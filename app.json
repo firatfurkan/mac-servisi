@@ -1,0 +1,175 @@
+{
+  "expo": {
+    "name": "Maç Servisi",
+    "slug": "mac-servisi",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/app-icon.png",
+    "scheme": "asist",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/images/app-logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff",
+      "textColor": "#03422d",
+      "dark": {
+        "image": "./assets/images/app-logo.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#0f1a19",
+        "textColor": "#03422d"
+      }
+    },
+    "ios": {
+      "icon": "./assets/images/app-icon.png",
+      "supportsTablet": true,
+      "bundleIdentifier": "com.furkanf.asist",
+      "buildNumber": "1",
+      "infoPlist": {
+        "SKAdNetworkItems": [
+          { "SKAdNetworkIdentifier": "cstr6suwn9.skadnetwork" },
+          { "SKAdNetworkIdentifier": "4pfyvq9l8r.skadnetwork" },
+          { "SKAdNetworkIdentifier": "ludvb6z3bs.skadnetwork" },
+          { "SKAdNetworkIdentifier": "cp8zw746q7.skadnetwork" },
+          { "SKAdNetworkIdentifier": "3sh42y64q3.skadnetwork" },
+          { "SKAdNetworkIdentifier": "c6k4g5qg8m.skadnetwork" },
+          { "SKAdNetworkIdentifier": "s39g8k73mm.skadnetwork" },
+          { "SKAdNetworkIdentifier": "3qy474624w.skadnetwork" },
+          { "SKAdNetworkIdentifier": "f38h382jlk.skadnetwork" },
+          { "SKAdNetworkIdentifier": "hs6bdukanm.skadnetwork" },
+          { "SKAdNetworkIdentifier": "v4nxqhlyqp.skadnetwork" },
+          { "SKAdNetworkIdentifier": "wzmmz9fp6w.skadnetwork" },
+          { "SKAdNetworkIdentifier": "yclnxrl5pm.skadnetwork" },
+          { "SKAdNetworkIdentifier": "t38b2kh725.skadnetwork" },
+          { "SKAdNetworkIdentifier": "7ug5zh24hu.skadnetwork" },
+          { "SKAdNetworkIdentifier": "gta9lk7p23.skadnetwork" },
+          { "SKAdNetworkIdentifier": "vutu7akeur.skadnetwork" },
+          { "SKAdNetworkIdentifier": "y5ghdn5j9k.skadnetwork" },
+          { "SKAdNetworkIdentifier": "n6fk4nfna4.skadnetwork" },
+          { "SKAdNetworkIdentifier": "v9wttpbfk9.skadnetwork" },
+          { "SKAdNetworkIdentifier": "n38lu8286q.skadnetwork" },
+          { "SKAdNetworkIdentifier": "47vhws6wlr.skadnetwork" },
+          { "SKAdNetworkIdentifier": "kbd757ywx3.skadnetwork" },
+          { "SKAdNetworkIdentifier": "9t245vhmpl.skadnetwork" },
+          { "SKAdNetworkIdentifier": "a2p9lx4jpn.skadnetwork" },
+          { "SKAdNetworkIdentifier": "22mmun2rn5.skadnetwork" },
+          { "SKAdNetworkIdentifier": "4468km3ulz.skadnetwork" },
+          { "SKAdNetworkIdentifier": "2u9pt9hc89.skadnetwork" },
+          { "SKAdNetworkIdentifier": "8s468mfl3y.skadnetwork" },
+          { "SKAdNetworkIdentifier": "av6w8kgt66.skadnetwork" },
+          { "SKAdNetworkIdentifier": "klf5c3l5u5.skadnetwork" },
+          { "SKAdNetworkIdentifier": "ppxm28t8ap.skadnetwork" },
+          { "SKAdNetworkIdentifier": "424m5254lk.skadnetwork" },
+          { "SKAdNetworkIdentifier": "uw77j35x4d.skadnetwork" },
+          { "SKAdNetworkIdentifier": "578prtvx9j.skadnetwork" },
+          { "SKAdNetworkIdentifier": "4dzt52r2t5.skadnetwork" },
+          { "SKAdNetworkIdentifier": "e5fvkxwrpn.skadnetwork" },
+          { "SKAdNetworkIdentifier": "8c4e2ghe7u.skadnetwork" },
+          { "SKAdNetworkIdentifier": "zq492l623r.skadnetwork" },
+          { "SKAdNetworkIdentifier": "3rd42ekr43.skadnetwork" },
+          { "SKAdNetworkIdentifier": "3qcr597p9d.skadnetwork" }
+        ],
+        "NSPrivacyAccessedAPITypes": [
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
+            "NSPrivacyAccessedAPITypeReasons": [
+              "CA92.1"
+            ]
+          },
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
+            "NSPrivacyAccessedAPITypeReasons": [
+              "CA92.1"
+            ]
+          }
+        ],
+        "NSPrivacyCollectedDataTypes": [
+          {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeUserID",
+            "NSPrivacyCollectedDataTypeLinked": false,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": [
+              "NSPrivacyCollectedDataTypePurposeAppFunctionality"
+            ]
+          },
+          {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeCoarseLocation",
+            "NSPrivacyCollectedDataTypeLinked": false,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": [
+              "NSPrivacyCollectedDataTypePurposeAppFunctionality"
+            ]
+          },
+          {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeUserID",
+            "NSPrivacyCollectedDataTypeLinked": false,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": [
+              "NSPrivacyCollectedDataTypePurposeAppFunctionality"
+            ]
+          },
+          {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeCoarseLocation",
+            "NSPrivacyCollectedDataTypeLinked": false,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": [
+              "NSPrivacyCollectedDataTypePurposeAppFunctionality"
+            ]
+          }
+        ],
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "backgroundColor": "#15ab6f",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "backgroundImage": "./assets/images/android-icon-background.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+      },
+      "package": "com.furkanf.asist",
+      "googleServicesFile": "./google-services.json"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-web-browser",
+      [
+        "expo-notifications",
+        {
+          "sounds": ["./assets/sounds/gol.mp3", "./assets/sounds/duduk.wav"]
+        }
+      ],
+      [
+        "react-native-google-mobile-ads",
+        {
+          "iosAppId": "ca-app-pub-3272601063768123~7042696977",
+          "androidAppId": "ca-app-pub-3272601063768123~8733696321"
+        }
+      ]
+    ],
+    "updates": {
+      "url": "https://u.expo.dev/58f18679-a282-4cb4-9475-0ae8f96a2c79",
+      "enabled": true,
+      "fallbackToCacheTimeout": 0
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "privacyPolicy": "https://furkanf.github.io/asist/privacy",
+      "router": {},
+      "eas": {
+        "projectId": "58f18679-a282-4cb4-9475-0ae8f96a2c79"
+      }
+    }
+  }
+}

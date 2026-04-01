@@ -1,0 +1,501 @@
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import React, { memo, useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import {
+    Animated,
+    Image,
+    Share,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
+import { useAppTheme } from "../../hooks/useAppTheme";
+import {
+    cancelMatchReminder,
+    scheduleMatchReminder,
+} from "../../services/goalTracker";
+import { registerMatchPush, unregisterMatchPush } from "../../services/pushService";
+import { useFavoritesStore } from "../../stores/favoritesStore";
+import { useNotificationStore } from "../../stores/notificationStore";
+import { Match, MatchEvent } from "../../types";
+import { formatMatchTime, getAggregateAdvancer, isKnockoutRound, isLive, isSingleLegKnockout } from "../../utils/matchUtils";
+
+interface Props {
+  match: Match;
+  events?: MatchEvent[];
+  pairedMatch?: Match; // Aynı turdaki diğer ayak maçı (aggregate için)
+}
+
+const LIVE_RED = "#FF4444";
+const UNFINISHED_GRAY = "#9E9E9E";
+
+function buildShareMessage(match: Match, events?: MatchEvent[]): string {
+  const LINE = "━━━━━━━━━━━━━━━━━━━━━━";
+
+  const statusLabel =
+    match.status === "live" || match.status === "half_time"
+      ? `🔴 CANLI${match.minute ? ` · ${match.minute}'` : ""}`
+      : match.status === "finished"
+      ? "✅ MAÇ SONUCU"
+      : match.status === "postponed"
+      ? "⏸ ERTELENDİ"
+      : match.status === "cancelled"
+      ? "❌ İPTAL"
+      : "🕐 YAKLAŞAN MAÇ";
+
+  const hasScore = match.homeScore != null && match.awayScore != null;
+
+  // Goal lists per team
+  const goals = (events ?? []).filter(
+    (e) => e.type === "goal" || e.type === "penalty" || e.type === "own_goal",
+  );
+  const homeGoals = goals.filter((e) => e.team === match.homeTeam.id);
+  const awayGoals = goals.filter((e) => e.team === match.awayTeam.id);
+
+  const formatGoals = (list: MatchEvent[]) =>
+    list.map((g) => `  ⚽ ${g.player} ${g.minute}'`).join("\n");
+
+  let msg = `${LINE}\n`;
+  msg += `🏆 ${match.league.name}\n`;
+  msg += `${LINE}\n\n`;
+  msg += `${statusLabel}\n\n`;
+
+  if (hasScore) {
+    const homeW = match.homeScore! > match.awayScore!;
+    const awayW = match.awayScore! > match.homeScore!;
+    msg += `${homeW ? "🥇 " : "    "}${match.homeTeam.name}\n`;
+    msg += `       ${match.homeScore}  —  ${match.awayScore}\n`;
+    msg += `${awayW ? "🥇 " : "    "}${match.awayTeam.name}\n`;
+  } else {
+    msg += `  ${match.homeTeam.name}\n`;
+    msg += `         vs\n`;
+    msg += `  ${match.awayTeam.name}\n`;
+  }
+
+  if (goals.length > 0) {
+    msg += `\n${LINE}\n`;
+    if (homeGoals.length > 0) {
+      msg += `${match.homeTeam.name}:\n${formatGoals(homeGoals)}\n`;
+    }
+    if (awayGoals.length > 0) {
+      msg += `${match.awayTeam.name}:\n${formatGoals(awayGoals)}\n`;
+    }
+  }
+
+  msg += `\n${LINE}\n`;
+  msg += `📲 Maç Servisi ile takip et!`;
+
+  return msg;
+}
+
+function MatchCard({ match, events, pairedMatch }: Props) {
+  const router = useRouter();
+  const { t, i18n } = useTranslation();
+  const theme = useAppTheme();
+  const live = isLive(match);
+  const finished = match.status === "finished";
+  const notStarted = match.status === "not_started";
+  const unfinished =
+    match.status === "postponed" || match.status === "cancelled";
+
+  // Aggregate hesaplama: paired maç varsa ve bu maç 2. ayaksa
+  const isSecondLeg = !!pairedMatch &&
+    new Date(match.startTime).getTime() >= new Date(pairedMatch.startTime).getTime();
+  const pairedFinished = pairedMatch?.status === "finished";
+
+  // Tur atlayan: tek maçlık → winner, iki bacaklı 2. ayak → aggregate
+  // Paired match yoksa ve knockout turuysa tek maç olarak kabul et (WC elemeleri vb.)
+  const advancer = finished
+    ? (isSecondLeg && pairedFinished
+        ? getAggregateAdvancer(match, pairedMatch)
+        : (isSingleLegKnockout(match.league.round) || (!pairedMatch && isKnockoutRound(match.league.round))
+            ? (match.winner ?? null)
+            : null))
+    : null;
+  const pulse = useRef(new Animated.Value(1)).current;
+
+  const isNotified = useNotificationStore((s) =>
+    s.notifiedMatchIds.includes(match.id),
+  );
+  const toggleNotificationRaw = useNotificationStore(
+    (s) => s.toggleMatchNotification,
+  );
+  const removeNotification = useNotificationStore((s) => s.removeMatchNotification);
+  const toggleNotification = useCallback(() => {
+    toggleNotificationRaw({
+      id: match.id,
+      startTime: match.startTime,
+      homeTeamName: match.homeTeam.name,
+      awayTeamName: match.awayTeam.name,
+    });
+  }, [match, toggleNotificationRaw]);
+  const isFavHome = useFavoritesStore((s) =>
+    s.favoriteTeamIds.includes(match.homeTeam.id),
+  );
+  const isFavAway = useFavoritesStore((s) =>
+    s.favoriteTeamIds.includes(match.awayTeam.id),
+  );
+  const isFavMatch = isFavHome || isFavAway;
+
+  // Biten maçlarda zili kapat ve aboneliği temizle
+  useEffect(() => {
+    if (finished && isNotified) {
+      removeNotification(match.id);
+      unregisterMatchPush(match.id).catch(() => {});
+      cancelMatchReminder(match.id).catch(() => {});
+    }
+  }, [finished, isNotified, match.id, removeNotification]);
+
+  // Favori takım maçlarını otomatik kaydet (bitmemiş maçlar)
+  useEffect(() => {
+    if (!isFavMatch || finished || unfinished) return;
+    if (isNotified) return; // zaten kayıtlı
+    toggleNotificationRaw({
+      id: match.id,
+      startTime: match.startTime,
+      homeTeamName: match.homeTeam.name,
+      awayTeamName: match.awayTeam.name,
+    });
+    registerMatchPush(match.id, match.startTime).catch(() => {});
+    if (notStarted) {
+      scheduleMatchReminder(match).catch(() => {});
+    }
+  // Sadece match.id ve isFavMatch değiştiğinde çalış
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [match.id, isFavMatch]);
+
+  // Zil aktif mi: bitmemiş/iptal olmamış maçlarda isNotified veya favori
+  const bellActive = !finished && !unfinished && (isNotified || isFavMatch);
+
+  const handleBellPress = useCallback(
+    (e: any) => {
+      e.stopPropagation?.();
+      const wasNotified = isNotified;
+      const willEnable = !isNotified && !isFavMatch;
+      toggleNotification();
+      // Schedule or cancel match start reminder
+      if (notStarted) {
+        if (willEnable || isFavMatch) {
+          scheduleMatchReminder(match).catch(() => {});
+        } else {
+          cancelMatchReminder(match.id).catch(() => {});
+        }
+      }
+      // Register or unregister server-side push subscription
+      if (!wasNotified && !isFavMatch) {
+        registerMatchPush(match.id, match.startTime).catch(() => {});
+      } else if (wasNotified) {
+        unregisterMatchPush(match.id).catch(() => {});
+      }
+    },
+    [match, isNotified, isFavMatch, notStarted, toggleNotification],
+  );
+
+  useEffect(() => {
+    if (!live) return;
+    const anim = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulse, {
+          toValue: 0.25,
+          duration: 900,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulse, {
+          toValue: 1,
+          duration: 900,
+          useNativeDriver: true,
+        }),
+      ]),
+    );
+    anim.start();
+    return () => anim.stop();
+  }, [live]);
+
+  const startHour = formatMatchTime(match.startTime);
+
+  const timeLabel =
+    notStarted || finished
+      ? startHour
+      : match.status === "half_time"
+        ? t("matchStatus.halfTime")
+        : live
+          ? match.extra
+            ? `${match.minute ?? 0}+${match.extra}'`
+            : `${match.minute ?? 0}'`
+          : match.status === "postponed"
+            ? "Ert."
+            : match.status === "cancelled"
+              ? "İpt."
+              : t("matchStatus.finished");
+
+  const goToTeam = (id: string, name: string, logo: string) => {
+    router.push(
+      `/team/${id}?name=${encodeURIComponent(name)}&logo=${encodeURIComponent(logo)}`,
+    );
+  };
+
+  return (
+    <TouchableOpacity
+      onPress={() => router.push(`/match/${match.id}`)}
+      activeOpacity={0.75}
+      style={[
+        styles.card,
+        {
+          backgroundColor: live ? LIVE_RED + "08" : theme.colors.card,
+          borderLeftWidth: 3,
+          borderLeftColor: live ? LIVE_RED : "transparent",
+          opacity: unfinished ? 0.6 : 1,
+        },
+      ]}
+    >
+      {/* Paylaş butonu — sol taraf */}
+      {!unfinished ? (
+        <TouchableOpacity
+          onPress={() => Share.share({ message: buildShareMessage(match, events) })}
+          activeOpacity={0.6}
+          style={styles.sideBtn}
+          hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
+        >
+          <Ionicons name="share-social-outline" size={16} color={theme.colors.primary} />
+        </TouchableOpacity>
+      ) : (
+        <View style={styles.sideBtn} />
+      )}
+
+      {/* Home team */}
+      <TouchableOpacity
+        style={styles.teamSide}
+        onPress={() =>
+          goToTeam(
+            match.homeTeam.id,
+            match.homeTeam.name,
+            match.homeTeam.logoUrl,
+          )
+        }
+        activeOpacity={0.6}
+        hitSlop={{ top: 8, bottom: 8, left: 4, right: 0 }}
+      >
+        <Image
+          source={{ uri: match.homeTeam.logoUrl }}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+        <View style={styles.teamNameRow}>
+          <Text
+            style={[
+              styles.teamName,
+              {
+                color: finished
+                  ? theme.colors.textSecondary
+                  : theme.colors.textPrimary,
+                fontWeight: advancer === "home" ? "800" : "600",
+              },
+            ]}
+            numberOfLines={1}
+          >
+            {match.homeTeam.name}
+          </Text>
+          {advancer === "home" && (
+            <Ionicons name="checkmark-circle" size={13} color="#4CAF50" style={styles.advancerIcon} />
+          )}
+        </View>
+      </TouchableOpacity>
+
+      {/* Center: score + status */}
+      <View style={styles.center}>
+        {notStarted || unfinished ? (
+          <Text style={[styles.timeOnly, {
+            color: unfinished ? UNFINISHED_GRAY : theme.colors.textSecondary,
+          }]}>
+            {unfinished
+              ? (match.status === "postponed" ? "Ertelendi" : "İptal")
+              : timeLabel}
+          </Text>
+        ) : (
+          <>
+            {/* Bu maçın skoru */}
+            <Text
+              style={[
+                styles.score,
+                { color: live ? LIVE_RED : theme.colors.textPrimary },
+              ]}
+            >
+              {`${match.homeScore ?? 0} - ${match.awayScore ?? 0}`}
+            </Text>
+            <View style={styles.statusRow}>
+              {live && (
+                <Animated.View
+                  style={[
+                    styles.liveDot,
+                    { backgroundColor: LIVE_RED, opacity: pulse },
+                  ]}
+                />
+              )}
+              <Text
+                style={[
+                  styles.statusLabel,
+                  {
+                    color: live
+                      ? LIVE_RED
+                      : unfinished
+                        ? UNFINISHED_GRAY
+                        : theme.colors.textSecondary,
+                  },
+                  live && { fontWeight: "700" },
+                ]}
+              >
+                {unfinished
+                  ? (match.status === "postponed" ? "Ert." : "İpt.")
+                  : finished
+                    ? t("matchStatus.finished")
+                    : timeLabel}
+              </Text>
+            </View>
+          </>
+        )}
+      </View>
+
+      {/* Away team */}
+      <TouchableOpacity
+        style={[styles.teamSide, styles.teamSideRight]}
+        onPress={() =>
+          goToTeam(
+            match.awayTeam.id,
+            match.awayTeam.name,
+            match.awayTeam.logoUrl,
+          )
+        }
+        activeOpacity={0.6}
+        hitSlop={{ top: 8, bottom: 8, left: 0, right: 4 }}
+      >
+        <View style={[styles.teamNameRow, { flexDirection: "row-reverse" }]}>
+          <Text
+            style={[
+              styles.teamName,
+              styles.teamNameRight,
+              {
+                color: finished
+                  ? theme.colors.textSecondary
+                  : theme.colors.textPrimary,
+                fontWeight: advancer === "away" ? "800" : "600",
+              },
+            ]}
+            numberOfLines={1}
+          >
+            {match.awayTeam.name}
+          </Text>
+          {advancer === "away" && (
+            <Ionicons name="checkmark-circle" size={13} color="#4CAF50" style={styles.advancerIcon} />
+          )}
+        </View>
+        <Image
+          source={{ uri: match.awayTeam.logoUrl }}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+      </TouchableOpacity>
+
+      {/* Zil butonu — sağ taraf (biten/ertelenen/iptal maçlarda gizli) */}
+      {finished || unfinished ? (
+        <View style={styles.sideBtn} />
+      ) : (
+        <TouchableOpacity
+          onPress={handleBellPress}
+          activeOpacity={0.6}
+          style={styles.sideBtn}
+          hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
+        >
+          <Ionicons
+            name={bellActive ? "notifications" : "notifications-outline"}
+            size={16}
+            color={bellActive ? theme.colors.primary : theme.colors.textSecondary + "80"}
+          />
+        </TouchableOpacity>
+      )}
+    </TouchableOpacity>
+  );
+}
+
+export default memo(MatchCard);
+
+const styles = StyleSheet.create({
+  card: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 6,
+    paddingVertical: 8,
+    overflow: "hidden",
+    maxWidth: "100%",
+  },
+  teamSide: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  teamSideRight: {
+    justifyContent: "flex-end",
+    gap: 4,
+  },
+  logo: {
+    width: 18,
+    height: 18,
+    borderRadius: 4,
+    flexShrink: 0,
+  },
+  teamNameRow: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+  },
+  teamName: {
+    flex: 1,
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  teamNameRight: {
+    textAlign: "right",
+  },
+  advancerIcon: {
+    flexShrink: 0,
+  },
+  center: {
+    width: 72,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 1,
+    paddingHorizontal: 2,
+  },
+  score: {
+    fontSize: 12,
+    fontWeight: "800",
+    letterSpacing: 0.5,
+  },
+  timeOnly: {
+    fontSize: 11,
+    fontWeight: "600",
+  },
+  statusRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+  },
+  liveDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 3,
+  },
+  statusLabel: {
+    fontSize: 10,
+    fontWeight: "500",
+  },
+  sideBtn: {
+    width: 28,
+    paddingVertical: 4,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+});
