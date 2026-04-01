@@ -23,8 +23,10 @@
       "icon": "./assets/images/app-icon.png",
       "supportsTablet": true,
       "bundleIdentifier": "com.furkanf.asist",
-      "buildNumber": "1",
+      "buildNumber": "2",
       "infoPlist": {
+        "NSPrivacyTracking": false,
+        "NSPrivacyTrackingDomains": [],
         "SKAdNetworkItems": [
           { "SKAdNetworkIdentifier": "cstr6suwn9.skadnetwork" },
           { "SKAdNetworkIdentifier": "4pfyvq9l8r.skadnetwork" },
@@ -74,42 +76,60 @@
             "NSPrivacyAccessedAPITypeReasons": [
               "CA92.1"
             ]
-          },
-          {
-            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
-            "NSPrivacyAccessedAPITypeReasons": [
-              "CA92.1"
-            ]
           }
         ],
         "NSPrivacyCollectedDataTypes": [
           {
             "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeUserID",
-            "NSPrivacyCollectedDataTypeLinked": false,
+            "NSPrivacyCollectedDataTypeLinked": true,
             "NSPrivacyCollectedDataTypeTracking": false,
             "NSPrivacyCollectedDataTypePurposes": [
               "NSPrivacyCollectedDataTypePurposeAppFunctionality"
             ]
           },
           {
-            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeCoarseLocation",
-            "NSPrivacyCollectedDataTypeLinked": false,
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeAdvertisingData",
+            "NSPrivacyCollectedDataTypeLinked": true,
             "NSPrivacyCollectedDataTypeTracking": false,
             "NSPrivacyCollectedDataTypePurposes": [
               "NSPrivacyCollectedDataTypePurposeAppFunctionality"
             ]
           },
           {
-            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeUserID",
-            "NSPrivacyCollectedDataTypeLinked": false,
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeDeviceID",
+            "NSPrivacyCollectedDataTypeLinked": true,
             "NSPrivacyCollectedDataTypeTracking": false,
             "NSPrivacyCollectedDataTypePurposes": [
               "NSPrivacyCollectedDataTypePurposeAppFunctionality"
             ]
           },
           {
-            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeCoarseLocation",
-            "NSPrivacyCollectedDataTypeLinked": false,
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeCrashData",
+            "NSPrivacyCollectedDataTypeLinked": true,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": [
+              "NSPrivacyCollectedDataTypePurposeAppFunctionality"
+            ]
+          },
+          {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypePerformanceData",
+            "NSPrivacyCollectedDataTypeLinked": true,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": [
+              "NSPrivacyCollectedDataTypePurposeAppFunctionality"
+            ]
+          },
+          {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeProductInteraction",
+            "NSPrivacyCollectedDataTypeLinked": true,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": [
+              "NSPrivacyCollectedDataTypePurposeAppFunctionality"
+            ]
+          },
+          {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeOtherUserContent",
+            "NSPrivacyCollectedDataTypeLinked": true,
             "NSPrivacyCollectedDataTypeTracking": false,
             "NSPrivacyCollectedDataTypePurposes": [
               "NSPrivacyCollectedDataTypePurposeAppFunctionality"
@@ -158,14 +178,12 @@
       "enabled": true,
       "fallbackToCacheTimeout": 0
     },
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
+    "runtimeVersion": "1.0.0",
     "experiments": {
       "typedRoutes": true
     },
     "extra": {
-      "privacyPolicy": "https://furkanf.github.io/asist/privacy",
+      "privacyPolicy": "https://firatfurkan.github.io/mac-servisi/privacy",
       "router": {},
       "eas": {
         "projectId": "58f18679-a282-4cb4-9475-0ae8f96a2c79"

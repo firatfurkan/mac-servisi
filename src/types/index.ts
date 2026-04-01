@@ -42,6 +42,7 @@ export interface Team {
   logoUrl: string;
   venue?: Venue;
   coach?: Coach;
+  national?: boolean;
 }
 
 export interface League {

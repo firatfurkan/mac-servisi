@@ -209,7 +209,9 @@ function transformStats(stats: any[], matchId: string): MatchStatistics {
   )?.value;
 
   const getXg = (teamStats: any[]): number => {
-    const s = teamStats.find((s: any) => s.type === "expected_goals");
+    const s = teamStats.find((s: any) =>
+      s.type === "expected_goals" || s.type === "Expected Goals" || s.type === "xG"
+    );
     return parseFloat(s?.value ?? 0) || 0;
   };
   const getPassPct = (teamStats: any[]): number => {
@@ -293,10 +295,11 @@ export const apiService = {
 
   async getTeamMatches(teamId: string, season: string): Promise<Match[]> {
     if (USE_MOCK) return mockApiService.getTeamMatches(teamId, season);
-    const data = await safeFetch(
-      `${BASE_URL}/fixtures?team=${teamId}&season=${season}&timezone=Europe/Istanbul`,
-      { headers },
-    );
+    // For national teams: season can be empty to fetch all seasons
+    const url = season
+      ? `${BASE_URL}/fixtures?team=${teamId}&season=${season}&timezone=Europe/Istanbul`
+      : `${BASE_URL}/fixtures?team=${teamId}&timezone=Europe/Istanbul`;
+    const data = await safeFetch(url, { headers });
     if (!data.response) return [];
     return data.response.map(transformFixture);
   },
@@ -1124,6 +1127,7 @@ export const apiService = {
       name: t.team.name,
       shortName: t.team.code || t.team.name.substring(0, 3).toUpperCase(),
       logoUrl: t.team.logo,
+      national: t.team.national ?? false,
       venue: t.venue
         ? {
             id: t.venue.id,

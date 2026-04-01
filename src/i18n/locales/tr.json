@@ -163,6 +163,7 @@
     "table": "Puan Durumu",
     "topScorers": "Gol Krallığı",
     "tableNotFound": "Puan durumu bulunamadı",
+    "noStandingsThisSeason": "Bu sezon için puan durumu bulunmuyor",
     "topScorersNotFound": "Gol krallığı verisi bulunamadı",
     "win": "G",
     "draw": "B",

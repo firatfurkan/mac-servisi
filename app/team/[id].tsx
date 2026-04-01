@@ -5,7 +5,7 @@ import "dayjs/locale/tr";
 import utc from "dayjs/plugin/utc";
 dayjs.extend(utc);
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
     Dimensions,
@@ -19,12 +19,16 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import FormStrip from "../../src/components/team/FormStrip";
+import { MatchCardSkeleton } from "../../src/components/common/SkeletonLoader";
 import { useAppTheme } from "../../src/hooks/useAppTheme";
 import { useTeamDetail } from "../../src/hooks/useTeamDetail";
-import { useTeamMatches } from "../../src/hooks/useTeamMatches";
+import { useTeamMatches, useNationalTeamMatches, NATIONAL_MIN_SEASON } from "../../src/hooks/useTeamMatches";
 import { useTeamSquad } from "../../src/hooks/useTeamSquad";
 import { useStandings } from "../../src/hooks/useStandings";
 import { useFavoritesStore } from "../../src/stores/favoritesStore";
+import { useNotificationStore } from "../../src/stores/notificationStore";
+import { cancelMatchReminder, scheduleMatchReminder } from "../../src/services/goalTracker";
+import { registerMatchPush, unregisterMatchPush } from "../../src/services/pushService";
 import { Match, SquadPlayer, StandingRow } from "../../src/types";
 
 type TeamTab = "matches" | "squad" | "standings";
@@ -63,7 +67,47 @@ function MatchRow({ match, teamId }: MatchRowProps) {
   const isHome = match.homeTeam.id === teamId;
   const notStarted = match.status === "not_started";
   const live = match.status === "live" || match.status === "half_time";
+  const finished = match.status === "finished";
   const unfinished = match.status === "postponed" || match.status === "cancelled";
+
+  // Notification logic (same as MatchCard)
+  const isNotified = useNotificationStore((s) => s.notifiedMatchIds.includes(match.id));
+  const toggleNotificationRaw = useNotificationStore((s) => s.toggleMatchNotification);
+  const removeNotification = useNotificationStore((s) => s.removeMatchNotification);
+  const isFavHome = useFavoritesStore((s) => s.favoriteTeamIds.includes(match.homeTeam.id));
+  const isFavAway = useFavoritesStore((s) => s.favoriteTeamIds.includes(match.awayTeam.id));
+  const isFavMatch = isFavHome || isFavAway;
+
+  useEffect(() => {
+    if (finished && isNotified) {
+      removeNotification(match.id);
+      unregisterMatchPush(match.id).catch(() => {});
+      cancelMatchReminder(match.id).catch(() => {});
+    }
+  }, [finished, isNotified, match.id, removeNotification]);
+
+  useEffect(() => {
+    if (!isFavMatch || finished || unfinished || isNotified) return;
+    toggleNotificationRaw({ id: match.id, startTime: match.startTime, homeTeamName: match.homeTeam.name, awayTeamName: match.awayTeam.name });
+    registerMatchPush(match.id, match.startTime).catch(() => {});
+    if (notStarted) scheduleMatchReminder(match).catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [match.id, isFavMatch]);
+
+  const bellActive = !finished && !unfinished && (isNotified || isFavMatch);
+
+  const handleBellPress = useCallback((e: any) => {
+    e.stopPropagation?.();
+    const wasNotified = isNotified;
+    const willEnable = !isNotified && !isFavMatch;
+    toggleNotificationRaw({ id: match.id, startTime: match.startTime, homeTeamName: match.homeTeam.name, awayTeamName: match.awayTeam.name });
+    if (notStarted) {
+      if (willEnable || isFavMatch) scheduleMatchReminder(match).catch(() => {});
+      else cancelMatchReminder(match.id).catch(() => {});
+    }
+    if (!wasNotified && !isFavMatch) registerMatchPush(match.id, match.startTime).catch(() => {});
+    else if (wasNotified) unregisterMatchPush(match.id).catch(() => {});
+  }, [match, isNotified, isFavMatch, notStarted, toggleNotificationRaw]);
 
   const dateStr = dayjs.utc(match.startTime)
     .utcOffset(3 * 60)
@@ -219,6 +263,24 @@ function MatchRow({ match, teamId }: MatchRowProps) {
           </View>
         </View>
       </View>
+
+      {/* Zil butonu */}
+      {finished || unfinished ? (
+        <View style={styles.bellPlaceholder} />
+      ) : (
+        <TouchableOpacity
+          onPress={handleBellPress}
+          activeOpacity={0.6}
+          style={styles.bellBtn}
+          hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
+        >
+          <Ionicons
+            name={bellActive ? "notifications" : "notifications-outline"}
+            size={16}
+            color={bellActive ? theme.colors.primary : theme.colors.textSecondary + "80"}
+          />
+        </TouchableOpacity>
+      )}
     </TouchableOpacity>
   );
 }
@@ -450,32 +512,58 @@ export default function TeamScreen() {
   const [showSeasonModal, setShowSeasonModal] = useState(false);
   const [activeTab, setActiveTab] = useState<TeamTab>("matches");
   const [sortMode, setSortMode] = useState<"date" | "league">("date");
+  // National teams use calendar years, not football seasons.
+  // Start with current year + previous year so we catch matches on both sides of the season boundary.
+  const [nationalSeasons, setNationalSeasons] = useState<string[]>(
+    [String(CURRENT_YEAR), CURRENT_SEASON]
+  );
   const { isFavorite, toggleFavorite } = useFavoritesStore();
+  const { data: teamDetail } = useTeamDetail(id ?? "");
+  const isNational = teamDetail?.national ?? false;
+
+  // Club team matches
+  const { data: clubMatches = [], isLoading: clubLoading, isError: clubError } = useTeamMatches(
+    id ?? "", season
+  );
+  // National team matches — lazy-loaded by season
   const {
-    data: matches = [],
-    isLoading,
-    isError,
-  } = useTeamMatches(id ?? "", season);
+    data: nationalMatches = [],
+    isLoadingInitial: nationalLoadingInitial,
+    isFetchingMore: nationalFetchingMore,
+  } = useNationalTeamMatches(id ?? "", isNational ? nationalSeasons : []);
+
+  const matches = isNational ? nationalMatches : clubMatches;
+  const isLoading = isNational ? nationalLoadingInitial : clubLoading;
+  const isError = isNational ? false : clubError;
+
   const { data: squad = [], isLoading: squadLoading } = useTeamSquad(
     id ?? "",
     season,
     activeTab === "squad",
   );
-  const { data: teamDetail } = useTeamDetail(id ?? "");
 
   // URL param yoksa API verisinden al (ör. arama olmadan direkt URL ile girildiğinde)
   const teamName = teamNameParam || teamDetail?.name || "";
   const teamLogo = teamLogoParam || teamDetail?.logoUrl || "";
 
   // Get primary league from matches for standings
+  // For national teams: prioritize competitive tournaments (skip friendlies)
   const primaryLeagueId = useMemo(() => {
     if (matches.length === 0) return "";
+    const isNational = teamDetail?.national ?? false;
+
     const leagueCounts: Record<string, number> = {};
     for (const m of matches) {
+      // For national teams, skip friendly matches (no league ID or specific patterns)
+      if (isNational && (m.league.id === "0" || m.league.name?.includes("Friendly"))) {
+        continue;
+      }
       leagueCounts[m.league.id] = (leagueCounts[m.league.id] ?? 0) + 1;
     }
+
+    if (Object.keys(leagueCounts).length === 0) return "";
     return Object.entries(leagueCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "";
-  }, [matches]);
+  }, [matches, teamDetail?.national]);
 
   const { data: standingsData, isLoading: standingsLoading } = useStandings(
     primaryLeagueId,
@@ -486,9 +574,10 @@ export default function TeamScreen() {
   );
   const standings = standingsData?.rows ?? [];
 
-  // Sort by date (most recent first) or by league name
   const sorted = useMemo(() => {
     const copy = [...matches];
+    // National teams: always newest first (already sorted by hook)
+    if (isNational) return copy;
     if (sortMode === "league") {
       copy.sort((a, b) => {
         const cmp = a.league.name.localeCompare(b.league.name, undefined, { sensitivity: "base" });
@@ -499,7 +588,7 @@ export default function TeamScreen() {
       copy.sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
     }
     return copy;
-  }, [matches, sortMode]);
+  }, [matches, sortMode, isNational]);
 
   const formatSeason = (s: string) => `${s}-${parseInt(s) + 1}`;
 
@@ -512,6 +601,15 @@ export default function TeamScreen() {
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ flexGrow: 1 }}
+        onScroll={isNational && activeTab === "matches" ? ({ nativeEvent: e }) => {
+          const nearBottom = e.layoutMeasurement.height + e.contentOffset.y >= e.contentSize.height - 200;
+          if (!nearBottom || nationalFetchingMore || nationalLoadingInitial) return;
+          const oldest = parseInt(nationalSeasons[nationalSeasons.length - 1]);
+          if (oldest > NATIONAL_MIN_SEASON) {
+            const next = String(oldest - 1);
+            setNationalSeasons(prev => prev.includes(next) ? prev : [...prev, next]);
+          }
+        } : undefined}
       >
         {/* Nav bar */}
         <View style={[styles.navBar, { backgroundColor: theme.colors.surface, paddingTop: insets.top + 4 }]}>
@@ -611,18 +709,20 @@ export default function TeamScreen() {
           </View>
         )}
 
-        {/* Season selector button */}
-        <TouchableOpacity
-          onPress={() => setShowSeasonModal(true)}
-          activeOpacity={0.7}
-          style={[
-            styles.seasonBtn,
-            {
-              backgroundColor: theme.colors.surface,
-              borderBottomColor: theme.colors.divider,
-            },
-          ]}
-        >
+        {/* Season selector button — hidden for national teams */}
+        {!teamDetail?.national && (
+          <>
+            <TouchableOpacity
+            onPress={() => setShowSeasonModal(true)}
+            activeOpacity={0.7}
+            style={[
+              styles.seasonBtn,
+              {
+                backgroundColor: theme.colors.surface,
+                borderBottomColor: theme.colors.divider,
+              },
+            ]}
+          >
           <Text
             style={[
               styles.seasonBtnLabel,
@@ -654,20 +754,20 @@ export default function TeamScreen() {
           >
             ▾
           </Text>
-        </TouchableOpacity>
+          </TouchableOpacity>
 
-        {/* Season Modal */}
-        <Modal
-          visible={showSeasonModal}
-          transparent
-          animationType="fade"
-          onRequestClose={() => setShowSeasonModal(false)}
-        >
-          <TouchableOpacity
-            style={styles.modalOverlay}
-            activeOpacity={1}
-            onPress={() => setShowSeasonModal(false)}
+          {/* Season Modal */}
+          <Modal
+            visible={showSeasonModal}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setShowSeasonModal(false)}
           >
+            <TouchableOpacity
+              style={styles.modalOverlay}
+              activeOpacity={1}
+              onPress={() => setShowSeasonModal(false)}
+            >
             <View
               style={[
                 styles.modalSheet,
@@ -722,8 +822,10 @@ export default function TeamScreen() {
                 </View>
               </ScrollView>
             </View>
-          </TouchableOpacity>
-        </Modal>
+            </TouchableOpacity>
+          </Modal>
+          </>
+        )}
 
         {/* Tab bar */}
         <View
@@ -795,8 +897,8 @@ export default function TeamScreen() {
 
         {activeTab === "matches" ? (
           <>
-            {/* Form strip + sort toggle */}
-            {sorted.length > 0 && (
+            {/* Form strip + sort toggle — hidden for national teams */}
+            {sorted.length > 0 && !isNational && (
               <View style={styles.formRow}>
                 <FormStrip teamId={id ?? ""} matches={sorted} />
                 <View style={styles.sortToggle}>
@@ -830,15 +932,13 @@ export default function TeamScreen() {
 
             {/* Match list */}
             {isLoading ? (
-              <View style={styles.center}>
-                <Text
-                  style={[
-                    styles.loadingText,
-                    { color: theme.colors.textSecondary },
-                  ]}
-                >
-                  {t("team.loading")}
-                </Text>
+              <View style={{ backgroundColor: theme.colors.background }}>
+                {[...Array(6)].map((_, i) => (
+                  <View key={i}>
+                    <MatchCardSkeleton />
+                    <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: theme.colors.divider, marginHorizontal: 12 }} />
+                  </View>
+                ))}
               </View>
             ) : isError ? (
               <View style={styles.center}>
@@ -875,6 +975,31 @@ export default function TeamScreen() {
                     )}
                   </View>
                 ))}
+                {/* National team: load more indicator */}
+                {isNational && (
+                  nationalFetchingMore ? (
+                    <View style={{ backgroundColor: theme.colors.background }}>
+                      {[...Array(3)].map((_, i) => (
+                        <View key={i}>
+                          <MatchCardSkeleton />
+                          <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: theme.colors.divider, marginHorizontal: 12 }} />
+                        </View>
+                      ))}
+                    </View>
+                  ) : parseInt(nationalSeasons[nationalSeasons.length - 1]) <= NATIONAL_MIN_SEASON ? (
+                    <View style={{ paddingVertical: 20, alignItems: "center" }}>
+                      <Text style={{ color: theme.colors.textSecondary, fontSize: 12 }}>
+                        {i18n.language === "tr" ? `${NATIONAL_MIN_SEASON}'den itibaren tüm maçlar gösterildi` : `All matches since ${NATIONAL_MIN_SEASON} loaded`}
+                      </Text>
+                    </View>
+                  ) : (
+                    <View style={{ paddingVertical: 20, alignItems: "center" }}>
+                      <Text style={{ color: theme.colors.textSecondary, fontSize: 12 }}>
+                        {i18n.language === "tr" ? "↓ Daha eski maçlar için kaydır" : "↓ Scroll for older matches"}
+                      </Text>
+                    </View>
+                  )
+                )}
               </View>
             )}
           </>
@@ -910,8 +1035,8 @@ export default function TeamScreen() {
               size={48}
               color={theme.colors.textSecondary + "60"}
             />
-            <Text style={{ color: theme.colors.textSecondary, marginTop: 12 }}>
-              {t("standings.tableNotFound")}
+            <Text style={{ color: theme.colors.textSecondary, marginTop: 12, textAlign: "center", paddingHorizontal: 24 }}>
+              {teamDetail?.national ? t("standings.noStandingsThisSeason") : t("standings.tableNotFound")}
             </Text>
           </View>
         ) : (
@@ -1131,11 +1256,20 @@ const styles = StyleSheet.create({
   matchRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 12,
+    paddingLeft: 12,
+    paddingRight: 6,
     paddingVertical: 10,
     gap: 10,
     overflow: "hidden",
     maxWidth: "100%",
+  },
+  bellBtn: {
+    width: 28,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  bellPlaceholder: {
+    width: 28,
   },
   resultBadge: {
     width: 28,

@@ -163,6 +163,7 @@
     "table": "Standings",
     "topScorers": "Top Scorers",
     "tableNotFound": "Standings not found",
+    "noStandingsThisSeason": "No standings available for this season",
     "topScorersNotFound": "Top scorers data not found",
     "win": "W",
     "draw": "D",

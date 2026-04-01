@@ -68,20 +68,21 @@ function ratingColor(r: number): string {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function groupByRow(players: LineupPlayer[]): LineupPlayer[][] {
-  const map: Record<number, LineupPlayer[]> = {};
+  const map: Record<string, LineupPlayer[]> = {};
   for (const p of players) {
     if (!p.grid) continue;
-    const row = parseInt(p.grid.split(":")[0]);
-    if (!map[row]) map[row] = [];
-    map[row].push(p);
+    const parts = p.grid.split(":");
+    const rowKey = parts[0]; // keep as string to preserve "2.5" etc.
+    if (__DEV__) console.log(`[groupByRow] ${p.name} grid=${p.grid} pos=${p.pos}`);
+    if (!map[rowKey]) map[rowKey] = [];
+    map[rowKey].push(p);
   }
   return Object.keys(map)
-    .map(Number)
-    .sort((a, b) => a - b)
-    .map((row) =>
-      map[row].sort((a, b) => {
-        const colA = parseInt(a.grid!.split(":")[1]);
-        const colB = parseInt(b.grid!.split(":")[1]);
+    .sort((a, b) => parseFloat(a) - parseFloat(b))
+    .map((rowKey) =>
+      map[rowKey].sort((a, b) => {
+        const colA = parseFloat(a.grid!.split(":")[1]);
+        const colB = parseFloat(b.grid!.split(":")[1]);
         return colA - colB;
       }),
     );
@@ -456,20 +457,24 @@ const TeamHalf = React.memo(function TeamHalf({
       paddingBottom: padBottom,
       zIndex: 1,
     }}>
-      {orderedRows.map((row, i) => (
-        <View key={i} style={s.row}>
-          {row.map((p) => (
-            <PlayerDot
-              key={p.id}
-              player={p}
-              color={color}
-              events={events}
-              stats={statsMap?.get(p.id)}
-              playerSize={playerSize}
-            />
-          ))}
-        </View>
-      ))}
+      {orderedRows.map((row, i) => {
+        // Away (isTop): mirror x-axis so RB appears on the right from away's perspective
+        const displayRow = isTop ? [...row].reverse() : row;
+        return (
+          <View key={i} style={s.row}>
+            {displayRow.map((p) => (
+              <PlayerDot
+                key={p.id}
+                player={p}
+                color={color}
+                events={events}
+                stats={statsMap?.get(p.id)}
+                playerSize={playerSize}
+              />
+            ))}
+          </View>
+        );
+      })}
     </View>
   );
 });

@@ -1,7 +1,10 @@
+# EAS Build Ignore
 node_modules
+android/build
+android/.gradle
+ios/build
+ios/Pods
 .expo
-dist
 .git
-.gemini
-AppData
-iCloudDrive
+dist
+web-build

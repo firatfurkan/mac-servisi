@@ -31,61 +31,70 @@ interface Props {
 const LIVE_RED = "#FF4444";
 const UNFINISHED_GRAY = "#9E9E9E";
 
+const IOS_LINK     = "https://apps.apple.com/app/mac-servisi/id6761078600";
+const ANDROID_LINK = "https://play.google.com/store/apps/details?id=com.furkanf.asist";
+const LINE = "━━━━━━━━━━━━━━━━━━━━━━";
+
 function buildShareMessage(match: Match, events?: MatchEvent[]): string {
-  const LINE = "━━━━━━━━━━━━━━━━━━━━━━";
-
-  const statusLabel =
-    match.status === "live" || match.status === "half_time"
-      ? `🔴 CANLI${match.minute ? ` · ${match.minute}'` : ""}`
-      : match.status === "finished"
-      ? "✅ MAÇ SONUCU"
-      : match.status === "postponed"
-      ? "⏸ ERTELENDİ"
-      : match.status === "cancelled"
-      ? "❌ İPTAL"
-      : "🕐 YAKLAŞAN MAÇ";
-
   const hasScore = match.homeScore != null && match.awayScore != null;
+  const isLiveMatch = match.status === "live" || match.status === "half_time";
+  const isFinished = match.status === "finished";
+  const isPostponed = match.status === "postponed";
+  const isCancelled = match.status === "cancelled";
 
-  // Goal lists per team
+  // Maç saati (UTC+3)
+  const dateObj = new Date(match.startTime);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const timeStr = `${pad(dateObj.getUTCHours() + 3 > 23 ? dateObj.getUTCHours() + 3 - 24 : dateObj.getUTCHours() + 3)}:${pad(dateObj.getUTCMinutes())}`;
+  const dateStr = `${pad(dateObj.getUTCDate())}.${pad(dateObj.getUTCMonth() + 1)}.${dateObj.getUTCFullYear()}`;
+
+  // Durum etiketi
+  const statusLabel = isLiveMatch
+    ? `🔴 CANLI${match.minute ? ` · ${match.minute}'` : ""}`
+    : isFinished  ? "✅ MAÇ SONUCU"
+    : isPostponed ? "⏸ ERTELENDİ"
+    : isCancelled ? "❌ İPTAL"
+    : `🕐 ${dateStr} · ${timeStr}`;
+
+  // Skor satırı
+  const homeW = hasScore && match.homeScore! > match.awayScore!;
+  const awayW = hasScore && match.awayScore! > match.homeScore!;
+  const scoreLine = hasScore
+    ? `⚽ ${homeW ? "𝗚 " : ""}${match.homeTeam.name}  ${match.homeScore} — ${match.awayScore}  ${match.awayTeam.name}${awayW ? " 𝗚" : ""}`
+    : `⚽ ${match.homeTeam.name}  vs  ${match.awayTeam.name}`;
+
+  // Goller
   const goals = (events ?? []).filter(
     (e) => e.type === "goal" || e.type === "penalty" || e.type === "own_goal",
   );
   const homeGoals = goals.filter((e) => e.team === match.homeTeam.id);
   const awayGoals = goals.filter((e) => e.team === match.awayTeam.id);
-
-  const formatGoals = (list: MatchEvent[]) =>
-    list.map((g) => `  ⚽ ${g.player} ${g.minute}'`).join("\n");
+  const goalLines = [
+    ...homeGoals.map((g) => `  ⚽ ${g.player} ${g.minute}' (${match.homeTeam.name})`),
+    ...awayGoals.map((g) => `  ⚽ ${g.player} ${g.minute}' (${match.awayTeam.name})`),
+  ]
+    .sort((a, b) => {
+      const mA = parseInt(a.match(/(\d+)'/)?.[1] ?? "0");
+      const mB = parseInt(b.match(/(\d+)'/)?.[1] ?? "0");
+      return mA - mB;
+    })
+    .join("\n");
 
   let msg = `${LINE}\n`;
   msg += `🏆 ${match.league.name}\n`;
   msg += `${LINE}\n\n`;
   msg += `${statusLabel}\n\n`;
+  msg += `${scoreLine}\n`;
 
-  if (hasScore) {
-    const homeW = match.homeScore! > match.awayScore!;
-    const awayW = match.awayScore! > match.homeScore!;
-    msg += `${homeW ? "🥇 " : "    "}${match.homeTeam.name}\n`;
-    msg += `       ${match.homeScore}  —  ${match.awayScore}\n`;
-    msg += `${awayW ? "🥇 " : "    "}${match.awayTeam.name}\n`;
-  } else {
-    msg += `  ${match.homeTeam.name}\n`;
-    msg += `         vs\n`;
-    msg += `  ${match.awayTeam.name}\n`;
-  }
-
-  if (goals.length > 0) {
-    msg += `\n${LINE}\n`;
-    if (homeGoals.length > 0) {
-      msg += `${match.homeTeam.name}:\n${formatGoals(homeGoals)}\n`;
-    }
-    if (awayGoals.length > 0) {
-      msg += `${match.awayTeam.name}:\n${formatGoals(awayGoals)}\n`;
-    }
+  if (goalLines) {
+    msg += `\n${goalLines}\n`;
   }
 
   msg += `\n${LINE}\n`;
-  msg += `📲 Maç Servisi ile takip et!`;
+  msg += `Maç Servisi ile maçı canlı takip et, gol bildirimlerini kaçırma! 🔔\n\n`;
+  msg += `📥 Hemen İndir:\n`;
+  msg += `🍎 iOS: ${IOS_LINK}\n`;
+  msg += `🤖 Android: ${ANDROID_LINK}`;
 
   return msg;
 }

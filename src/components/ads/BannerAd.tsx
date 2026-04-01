@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
-import { Platform, View, Text, StyleSheet } from 'react-native';
-import { BannerAd as GoogleBannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
+import Constants from 'expo-constants';
+import React, { useEffect, useState } from 'react';
+import { Platform, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppTheme } from '../../hooks/useAppTheme';
+
+const isExpoGo = Constants.appOwnership === 'expo';
 
 const TEST_MODE = false;
 
-const TEST_BANNER_ID  = 'ca-app-pub-3940256099942544/2934735716';
+const TEST_BANNER_ID         = 'ca-app-pub-3940256099942544/2934735716';
 const PROD_BANNER_ID_IOS     = 'ca-app-pub-3272601063768123/7285040449';
 const PROD_BANNER_ID_ANDROID = 'ca-app-pub-3272601063768123/1426051949';
 
@@ -14,24 +17,23 @@ const AD_UNIT_ID = TEST_MODE ? TEST_BANNER_ID : PROD_BANNER_ID;
 
 export default function BannerAd() {
   const theme = useAppTheme();
+  const insets = useSafeAreaInsets();
   const [adFailed, setAdFailed] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
+  const [modules, setModules] = useState<{ BannerAd: any; BannerAdSize: any } | null>(null);
 
-  const handleAdFailedToLoad = (error: any) => {
-    const msg = error?.message || String(error);
-    setErrorMsg(msg);
-    setAdFailed(true);
-  };
+  useEffect(() => {
+    if (isExpoGo || Platform.OS === 'web') return;
+    import('react-native-google-mobile-ads')
+      .then(({ BannerAd: NativeBannerAd, BannerAdSize }) => {
+        setModules({ BannerAd: NativeBannerAd, BannerAdSize });
+      })
+      .catch(() => setAdFailed(true));
+  }, []);
 
-  if (adFailed) {
-    // TEST_MODE'da hata görünür — production'da gizle
-    if (!TEST_MODE) return null;
-    return (
-      <View style={[styles.errorBox, { borderColor: theme.colors.primary }]}>
-        <Text style={{ color: 'red', fontSize: 10 }}>AdMob hata: {errorMsg}</Text>
-      </View>
-    );
-  }
+  if (isExpoGo || Platform.OS === 'web') return null;
+  if (adFailed || !modules) return null;
+
+  const { BannerAd: NativeBannerAd, BannerAdSize } = modules;
 
   return (
     <View
@@ -40,14 +42,15 @@ export default function BannerAd() {
         {
           backgroundColor: theme.colors.surface,
           borderTopColor: theme.colors.divider,
+          paddingBottom: insets.bottom,
         },
       ]}
     >
-      <GoogleBannerAd
+      <NativeBannerAd
         unitId={AD_UNIT_ID}
         size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
-        requestOptions={{ requestNonPersonalizedAdsOnly: false }}
-        onAdFailedToLoad={handleAdFailedToLoad}
+        requestOptions={{ requestNonPersonalizedAdsOnly: true }}
+        onAdFailedToLoad={() => setAdFailed(true)}
       />
     </View>
   );
@@ -61,12 +64,5 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     paddingVertical: 4,
     minHeight: 58,
-  },
-  errorBox: {
-    width: '100%',
-    padding: 8,
-    borderWidth: 1,
-    borderStyle: 'dashed',
-    alignItems: 'center',
   },
 });

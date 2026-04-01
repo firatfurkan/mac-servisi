@@ -14,6 +14,7 @@ import { Image, Platform, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ErrorBoundary } from '../src/components/common/ErrorBoundary';
 import InAppNotificationBanner, { BannerData, detectNotifType } from '../src/components/common/InAppNotificationBanner';
+import BannerAd from '../src/components/ads/BannerAd';
 import { LoadingProvider } from '../src/context/LoadingContext';
 import { useAppTheme } from '../src/hooks/useAppTheme';
 import { useNotifiedMatchTracker } from '../src/hooks/useNotifiedMatchTracker';
@@ -213,6 +214,7 @@ export default function RootLayout() {
               data={banner}
               onDismiss={() => setBanner(null)}
             />
+            <View style={{ flex: 1 }}>
             <Stack
               screenOptions={{
                 headerShown: false,
@@ -230,6 +232,8 @@ export default function RootLayout() {
               <Stack.Screen name="player/[id]" options={{ headerShown: false, animation: 'slide_from_right' }} />
               <Stack.Screen name="legal" options={{ headerShown: false, animation: 'slide_from_right' }} />
             </Stack>
+            </View>
+            <BannerAd />
           </View>
         </LoadingProvider>
       </QueryClientProvider>
