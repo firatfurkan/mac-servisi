@@ -1,8 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import {
+  ActivityIndicator,
   Image,
   ScrollView,
   StyleSheet,
@@ -13,7 +15,7 @@ import {
 import { useAppTheme } from "../../hooks/useAppTheme";
 import { useRoundFixtures } from "../../hooks/useRoundFixtures";
 import { useStandings } from "../../hooks/useStandings";
-import { Match } from "../../types";
+import { Match, StandingRow } from "../../types";
 import { formatMatchTime, isKnockoutRound, translateRound } from "../../utils/matchUtils";
 
 const FORM_COLORS: Record<string, string> = {
@@ -32,6 +34,7 @@ interface StandingsTabProps {
   homeTeamId: string;
   awayTeamId: string;
   isLive: boolean;
+  isFinished?: boolean;
   homeScore?: number | null;
   awayScore?: number | null;
   round?: string;
@@ -43,6 +46,7 @@ export default function StandingsTab({
   homeTeamId,
   awayTeamId,
   isLive,
+  isFinished = false,
   homeScore,
   awayScore,
   round,
@@ -50,13 +54,12 @@ export default function StandingsTab({
   const { t, i18n } = useTranslation();
   const theme = useAppTheme();
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const isKnockout = isKnockoutRound(round);
-
-  // Extract base round name (strip "- 1st Leg" / "- 2nd Leg" suffix)
   const baseRound = round?.replace(/\s*-\s*(1st|2nd)\s*Leg/i, "").trim() ?? "";
 
-  const { data: standingsData, isLoading, isError } = useStandings(
+  const { data: standingsData, isLoading, isError, refetch } = useStandings(
     leagueId,
     season,
     !isKnockout,
@@ -66,26 +69,127 @@ export default function StandingsTab({
   const rawStandings = standingsData?.rows ?? [];
   const groupName = standingsData?.groupName ?? "";
 
-  // Canlı maç devam ederken API güncellenmeden önce geçici puan hesapla
+  // ─── SYNC: Bugünkü tüm bitmiş/canlı maçları standings'e yansıt ───
+  // API-Sports standings'i maç bittikten 30dk-2saat sonra günceller.
+  // Çözüm: React Query cache'indeki tüm ['matches', date] sorgularını tarayıp
+  // aynı ligden biten maçları standings'e manuel olarak uygula.
   const standings = React.useMemo(() => {
-    if (!isLive || homeScore == null || awayScore == null || rawStandings.length === 0) {
-      return rawStandings;
+    if (rawStandings.length === 0) return rawStandings;
+
+    // Standings'in en son ne zaman fetch edildiğini al
+    const standingsUpdatedAt = queryClient.getQueryState(
+      ['standings', leagueId, season, homeTeamId]
+    )?.dataUpdatedAt ?? 0;
+
+    // Tüm 'matches' cache'lerini tara (farklı tarihler için birden fazla olabilir)
+    const allMatchCaches = queryClient.getQueriesData<Match[]>({ queryKey: ['matches'] });
+    const FINISHED = new Set(['finished', 'ft', 'aet', 'pen']);
+
+    // Bu ligden biten veya canlı maçları topla.
+    // Double-count koruması: matches cache'i standings'ten DAHA ESKİ bir fetch'e aitse
+    // (yani standings fetch'inden önce maç bitmişti) API zaten saymış olabilir.
+    // Bu durumu tespit etmek için: matches query'sinin dataUpdatedAt'ını kontrol et.
+    const relevantMatches: Match[] = [];
+    for (const [queryKey, matches] of allMatchCaches) {
+      if (!matches) continue;
+      // Bu matches query'sinin ne zaman fetch edildiğini al
+      const matchesUpdatedAt = queryClient.getQueryState(queryKey)?.dataUpdatedAt ?? 0;
+      for (const m of matches) {
+        if (m.league.id !== leagueId) continue;
+        const isMatchLive = m.status === 'live' || m.status === 'half_time';
+        const isMatchFinished = FINISHED.has(m.status);
+        if (!((isMatchFinished || isMatchLive) && m.homeScore != null && m.awayScore != null)) continue;
+
+        // Double-count koruması: standings bu matches fetch'inden SONRA güncellendiyse
+        // API büyük olasılıkla maçı standings'e saymış demektir — projeksiyon yapma
+        if (isMatchFinished && standingsUpdatedAt > matchesUpdatedAt + 60_000) {
+          // Standings, matches fetch'inden 1+ dakika sonra güncellendiyse API'ye güven
+          continue;
+        }
+
+        relevantMatches.push(m);
+      }
     }
 
-    const homePoints = homeScore > awayScore ? 3 : homeScore === awayScore ? 1 : 0;
-    const awayPoints = awayScore > homeScore ? 3 : homeScore === awayScore ? 1 : 0;
+    // Cache boşsa fallback: sadece CANLI maçlarda geçici projeksiyon yap.
+    // Biten maçlar için cache boşsa (30dk+ geçmiş demek) API'ye güven — double-count riski var.
+    if (relevantMatches.length === 0) {
+      const currentMatchActive = isLive && homeScore != null && awayScore != null;
+      if (!currentMatchActive) return rawStandings;
+      // Sahte bir match objesi oluştur (sadece gerekli alanlar)
+      relevantMatches.push({
+        id: 'current',
+        league: { id: leagueId, season, name: '', logoUrl: '', round: round ?? '' },
+        homeTeam: { id: homeTeamId, name: '', logoUrl: '', shortName: '' },
+        awayTeam: { id: awayTeamId, name: '', logoUrl: '', shortName: '' },
+        homeScore,
+        awayScore,
+        status: isFinished ? 'finished' : 'live',
+        startTime: '',
+        minute: null,
+        extra: null,
+      } as unknown as Match);
+    }
 
-    return rawStandings.map((row) => {
-      if (row.team.id === homeTeamId) {
-        return { ...row, points: row.points + homePoints, played: row.played + 1 };
-      }
-      if (row.team.id === awayTeamId) {
-        return { ...row, points: row.points + awayPoints, played: row.played + 1 };
-      }
-      return row;
+    // Her takım için uygulanan düzeltmeleri topla
+    const adjustments = new Map<string, {
+      points: number; played: number; won: number; drawn: number;
+      lost: number; goalsFor: number; goalsAgainst: number; gd: number;
+    }>();
+
+    for (const m of relevantMatches) {
+      const hId = m.homeTeam.id;
+      const aId = m.awayTeam.id;
+      const hScore = m.homeScore!;
+      const aScore = m.awayScore!;
+      const hPoints = hScore > aScore ? 3 : hScore === aScore ? 1 : 0;
+      const aPoints = aScore > hScore ? 3 : hScore === aScore ? 1 : 0;
+
+      const addAdj = (id: string, pts: number, gf: number, ga: number) => {
+        const prev = adjustments.get(id) ?? { points: 0, played: 0, won: 0, drawn: 0, lost: 0, goalsFor: 0, goalsAgainst: 0, gd: 0 };
+        adjustments.set(id, {
+          points: prev.points + pts,
+          played: prev.played + 1,
+          won: prev.won + (pts === 3 ? 1 : 0),
+          drawn: prev.drawn + (pts === 1 ? 1 : 0),
+          lost: prev.lost + (pts === 0 ? 1 : 0),
+          goalsFor: prev.goalsFor + gf,
+          goalsAgainst: prev.goalsAgainst + ga,
+          gd: prev.gd + (gf - ga),
+        });
+      };
+
+      addAdj(hId, hPoints, hScore, aScore);
+      addAdj(aId, aPoints, aScore, hScore);
+    }
+
+    // Standings'teki mevcut "played" ile adjustment'taki "played" toplamını karşılaştır.
+    // Eğer standings.played + adj.played çok yüksekse (>sezon uzunluğu) double-count var.
+    // Pratik sınır: bir takım sezonda en fazla 38-42 maç oynar.
+    const MAX_SEASON_MATCHES = 46;
+
+    const projected = rawStandings.map((row) => {
+      const adj = adjustments.get(row.team.id);
+      if (!adj) return row;
+      // Double-count koruması: toplam played makul bir sınırı aşmamalı
+      if (row.played + adj.played > MAX_SEASON_MATCHES) return row;
+      return {
+        ...row,
+        points: row.points + adj.points,
+        played: row.played + adj.played,
+        won: row.won + adj.won,
+        drawn: row.drawn + adj.drawn,
+        lost: row.lost + adj.lost,
+        goalsFor: row.goalsFor + adj.goalsFor,
+        goalsAgainst: row.goalsAgainst + adj.goalsAgainst,
+        goalDifference: row.goalDifference + adj.gd,
+      };
     }).sort((a, b) => b.points - a.points || b.goalDifference - a.goalDifference)
       .map((row, idx) => ({ ...row, rank: idx + 1 }));
-  }, [rawStandings, isLive, homeScore, awayScore, homeTeamId, awayTeamId]);
+
+    return projected;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rawStandings, leagueId, season, homeTeamId]);
 
   // For knockout: fetch both legs
   const firstLegRound = baseRound ? `${baseRound} - 1st Leg` : "";
@@ -193,10 +297,14 @@ export default function StandingsTab({
 
   // ─── LEAGUE STANDINGS MODE ───
   if (isLoading) {
-    return <View style={styles.center} />;
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+      </View>
+    );
   }
 
-  if (isError || standings.length === 0) {
+  if (isError && standings.length === 0) {
     return (
       <View style={styles.center}>
         <Ionicons
@@ -207,6 +315,21 @@ export default function StandingsTab({
         <Text style={{ color: theme.colors.textSecondary, marginTop: 12 }}>
           {t("standings.tableNotFound")}
         </Text>
+        <TouchableOpacity
+          onPress={() => refetch()}
+          style={[styles.retryBtn, { backgroundColor: theme.colors.primary }]}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.retryBtnText}>{t('common.retry') ?? 'Tekrar Dene'}</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  if (standings.length === 0) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
       </View>
     );
   }
@@ -763,6 +886,8 @@ function KnockoutMatchup({
 
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: "center", justifyContent: "center", gap: 8 },
+  retryBtn: { marginTop: 16, paddingHorizontal: 24, paddingVertical: 10, borderRadius: 8 },
+  retryBtnText: { color: "#fff", fontSize: 14, fontWeight: "700" },
 
   // Group name header (multi-group leagues)
   groupHeader: {

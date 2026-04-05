@@ -13,6 +13,7 @@ import {
 } from "react-native";
 
 import { useTranslation } from "react-i18next";
+import BannerAd from "../../src/components/ads/BannerAd";
 import { useAppTheme } from "../../src/hooks/useAppTheme";
 import { useMatches } from "../../src/hooks/useMatches";
 import { apiService } from "../../src/services/api";
@@ -198,6 +199,7 @@ export default function FavoritesScreen() {
   const allFavTeams = favoriteTeamIds.map((id) => getTeamInfo(id, favoriteTeams, POPULAR_TEAMS));
 
   return (
+    <View style={[styles.wrapper, { backgroundColor: theme.colors.background }]}>
     <ScrollView
       ref={scrollRef}
       horizontal={false}
@@ -389,10 +391,13 @@ export default function FavoritesScreen() {
         ))}
       </View>
     </ScrollView>
+    <BannerAd />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  wrapper: { flex: 1, overflow: "hidden" },
   container: { flex: 1, overflow: "hidden", maxWidth: "100%" },
   content: { paddingBottom: 24 },
   emptyContent: {

@@ -1,5 +1,4 @@
 import { Ionicons } from "@expo/vector-icons";
-import Constants from "expo-constants";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -16,18 +15,13 @@ import LeagueSection from "../../src/components/home/LeagueSection";
 import MatchCard from "../../src/components/home/MatchCard";
 import SearchBar from "../../src/components/home/SearchBar";
 import { AppFooter } from "../../src/components/AppFooter";
+import BannerAd from "../../src/components/ads/BannerAd";
 import { useAppTheme } from "../../src/hooks/useAppTheme";
 import { useMatches } from "../../src/hooks/useMatches";
 import { useFavoritesStore } from "../../src/stores/favoritesStore";
 import { useMatchStore } from "../../src/stores/matchStore";
 import { groupMatchesByLeague } from "../../src/utils/matchUtils";
 
-// Expo Go'da react-native-google-mobile-ads native module yok → crash yapar
-const isExpoGo = Constants.appOwnership === 'expo';
-// Static import yerine conditional require — Expo Go'da modül hiç yüklenmez
-const BannerAd: React.ComponentType = isExpoGo
-  ? () => null
-  : require('../../src/components/ads/BannerAd').default;
 
 
 // 1. UEFA Kupaları
@@ -168,6 +162,7 @@ export default function HomeScreen() {
               styles.liveBtnText,
               { color: liveOnly ? "#fff" : theme.colors.liveBadge },
             ]}
+            maxFontSizeMultiplier={1.1}
           >
             {t("home.live")}
             {liveCount > 0 && ` (${liveCount})`}
@@ -179,6 +174,7 @@ export default function HomeScreen() {
         {/* Match count summary */}
         <Text
           style={[styles.matchSummary, { color: theme.colors.textSecondary }]}
+          maxFontSizeMultiplier={1.1}
         >
           {matches.length} maç
           {liveCount > 0 && ` • ${liveCount} canlı`}
@@ -237,6 +233,7 @@ export default function HomeScreen() {
                       styles.favoriteHeaderText,
                       { color: theme.colors.primary },
                     ]}
+                    maxFontSizeMultiplier={1.0}
                   >
                     Favori Takımların Maçları
                   </Text>
@@ -289,7 +286,7 @@ export default function HomeScreen() {
           ListFooterComponent={<AppFooter />}
         />
       )}
-      {!isExpoGo && <BannerAd />}
+      <BannerAd />
     </View>
   );
 }
@@ -298,16 +295,19 @@ const styles = StyleSheet.create({
   container: { flex: 1, overflow: "hidden", maxWidth: "100%" },
   filterBar: {
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingVertical: 6,
+    minHeight: 40,
     borderBottomWidth: StyleSheet.hairlineWidth,
     flexDirection: "row",
+    alignItems: "center",
   },
   liveBtn: {
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
     paddingHorizontal: 10,
-    paddingVertical: 5,
+    paddingVertical: 4,
+    minHeight: 28,
     borderRadius: 14,
     borderWidth: 1.5,
   },

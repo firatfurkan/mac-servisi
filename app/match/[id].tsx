@@ -5,7 +5,7 @@ import "dayjs/locale/tr";
 import utc from "dayjs/plugin/utc";
 dayjs.extend(utc);
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
     Image,
@@ -15,6 +15,8 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import BannerAd from "../../src/components/ads/BannerAd";
+import BrandMark from "../../src/components/common/BrandMark";
 import EventTimeline from "../../src/components/match/EventTimeline";
 import FootballPitch from "../../src/components/match/FootballPitch";
 import StatBar from "../../src/components/match/StatBar";
@@ -32,7 +34,7 @@ import {
     useTeamLastHomeMatches,
 } from "../../src/hooks/useTeamLastMatches";
 import { PlayerMatchStats } from "../../src/types";
-import { getStatusText, getFirstLegRound, getAggregateAdvancer, getRoundBase, isKnockoutRound, isLive, isSecondLeg, isSingleLegKnockout } from "../../src/utils/matchUtils";
+import { getStatusText, getFirstLegRound, getAggregateAdvancer, getRoundBase, isKnockoutRound, isLive, isSecondLeg, isSingleLegKnockout, translateRound } from "../../src/utils/matchUtils";
 import { useRoundFixtures } from "../../src/hooks/useRoundFixtures";
 import ForumTab from "../../src/components/match/ForumTab";
 import StandingsTab from "../../src/components/match/StandingsTab";
@@ -47,11 +49,24 @@ export default function MatchDetailScreen() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<Tab>("summary");
   const [startMinute, setStartMinute] = useState(0);
-  const [endMinute, setEndMinute] = useState(120);
+  const [endMinute, setEndMinute] = useState(90);
   const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
   const [h2hSubTab, setH2hSubTab] = useState<"h2h" | "home" | "away">("h2h");
 
   const { data: match, isLoading, isError } = useMatchDetail(id ?? "");
+
+  // Uzatma/penaltı tespiti:
+  // - Penaltıya giden maçlar (scorePenalty mevcut)
+  // - Eleme turu maçları (kupa → uzatmaya gidebilir)
+  const hasExtraTime = match != null && (
+    match.scorePenalty != null ||
+    isKnockoutRound(match.league.round)
+  );
+  const maxMinute = hasExtraTime ? 120 : 90;
+  useEffect(() => {
+    setStartMinute(0);
+    setEndMinute(maxMinute);
+  }, [maxMinute]);
 
   // Lineup ve stats verisini sayfa açılır açılmaz fetch et (tab geçişinde bekleme olmasın)
   const { data: lineup, isLoading: lineupLoading } = useLineup(id ?? "", !!id);
@@ -419,11 +434,11 @@ export default function MatchDetailScreen() {
                 ]}
               >
                 {matchDate} • {matchTime}
-                {match.league.round && ` • ${match.league.round}`}
+                {match.league.round && ` • ${translateRound(match.league.round, i18n.language)}`}
               </Text>
             </View>
           </View>
-          <View style={styles.backBtn} />
+          <BrandMark />
         </View>
 
         {/* ─── Score Hero ─── */}
@@ -1075,7 +1090,7 @@ export default function MatchDetailScreen() {
               <TimeRangeSelector
                 startMinute={startMinute}
                 endMinute={endMinute}
-                maxMinute={120}
+                maxMinute={maxMinute}
                 onChangeStart={setStartMinute}
                 onChangeEnd={setEndMinute}
               />
@@ -1155,7 +1170,7 @@ export default function MatchDetailScreen() {
                 const homeRed = count("home", "red_card");
                 const awayRed = count("away", "red_card");
 
-                const isFullMatch = startMinute === 0 && endMinute === 120;
+                const isFullMatch = startMinute === 0 && endMinute === maxMinute;
 
                 if (isFullMatch) {
                   const s = match.statistics;
@@ -2149,6 +2164,7 @@ export default function MatchDetailScreen() {
               homeTeamId={match.homeTeam.id}
               awayTeamId={match.awayTeam.id}
               isLive={isLive(match)}
+              isFinished={match.status === "finished"}
               homeScore={match.homeScore}
               awayScore={match.awayScore}
               round={match.league.round}
@@ -2160,6 +2176,7 @@ export default function MatchDetailScreen() {
       {activeTab === "forum" && (
         <ForumTab matchId={id as string} />
       )}
+      <BannerAd />
       </View>
     </>
   );

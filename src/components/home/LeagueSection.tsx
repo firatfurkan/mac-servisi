@@ -115,6 +115,7 @@ function LeagueSection({
             <Text
               style={[styles.leagueName, { color: theme.colors.textPrimary }]}
               numberOfLines={1}
+              maxFontSizeMultiplier={1.1}
             >
               {leagueName}
             </Text>
@@ -124,16 +125,23 @@ function LeagueSection({
                   ? theme.colors.primary + "20"
                   : theme.colors.divider + "60",
               }]}>
-                <Text style={[styles.roundText, {
-                  color: isKnockoutRound(round)
-                    ? theme.colors.primary
-                    : theme.colors.textSecondary,
-                }]}>
+                <Text
+                  style={[styles.roundText, {
+                    color: isKnockoutRound(round)
+                      ? theme.colors.primary
+                      : theme.colors.textSecondary,
+                  }]}
+                  maxFontSizeMultiplier={1.0}
+                >
                   {roundLabel}
                 </Text>
               </View>
             ) : (
-              <Text style={[styles.countryName, { color: theme.colors.textSecondary }]}>
+              <Text
+                style={[styles.countryName, { color: theme.colors.textSecondary }]}
+                numberOfLines={1}
+                maxFontSizeMultiplier={1.1}
+              >
                 {leagueCountry}
               </Text>
             )}
@@ -163,6 +171,7 @@ function LeagueSection({
             />
             <Text
               style={[styles.liveBadgeText, { color: theme.colors.liveBadge }]}
+              maxFontSizeMultiplier={1.0}
             >
               {liveCount}
             </Text>
@@ -226,7 +235,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 8,
-    paddingVertical: 6,
+    paddingVertical: 4,
+    minHeight: 36,
     gap: 4,
   },
   leaguePress: {

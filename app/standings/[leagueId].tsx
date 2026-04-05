@@ -1,9 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
-
+    ActivityIndicator,
     Image,
+    RefreshControl,
     ScrollView,
     StyleSheet,
     Text,
@@ -12,6 +13,8 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
+import BannerAd from "../../src/components/ads/BannerAd";
+import BrandMark from "../../src/components/common/BrandMark";
 import { useAppTheme } from "../../src/hooks/useAppTheme";
 import { useStandings } from "../../src/hooks/useStandings";
 import { useTopScorers } from "../../src/hooks/useTopScorers";
@@ -54,13 +57,20 @@ export default function StandingsScreen() {
     data: standingsData,
     isLoading,
     isError,
+    isRefetching,
+    refetch,
   } = useStandings(leagueId!, season, undefined, undefined, teamId);
   const standings = standingsData?.rows ?? [];
   const groupName = standingsData?.groupName ?? "";
-  const { data: scorers = [], isLoading: scorersLoading } = useTopScorers(
+  const { data: scorers = [], isLoading: scorersLoading, refetch: refetchScorers } = useTopScorers(
     leagueId!,
     season,
   );
+
+  const onRefresh = useCallback(() => {
+    refetch();
+    refetchScorers();
+  }, [refetch, refetchScorers]);
 
   const goToTeam = (id: string, teamName: string, teamLogo: string) => {
     router.push(
@@ -125,7 +135,7 @@ export default function StandingsScreen() {
               </Text>
             </View>
           </View>
-          <View style={styles.backBtn} />
+          <BrandMark />
         </View>
 
         {/* Tab bar */}
@@ -194,22 +204,44 @@ export default function StandingsScreen() {
         {activeTab === "standings" ? (
           isLoading ? (
             <View style={styles.center}>
+              <ActivityIndicator size="large" color={theme.colors.primary} />
             </View>
-          ) : isError || standings.length === 0 ? (
+          ) : isError && standings.length === 0 ? (
             <View style={styles.center}>
               <Ionicons
                 name="trophy-outline"
                 size={48}
                 color={theme.colors.textSecondary + "60"}
               />
-              <Text
-                style={{ color: theme.colors.textSecondary, marginTop: 12 }}
-              >
+              <Text style={{ color: theme.colors.textSecondary, marginTop: 12 }}>
                 {t('standings.tableNotFound')}
               </Text>
+              <TouchableOpacity
+                onPress={() => refetch()}
+                style={[styles.retryBtn, { backgroundColor: theme.colors.primary }]}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.retryBtnText}>{t('common.retry') ?? 'Tekrar Dene'}</Text>
+              </TouchableOpacity>
+            </View>
+          ) : standings.length === 0 ? (
+            <View style={styles.center}>
+              <ActivityIndicator size="large" color={theme.colors.primary} />
             </View>
           ) : (
-            <ScrollView horizontal={false} scrollEventThrottle={16} showsVerticalScrollIndicator={false}>
+            <ScrollView
+              horizontal={false}
+              scrollEventThrottle={16}
+              showsVerticalScrollIndicator={false}
+              refreshControl={
+                <RefreshControl
+                  refreshing={isRefetching}
+                  onRefresh={onRefresh}
+                  tintColor={theme.colors.primary}
+                  colors={[theme.colors.primary]}
+                />
+              }
+            >
               {/* Table header */}
               <View
                 style={[
@@ -448,7 +480,19 @@ export default function StandingsScreen() {
             </Text>
           </View>
         ) : (
-          <ScrollView horizontal={false} scrollEventThrottle={16} showsVerticalScrollIndicator={false}>
+          <ScrollView
+            horizontal={false}
+            scrollEventThrottle={16}
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={isRefetching}
+                onRefresh={onRefresh}
+                tintColor={theme.colors.primary}
+                colors={[theme.colors.primary]}
+              />
+            }
+          >
             {/* Scorers header */}
             <View
               style={[
@@ -582,6 +626,7 @@ export default function StandingsScreen() {
             ))}
           </ScrollView>
         )}
+      <BannerAd />
       </View>
     </>
   );
@@ -590,6 +635,8 @@ export default function StandingsScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, overflow: "hidden", maxWidth: "100%" },
   center: { flex: 1, alignItems: "center", justifyContent: "center", gap: 8 },
+  retryBtn: { marginTop: 16, paddingHorizontal: 24, paddingVertical: 10, borderRadius: 8 },
+  retryBtnText: { color: "#fff", fontSize: 14, fontWeight: "700" },
   groupHeader: {
     paddingHorizontal: 12,
     paddingVertical: 8,

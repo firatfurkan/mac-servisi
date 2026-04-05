@@ -3,6 +3,7 @@ import { View, Text, Image, ScrollView, TouchableOpacity, TextInput, StyleSheet 
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import BannerAd from '../../src/components/ads/BannerAd';
 import { useAppTheme } from '../../src/hooks/useAppTheme';
 
 interface LeagueItem {
@@ -107,7 +108,7 @@ export default function LeaguesScreen() {
         )}
       </View>
 
-      <ScrollView horizontal={false} scrollEventThrottle={16} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView horizontal={false} scrollEventThrottle={16} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
         {search.trim() ? (
           // Flat filtered list
           filteredLeagues.length === 0 ? (
@@ -167,6 +168,7 @@ export default function LeaguesScreen() {
           })
         )}
       </ScrollView>
+      <BannerAd />
     </View>
   );
 }

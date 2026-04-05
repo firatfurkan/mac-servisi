@@ -393,18 +393,42 @@ const ROUND_TR: [string, string][] = [
 export function translateRound(round: string | undefined, lang: string): string {
   if (!round) return "";
   if (lang !== "tr") return round;
+
+  // Tam eşleşme veya "X - ..." prefix eşleşmesi
   for (const [en, tr] of ROUND_TR) {
     if (round === en) return tr;
     if (round.startsWith(en + " -") || round.startsWith(en + "-")) {
       return round.replace(en, tr);
     }
   }
+
+  // "Regular Season - 28" / "Regular Season - Round 28" → "28. Hafta" / "Hafta 28"
+  const regularWeekMatch = round.match(/Regular Season\s*[-–]\s*(?:Round\s+)?(\d+)$/i);
+  if (regularWeekMatch) return `${regularWeekMatch[1]}. Hafta`;
+
+  // "Regular Season - ..." (diğer tüm Regular Season alt tipleri)
+  if (round.startsWith("Regular Season")) return round.replace("Regular Season", "Normal Sezon");
+
+  // "League Stage - Round X" → "Lig Aşaması - Hafta X"
+  const leagueRoundMatch = round.match(/League Stage\s*[-–]\s*(?:Round\s+)?(\d+)$/i);
+  if (leagueRoundMatch) return `Lig Aşaması - ${leagueRoundMatch[1]}. Hafta`;
+
   // "Group X" / "group-X" → "Grup X"
   const groupMatch = round.match(/^[Gg]roup[\s\-_]*(\S+)$/);
   if (groupMatch) return `Grup ${groupMatch[1]}`;
+
   // "Regular Season - Group X" → "Grup X"
-  const regularGroupMatch = round.match(/Regular Season\s*-\s*[Gg]roup[\s\-_]*(\S+)$/);
+  const regularGroupMatch = round.match(/Regular Season\s*[-–]\s*[Gg]roup[\s\-_]*(\S+)$/i);
   if (regularGroupMatch) return `Grup ${regularGroupMatch[1]}`;
+
+  // "1st Leg" / "2nd Leg" suffix içeriyorsa base'i çevir
+  const legMatch = round.match(/^(.+?)\s*[-–]\s*(1st|2nd)\s*Leg$/i);
+  if (legMatch) {
+    const base = translateRound(legMatch[1].trim(), lang);
+    const legNum = legMatch[2].toLowerCase() === "1st" ? "1." : "2.";
+    return `${base} - ${legNum} Maç`;
+  }
+
   return round;
 }
 

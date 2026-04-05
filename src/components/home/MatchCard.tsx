@@ -303,6 +303,8 @@ function MatchCard({ match, events, pairedMatch }: Props) {
               },
             ]}
             numberOfLines={1}
+            ellipsizeMode="tail"
+            maxFontSizeMultiplier={1.2}
           >
             {match.homeTeam.name}
           </Text>
@@ -315,9 +317,12 @@ function MatchCard({ match, events, pairedMatch }: Props) {
       {/* Center: score + status */}
       <View style={styles.center}>
         {notStarted || unfinished ? (
-          <Text style={[styles.timeOnly, {
-            color: unfinished ? UNFINISHED_GRAY : theme.colors.textSecondary,
-          }]}>
+          <Text
+            style={[styles.timeOnly, {
+              color: unfinished ? UNFINISHED_GRAY : theme.colors.textSecondary,
+            }]}
+            maxFontSizeMultiplier={1.0}
+          >
             {unfinished
               ? (match.status === "postponed" ? "Ertelendi" : "İptal")
               : timeLabel}
@@ -330,6 +335,7 @@ function MatchCard({ match, events, pairedMatch }: Props) {
                 styles.score,
                 { color: live ? LIVE_RED : theme.colors.textPrimary },
               ]}
+              maxFontSizeMultiplier={1.1}
             >
               {`${match.homeScore ?? 0} - ${match.awayScore ?? 0}`}
             </Text>
@@ -354,6 +360,7 @@ function MatchCard({ match, events, pairedMatch }: Props) {
                   },
                   live && { fontWeight: "700" },
                 ]}
+                maxFontSizeMultiplier={1.0}
               >
                 {unfinished
                   ? (match.status === "postponed" ? "Ert." : "İpt.")
@@ -392,6 +399,8 @@ function MatchCard({ match, events, pairedMatch }: Props) {
               },
             ]}
             numberOfLines={1}
+            ellipsizeMode="tail"
+            maxFontSizeMultiplier={1.2}
           >
             {match.awayTeam.name}
           </Text>
@@ -434,7 +443,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 6,
-    paddingVertical: 8,
+    paddingVertical: 6,
+    minHeight: 46,
     overflow: "hidden",
     maxWidth: "100%",
   },
@@ -472,11 +482,13 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   center: {
+    minWidth: 68,
     width: 72,
     alignItems: "center",
     justifyContent: "center",
     gap: 1,
     paddingHorizontal: 2,
+    flexShrink: 0,
   },
   score: {
     fontSize: 12,

@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import BrandMark from "../../src/components/common/BrandMark";
 import dayjs from "dayjs";
 import "dayjs/locale/en";
 import "dayjs/locale/tr";
@@ -621,6 +622,7 @@ export default function TeamScreen() {
             <Ionicons name="chevron-back" size={24} color={theme.colors.textPrimary} />
           </TouchableOpacity>
           <View style={{ flex: 1 }} />
+          <BrandMark />
           <TouchableOpacity
             onPress={() => id && toggleFavorite(id, teamName, teamLogo)}
             activeOpacity={0.6}

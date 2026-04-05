@@ -33,9 +33,14 @@ export function useMatchDetail(matchId: string) {
         }
       );
 
-      // Devre arası → canlı geçişinde anasayfayı zorla yenile
+      // Status değiştiğinde ilgili cache'leri zorla yenile
       if (statusChanged) {
         queryClient.invalidateQueries({ queryKey: ['matches'] });
+        // Maç bittiğinde puan durumu cache'ini de temizle
+        const FINISHED = new Set(['finished', 'ft', 'aet', 'pen']);
+        if (FINISHED.has(data.status)) {
+          queryClient.invalidateQueries({ queryKey: ['standings'] });
+        }
       }
 
       return data;

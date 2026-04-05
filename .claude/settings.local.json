@@ -74,7 +74,9 @@
       "Bash(npm root:*)",
       "Bash(node --experimental-vm-modules -e \":*)",
       "WebFetch(domain:furkanf.github.io)",
-      "WebFetch(domain:furkandemir.me)"
+      "WebFetch(domain:furkandemir.me)",
+      "Bash(grep -n \"<ScrollView\" /c/Users/firat/macapp/app/team/[id].tsx)",
+      "Bash(npx expo-doctor:*)"
     ]
   }
 }

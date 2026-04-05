@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import BrandMark from "../../src/components/common/BrandMark";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
 import {
@@ -375,6 +376,8 @@ export default function PlayerScreen() {
           >
             <Ionicons name="chevron-back" size={24} color={theme.colors.textPrimary} />
           </TouchableOpacity>
+          <View style={{ flex: 1 }} />
+          <BrandMark />
         </View>
 
         {isLoading ? (

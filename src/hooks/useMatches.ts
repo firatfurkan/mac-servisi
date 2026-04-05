@@ -23,17 +23,27 @@ export function useMatches(date: string) {
           : Promise.resolve<Match[]>([]),
       ]);
 
-      if (liveMatches.length === 0) return matches;
+      if (liveMatches.length === 0) {
+        // Önceki veride canlı maç varsa ama artık yoksa → maçlar bitmiş demektir
+        // Standings cache'ini invalidate et
+        if (hasLive) {
+          queryClient.invalidateQueries({ queryKey: ['standings'] });
+        }
+        return matches;
+      }
 
       // Live endpoint'inden gelen verileri maç listesine yaz.
       // Sadece live/half_time olan maçlar güncellenir; bitmiş maçlara dokunulmaz.
       const liveMap = new Map(liveMatches.map((m) => [m.id, m]));
       const FINISHED_STATUSES = new Set(['finished', 'ft', 'aet', 'pen']);
       const LIVE_STATUSES = new Set(['live', 'half_time']);
-      return matches.map((m) => {
+
+      // Önceki cache'de canlı olan ama artık biten maç var mı kontrol et
+      let anyFinished = false;
+
+      const result = matches.map((m) => {
         const live = liveMap.get(m.id);
         if (!live) return m;
-        // Maç bitmiş (date endpoint) veya live status geçersizse dokunma
         if (FINISHED_STATUSES.has(m.status)) return m;
         if (!LIVE_STATUSES.has(live.status)) return m;
         return {
@@ -45,6 +55,24 @@ export function useMatches(date: string) {
           status: live.status,
         };
       });
+
+      // Önceki fetch'te canlı olan maçlardan biri artık bitmişse standings'i yenile
+      if (currentData) {
+        for (const prev of currentData) {
+          if ((prev.status === 'live' || prev.status === 'half_time')) {
+            const updated = result.find((m) => m.id === prev.id);
+            if (updated && FINISHED_STATUSES.has(updated.status)) {
+              anyFinished = true;
+              break;
+            }
+          }
+        }
+        if (anyFinished) {
+          queryClient.invalidateQueries({ queryKey: ['standings'] });
+        }
+      }
+
+      return result;
     },
     refetchInterval: (query) => {
       const data = query.state.data as Match[] | undefined;

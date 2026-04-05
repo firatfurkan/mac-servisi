@@ -1,18 +1,15 @@
 import { Tabs } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import BrandMark from "../../src/components/common/BrandMark";
 import NavigationMenu from "../../src/components/navigation/NavigationMenu";
 import { useAppTheme } from "../../src/hooks/useAppTheme";
-import { spacing, typography } from "../../src/theme/tokens";
+import { spacing } from "../../src/theme/tokens";
 
 function HeaderRight() {
-  const theme = useAppTheme();
-
   return (
     <View style={styles.headerContent}>
-      <Text style={[styles.appName, { color: theme.colors.primary }]}>
-        Maç Servisi
-      </Text>
+      <BrandMark />
     </View>
   );
 }
@@ -43,27 +40,19 @@ export default function TabLayout() {
       >
         <Tabs.Screen
           name="index"
-          options={{
-            title: t("navigation.home"),
-          }}
+          options={{ title: t("navigation.home"), headerTitle: "" }}
         />
         <Tabs.Screen
           name="favorites"
-          options={{
-            title: t("navigation.favorites"),
-          }}
+          options={{ title: t("navigation.favorites"), headerTitle: "" }}
         />
         <Tabs.Screen
           name="leagues"
-          options={{
-            title: t("navigation.leagues"),
-          }}
+          options={{ title: t("navigation.leagues"), headerTitle: "" }}
         />
         <Tabs.Screen
           name="settings"
-          options={{
-            title: t("navigation.settings"),
-          }}
+          options={{ title: t("navigation.settings"), headerTitle: "" }}
         />
       </Tabs>
     </NavigationMenu>
@@ -72,13 +61,6 @@ export default function TabLayout() {
 
 const styles = StyleSheet.create({
   headerContent: {
-    flexDirection: "row",
-    alignItems: "center",
     marginRight: spacing.lg,
-  },
-  appName: {
-    fontSize: typography.sizes.xxl,
-    fontWeight: typography.weights.extrabold,
-    letterSpacing: -0.5,
   },
 });

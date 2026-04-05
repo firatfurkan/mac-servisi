@@ -10,7 +10,10 @@ import { Stack, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useRef, useState } from 'react';
-import { Image, Platform, StyleSheet, View } from 'react-native';
+import { Image, Platform, StyleSheet, Text, View } from 'react-native';
+
+if (Text.defaultProps == null) Text.defaultProps = {};
+Text.defaultProps.maxFontSizeMultiplier = 1.3;
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ErrorBoundary } from '../src/components/common/ErrorBoundary';
 import InAppNotificationBanner, { BannerData, detectNotifType } from '../src/components/common/InAppNotificationBanner';
@@ -221,11 +224,12 @@ export default function RootLayout() {
                 contentStyle: { backgroundColor: theme.colors.background },
                 animation: 'slide_from_right',
                 animationDuration: 200,
-                gestureEnabled: false,
+                gestureEnabled: true,
+                gestureDirection: 'horizontal',
               }}
             >
-              <Stack.Screen name="(tabs)" />
-              <Stack.Screen name="onboarding" options={{ headerShown: false, animation: 'fade' }} />
+              <Stack.Screen name="(tabs)" options={{ gestureEnabled: false }} />
+              <Stack.Screen name="onboarding" options={{ headerShown: false, animation: 'fade', gestureEnabled: false }} />
               <Stack.Screen name="match/[id]" options={{ headerShown: false, animation: 'slide_from_right' }} />
               <Stack.Screen name="team/[id]" options={{ headerShown: false, animation: 'slide_from_right' }} />
               <Stack.Screen name="standings/[leagueId]" options={{ headerShown: false, animation: 'slide_from_right' }} />
