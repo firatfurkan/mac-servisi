@@ -3,7 +3,6 @@ import { View, Text, Image, ScrollView, TouchableOpacity, TextInput, StyleSheet 
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import BannerAd from '../../src/components/ads/BannerAd';
 import { useAppTheme } from '../../src/hooks/useAppTheme';
 
 interface LeagueItem {
@@ -38,11 +37,11 @@ const LEAGUES: LeagueItem[] = [
   { id: '3', name: 'UEFA Europa League', country: 'Avrupa', logo: 'https://media.api-sports.io/football/leagues/3.png', flag: '🏆', category: 'europe' },
   { id: '848', name: 'UEFA Conference League', country: 'Avrupa', logo: 'https://media.api-sports.io/football/leagues/848.png', flag: '🏆', category: 'europe' },
   // Other popular
-  { id: '40', name: 'Championship', country: 'İngiltere', logo: 'https://media.api-sports.io/football/leagues/40.png', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', category: 'other' },
   { id: '79', name: '2. Bundesliga', country: 'Almanya', logo: 'https://media.api-sports.io/football/leagues/79.png', flag: '🇩🇪', category: 'other' },
   { id: '136', name: 'Serie B', country: 'İtalya', logo: 'https://media.api-sports.io/football/leagues/136.png', flag: '🇮🇹', category: 'other' },
   { id: '141', name: 'Segunda División', country: 'İspanya', logo: 'https://media.api-sports.io/football/leagues/141.png', flag: '🇪🇸', category: 'other' },
   { id: '144', name: 'Jupiler Pro League', country: 'Belçika', logo: 'https://media.api-sports.io/football/leagues/144.png', flag: '🇧🇪', category: 'other' },
+  { id: '40', name: 'Championship', country: 'İngiltere', logo: 'https://media.api-sports.io/football/leagues/40.png', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', category: 'other' },
   { id: '88', name: 'Eredivisie', country: 'Hollanda', logo: 'https://media.api-sports.io/football/leagues/88.png', flag: '🇳🇱', category: 'other' },
   { id: '94', name: 'Primeira Liga', country: 'Portekiz', logo: 'https://media.api-sports.io/football/leagues/94.png', flag: '🇵🇹', category: 'other' },
   { id: '179', name: 'Premiership', country: 'İskoçya', logo: 'https://media.api-sports.io/football/leagues/179.png', flag: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', category: 'other' },
@@ -168,7 +167,6 @@ export default function LeaguesScreen() {
           })
         )}
       </ScrollView>
-      <BannerAd />
     </View>
   );
 }

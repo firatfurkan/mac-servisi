@@ -1,4 +1,9 @@
+import i18n from "../i18n/config";
 import {
+  BracketLegScore,
+  BracketMatchup,
+  BracketRound,
+  BracketTeamEntry,
   CommentaryItem,
   Injury,
   LineupPlayer,
@@ -19,9 +24,17 @@ import {
   TopScorer,
   Transfer,
 } from "../types";
+import {
+  getRoundBase,
+  isFirstLeg,
+  isKnockoutRound,
+  isSecondLeg,
+  isSingleLegKnockout,
+  translateCountry,
+  translateLeagueName,
+  translateTeamName,
+} from "../utils/matchUtils";
 import { USE_MOCK, mockApiService } from "./mockData";
-import { translateTeamName, translateLeagueName, translateCountry } from "../utils/matchUtils";
-import i18n from "../i18n/config";
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 const API_KEY = process.env.EXPO_PUBLIC_API_KEY;
@@ -50,20 +63,46 @@ function transformFixture(f: any): Match {
     broadcast.push(...(Array.isArray(f.fixture.coverage.tv) ? f.fixture.coverage.tv : [f.fixture.coverage.tv]));
   }
 
-  const assistantReferees = [];
-  if (f.fixture.referees?.secondRef?.name) {
-    assistantReferees.push({ name: f.fixture.referees.secondRef.name });
+  // A person's name always has a dot (abbreviated: "D. Orsato") OR a space (full: "Marco Guida").
+  // A country/nationality is a single word with no dot: "Italy", "Türkiye", "England".
+  const looksLikeName = (s: string) => s.includes('.') || s.includes(' ');
+
+  // Parse comma-separated referee string:
+  // "D. Orsato, Marco Guida, C. Carbone, S. Irrati"  → 4 names
+  // "Ali Yılmaz, Türkiye"                            → 1 name + 1 country (discard country)
+  let parsedMainReferee: string | undefined;
+  const assistantReferees: { name: string }[] = [];
+  let fourthOfficial: { name: string } | undefined;
+  let varReferee: { name: string } | undefined;
+
+  const refereeStr: string | null = f.fixture.referee ?? null;
+  if (refereeStr) {
+    const all = refereeStr.split(",").map((s: string) => s.trim()).filter(Boolean);
+    // Keep only segments that look like a person's name; drop country/nationality tokens
+    const names = all.filter(looksLikeName);
+    if (names[0]) parsedMainReferee = names[0];
+    if (names[1]) assistantReferees.push({ name: names[1] });
+    if (names[2]) assistantReferees.push({ name: names[2] });
+    if (names[3]) fourthOfficial = { name: names[3] };
+    if (names[4]) varReferee = { name: names[4] };
   }
-  if (f.fixture.referees?.thirdRef?.name) {
-    assistantReferees.push({ name: f.fixture.referees.thirdRef.name });
-  }
-  if (f.fixture.referees?.fourthRef?.name) {
-    assistantReferees.push({ name: f.fixture.referees.fourthRef.name });
-  }
-  if (Array.isArray(f.fixture.referees) && f.fixture.referees.length > 1) {
-    for (let i = 1; i < f.fixture.referees.length; i++) {
-      const ref = f.fixture.referees[i];
-      if (ref?.name) assistantReferees.push({ name: ref.name });
+
+  // Fallback: structured referees object (some leagues return this instead of the string)
+  if (!parsedMainReferee && f.fixture.referees) {
+    const refs = f.fixture.referees;
+    if (Array.isArray(refs)) {
+      if (refs[0]?.name) parsedMainReferee = refs[0].name;
+      if (refs[1]?.name) assistantReferees.push({ name: refs[1].name });
+      if (refs[2]?.name) assistantReferees.push({ name: refs[2].name });
+      if (refs[3]?.name) fourthOfficial = { name: refs[3].name };
+      if (refs[4]?.name) varReferee = { name: refs[4].name };
+    } else {
+      if (refs.mainRef?.name) parsedMainReferee = refs.mainRef.name;
+      if (refs.secondRef?.name) assistantReferees.push({ name: refs.secondRef.name });
+      if (refs.thirdRef?.name) assistantReferees.push({ name: refs.thirdRef.name });
+      if (refs.fourthRef?.name) fourthOfficial = { name: refs.fourthRef.name };
+      const varName = refs.videoAssistantReferee?.name ?? refs.var?.name ?? refs.varRef?.name;
+      if (varName) varReferee = { name: varName };
     }
   }
 
@@ -101,8 +140,10 @@ function transformFixture(f: any): Match {
     venue: f.fixture.venue
       ? { id: Number(f.fixture.venue.id), name: f.fixture.venue.name, city: f.fixture.venue.city }
       : undefined,
-    referee: f.fixture.referee ?? undefined,
+    referee: parsedMainReferee,
     assistantReferees: assistantReferees.length > 0 ? assistantReferees : undefined,
+    fourthOfficial,
+    varReferee,
     broadcast: broadcast.length > 0 ? broadcast : undefined,
     winner: f.teams?.home?.winner === true ? "home"
           : f.teams?.away?.winner === true ? "away"
@@ -262,6 +303,146 @@ function transformStats(stats: any[], matchId: string): MatchStatistics {
   };
 }
 
+// ─── Bracket helpers (module-level) ──────────────────────────────────────────
+
+/** Sentinel for an undetermined bracket slot (team not yet known). */
+const TBD_ENTRY: BracketTeamEntry = {
+  id: '__tbd__',
+  name: '',
+  logoUrl: '',
+};
+
+/** Progression map: base round key → next round key */
+const NEXT_ROUND_KEY: Record<string, string> = {
+  'Round of 128':   'Round of 64',
+  'Round of 64':    'Round of 32',
+  'Round of 32':    'Round of 16',
+  'Round of 16':    'Quarter-finals',
+  'Quarter-finals': 'Semi-finals',
+  'Quarter-Finals': 'Semi-finals',
+  'Semi-finals':    'Final',
+  'Semi-Finals':    'Final',
+};
+
+/**
+ * Returns the winner team entry of a matchup, or TBD_ENTRY if unknown.
+ */
+function resolveWinner(
+  mu: BracketMatchup | undefined,
+): BracketTeamEntry {
+  if (!mu) return TBD_ENTRY;
+  if (mu.winner === 'team1') return mu.team1;
+  if (mu.winner === 'team2') return mu.team2;
+  return TBD_ENTRY;
+}
+
+/**
+ * Reorders `current` so that consecutive pairs (0&1, 2&3, …) feed the
+ * corresponding match in `next`, based on winner ↔ team ID matching.
+ *
+ * Unmatched entries (ties still in progress) are appended at the end.
+ */
+function sortMatchupsByNextRound(
+  current: BracketMatchup[],
+  next:    BracketMatchup[],
+): BracketMatchup[] {
+  const pool = [...current];
+  const out:  BracketMatchup[] = [];
+
+  for (const nextMu of next) {
+    if (nextMu.isTBD) {
+      // TBD next slot — just take the next two from pool in order
+      if (pool.length) out.push(pool.splice(0, 1)[0]);
+      if (pool.length) out.push(pool.splice(0, 1)[0]);
+      continue;
+    }
+
+    // Feeder for nextMu.team1
+    const i1 = pool.findIndex(
+      (mu) =>
+        (mu.winner === 'team1' && mu.team1.id === nextMu.team1.id) ||
+        (mu.winner === 'team2' && mu.team2.id === nextMu.team1.id),
+    );
+    if (i1 !== -1) out.push(pool.splice(i1, 1)[0]);
+
+    // Feeder for nextMu.team2
+    const i2 = pool.findIndex(
+      (mu) =>
+        (mu.winner === 'team1' && mu.team1.id === nextMu.team2.id) ||
+        (mu.winner === 'team2' && mu.team2.id === nextMu.team2.id),
+    );
+    if (i2 !== -1) out.push(pool.splice(i2, 1)[0]);
+  }
+
+  return [...out, ...pool]; // append unresolved ties
+}
+
+/**
+ * Synthesises a TBD round for the stage after `prev`.
+ * Each pair of `prev` matchups feeds one TBD slot.
+ * If a prev winner is already known, that team is pre-filled in the slot.
+ */
+function buildTBDRound(
+  prev: BracketRound,
+): BracketRound | null {
+  const count = Math.floor(prev.matchups.length / 2);
+  if (count < 1) return null;
+
+  const nextKey = NEXT_ROUND_KEY[prev.key] ?? 'Next Round';
+
+  const matchups: BracketMatchup[] = Array.from(
+    { length: count },
+    (_, i) => ({
+      id: `__tbd__${prev.key}__${i}`,
+      team1: resolveWinner(prev.matchups[i * 2]),
+      team2: resolveWinner(prev.matchups[i * 2 + 1]),
+      isSingleLeg: true,
+      isTBD: true,
+      winner: null,
+    }),
+  );
+
+  return {
+    key: nextKey,
+    displayName: nextKey,
+    order: prev.order + 1,
+    matchups,
+  };
+}
+
+// ─── Description fallbacks ────────────────────────────────────────────────────
+
+/**
+ * Some leagues in API-Sports return null/empty description for certain zones
+ * (e.g. TFF 1. Lig play-off spots 4-7). This function patches those rows
+ * based on the known structure of each league.
+ *
+ * Only fills in when description is already empty — never overrides API data.
+ */
+function applyDescriptionFallbacks(
+  rows: StandingRow[],
+  leagueId: string,
+): StandingRow[] {
+  // TFF 1. Lig (204)
+  // 1-2: Direct promotion to Süper Lig  (API usually sets these)
+  // 3  : Promotion playoff final        (API usually sets this)
+  // 4-7: Promotion play-offs            (API leaves blank → patch)
+  // 16-18: Relegation                   (API usually sets these)
+  if (leagueId === '204') {
+    return rows.map((row) => {
+      if (row.description) return row; // API already provided one
+      if (row.rank >= 4 && row.rank <= 7) {
+        return { ...row, description: 'Promotion - Play-offs' };
+      }
+      return row;
+    });
+  }
+
+  return rows;
+}
+
+// ─── apiService ───────────────────────────────────────────────────────────────
+
 export const apiService = {
   async getMatchesByDate(date: string): Promise<Match[]> {
     if (USE_MOCK) return mockApiService.getMatchesByDate(date);
@@ -349,7 +530,7 @@ export const apiService = {
       formation: t.formation ?? "",
       coach: coachName,
       startXI: (t.startXI ?? []).map((p: any): LineupPlayer => ({
-        id: p.player.id,
+        id: Number(p.player.id),
         name: p.player.name,
         number: p.player.number,
         pos: p.player.pos,
@@ -413,31 +594,27 @@ export const apiService = {
     leagueId: string,
     season: string,
     teamId?: string,
-  ): Promise<{ rows: StandingRow[]; groupName: string }> {
+  ): Promise<{ rows: StandingRow[]; groupName: string; groups: { name: string; rows: StandingRow[] }[] }> {
     if (USE_MOCK) {
       const rows = await mockApiService.getStandings(leagueId, season);
-      return { rows, groupName: "" };
+      return { rows, groupName: "", groups: [] };
     }
     const data = await safeFetch(
       `${BASE_URL}/standings?league=${leagueId}&season=${season}`,
       { headers },
     );
-    const allGroups: any[][] = data.response?.[0]?.league?.standings ?? [];
-    if (!allGroups.length) return { rows: [], groupName: "" };
-
-    // If multiple groups, pick the one containing teamId (for split leagues like TFF 2. Lig)
-    let group = allGroups[0];
-    if (teamId && allGroups.length > 1) {
-      const found = allGroups.find((g) =>
-        g.some((s: any) => String(s.team.id) === String(teamId)),
-      );
-      if (found) group = found;
+    // Bazı ligler (Türkiye Kupası gibi) her grubu ayrı response[i] olarak döner.
+    // Tüm response girişlerini tarayıp tüm grupları tek dizide topla.
+    const allGroups: any[][] = [];
+    for (const resp of data.response ?? []) {
+      for (const group of resp?.league?.standings ?? []) {
+        allGroups.push(group);
+      }
     }
+    if (!allGroups.length) return { rows: [], groupName: "", groups: [] };
 
-    // Only show groupName when there are genuinely multiple groups (e.g. TFF 2. Lig)
-    const groupName: string = allGroups.length > 1 ? (group[0]?.group ?? "") : "";
-    const rows = group.map(
-      (s: any): StandingRow => ({
+    const mapRows = (group: any[]): StandingRow[] =>
+      group.map((s: any): StandingRow => ({
         rank: s.rank,
         team: {
           id: String(s.team.id),
@@ -454,15 +631,70 @@ export const apiService = {
         goalDifference: s.goalsDiff,
         points: s.points,
         form: s.form ?? "",
-      }),
-    );
-    return { rows, groupName };
+        description: s.description ?? "",
+      }));
+
+    // Birden fazla grup varsa hepsini döndür (Türkiye Kupası Grup A/B/C gibi)
+    if (allGroups.length > 1) {
+      const groups = allGroups.map((g) => ({
+        name: g[0]?.group ?? "",
+        rows: applyDescriptionFallbacks(mapRows(g), leagueId),
+      }));
+
+      // teamId verilmişse o takımın grubunu varsayılan yap
+      let defaultIdx = 0;
+      if (teamId) {
+        const found = allGroups.findIndex((g) =>
+          g.some((s: any) => String(s.team.id) === String(teamId)),
+        );
+        if (found !== -1) defaultIdx = found;
+      }
+
+      return {
+        rows: groups[defaultIdx].rows,
+        groupName: groups[defaultIdx].name,
+        groups,
+      };
+    }
+
+    // Tek grup
+    const patched = applyDescriptionFallbacks(mapRows(allGroups[0]), leagueId);
+    return { rows: patched, groupName: "", groups: [] };
   },
 
   async getTopScorers(leagueId: string, season: string): Promise<TopScorer[]> {
     if (USE_MOCK) return mockApiService.getTopScorers(leagueId, season);
     const data = await safeFetch(
       `${BASE_URL}/players/topscorers?league=${leagueId}&season=${season}`,
+      { headers },
+    );
+    if (!data.response) return [];
+    return data.response.map(
+      (p: any, i: number): TopScorer => ({
+        rank: i + 1,
+        player: {
+          id: p.player.id,
+          name: p.player.name,
+          photo: p.player.photo,
+        },
+        team: {
+          id: String(p.statistics[0]?.team?.id ?? ""),
+          name: p.statistics[0]?.team?.name ?? "",
+          shortName: (p.statistics[0]?.team?.name ?? "")
+            .substring(0, 3)
+            .toUpperCase(),
+          logoUrl: p.statistics[0]?.team?.logo ?? "",
+        },
+        goals: p.statistics[0]?.goals?.total ?? 0,
+        assists: p.statistics[0]?.goals?.assists ?? 0,
+        matches: p.statistics[0]?.games?.appearences ?? 0,
+      }),
+    );
+  },
+
+  async getTopAssists(leagueId: string, season: string): Promise<TopScorer[]> {
+    const data = await safeFetch(
+      `${BASE_URL}/players/topassists?league=${leagueId}&season=${season}`,
       { headers },
     );
     if (!data.response) return [];
@@ -957,14 +1189,35 @@ export const apiService = {
     });
   },
 
-  async searchTeams(query: string): Promise<Team[]> {
+   async searchTeams(query: string): Promise<Team[]> {
     if (USE_MOCK) return mockApiService.searchTeams(query);
-    const data = await safeFetch(
-      `${BASE_URL}/teams?search=${encodeURIComponent(query)}`,
-      { headers },
-    );
-    if (!data.response) return [];
-    return data.response.map(
+    
+    // 1. Orijinal Türkçeyi İngilizce karakterlere çevir (geniş arama için)
+    const normalizedQuery = query
+      .replace(/ı/g, 'i').replace(/İ/g, 'I')
+      .replace(/ğ/g, 'g').replace(/Ğ/g, 'G')
+      .replace(/ü/g, 'u').replace(/Ü/g, 'U')
+      .replace(/ş/g, 's').replace(/Ş/g, 'S')
+      .replace(/ö/g, 'o').replace(/Ö/g, 'O')
+      .replace(/ç/g, 'c').replace(/Ç/g, 'C');
+
+    // 2. Hem İngilizce karakterli halini (geniş arama) 
+    // hem de kullanıcının yazdığı orijinal halini (tam ad araması) paralel isteyelim.
+    const fetchSearch = safeFetch(`${BASE_URL}/teams?search=${encodeURIComponent(normalizedQuery)}`, { headers }).catch(() => ({ response: [] }));
+    const fetchName = safeFetch(`${BASE_URL}/teams?name=${encodeURIComponent(query)}`, { headers }).catch(() => ({ response: [] }));
+
+    const [searchData, nameData] = await Promise.all([fetchSearch, fetchName]);
+
+    // 3. İki ihtimalden gelen sonuçları birleştirip tekrar edenleri ayıkla
+    const records = [...(searchData.response || []), ...(nameData.response || [])];
+    const uniqueTeams = new Map<string, any>();
+    records.forEach((t: any) => {
+      uniqueTeams.set(String(t.team.id), t);
+    });
+
+    const combinedList = Array.from(uniqueTeams.values());
+
+    return combinedList.map(
       (t: any): Team => ({
         id: String(t.team.id),
         name: t.team.name,
@@ -973,6 +1226,7 @@ export const apiService = {
       }),
     );
   },
+
 
   async searchPlayers(query: string, season = 2025): Promise<{ id: number; name: string; photo: string; team: string; teamLogo: string }[]> {
     // API "team veya league gerekli" hatası veriyor — büyük liglerde paralel ara
@@ -1090,6 +1344,29 @@ export const apiService = {
     }));
   },
 
+  async getFixtureBroadcasts(fixtureId: string): Promise<string[]> {
+    try {
+      const data = await safeFetch(
+        `${BASE_URL}/fixtures/broadcasts?fixture=${fixtureId}`,
+        { headers },
+      );
+      if (!data.response || data.response.length === 0) return [];
+      const channels: string[] = [];
+      for (const item of data.response) {
+        if (Array.isArray(item.broadcasters)) {
+          for (const b of item.broadcasters) {
+            if (b.name) channels.push(b.name);
+          }
+        } else if (item.name) {
+          channels.push(item.name);
+        }
+      }
+      return [...new Set(channels)]; // deduplicate
+    } catch {
+      return [];
+    }
+  },
+
   async getTeamTransfers(teamId: string): Promise<Transfer[]> {
     if (USE_MOCK) return mockApiService.getTeamTransfers(teamId);
     const data = await safeFetch(`${BASE_URL}/transfers?team=${teamId}`, {
@@ -1156,6 +1433,16 @@ export const apiService = {
     }));
   },
 
+  async getLeagueRecentFixtures(leagueId: string, season: string, last = 50): Promise<Match[]> {
+    if (USE_MOCK) return [];
+    const data = await safeFetch(
+      `${BASE_URL}/fixtures?league=${leagueId}&season=${season}&last=${last}&timezone=Europe/Istanbul`,
+      { headers },
+    );
+    if (!data.response) return [];
+    return data.response.map(transformFixture);
+  },
+
   async getLeagueFixturesByRound(leagueId: string, season: string, round: string): Promise<Match[]> {
     if (USE_MOCK) return [];
     const data = await safeFetch(
@@ -1218,7 +1505,7 @@ export const apiService = {
           : p.name;
 
         results.push({
-          playerId: p.id,
+          playerId: Number(p.id),
           playerName: fullName,
           nationality: p.nationality ?? undefined,
           rating: stats.games?.rating ? parseFloat(stats.games.rating) : 0,
@@ -1245,5 +1532,369 @@ export const apiService = {
       }
     }
     return results;
+  },
+
+  // ─── Tournament Bracket ─────────────────────────────────────────────────────
+
+  async getBracket(leagueId: string, season: string): Promise<BracketRound[]> {
+    // Step 1: Get all round names for this league/season
+    const roundsData = await safeFetch(
+      `${BASE_URL}/fixtures/rounds?league=${leagueId}&season=${season}`,
+      { headers },
+    );
+    const allRounds: string[] = roundsData.response ?? [];
+    let knockoutRounds = allRounds.filter((r) => isKnockoutRound(r));
+
+    // ── League-specific pre-fetch filtering ───────────────────────────────────
+    // UCL (2) / Europa League (3) / Conference League (848) all share the new
+    // UEFA format: a summer "Play-offs" qualifying round feeds the league phase,
+    // while a separate "Knockout phase play-offs" round is the main-draw R32.
+    // Both strings pass isKnockoutRound (both contain "play-off").
+    //
+    // Rule: for these three competitions, only accept a play-off round whose
+    // name ALSO contains "knockout". Plain "Play-offs" = qualifying → discard.
+    const UEFA_NEW_FORMAT = new Set(['2', '3', '848']);
+    if (UEFA_NEW_FORMAT.has(leagueId)) {
+      knockoutRounds = knockoutRounds.filter((r) => {
+        const lower = r.toLowerCase();
+        const isPlayOff = lower.includes('play-off') || lower.includes('playoff');
+        if (!isPlayOff) return true; // quarter-finals, semi-finals etc. → keep
+        return lower.includes('knockout'); // keep only "Knockout phase play-offs"
+      });
+    }
+
+    // Türkiye Kupası (206): API returns early rounds that occasionally get
+    // mis-labeled (e.g. early preliminary matches tagged as "Final").
+    // Whitelist only the canonical late stages to guarantee a clean bracket.
+    if (leagueId === '206') {
+      knockoutRounds = knockoutRounds.filter((r) => {
+        const base = getRoundBase(r).toLowerCase().trim();
+        // Accept: "Final" (exact) | "Semi-final(s)" | "Quarter-final(s)"
+        if (base === 'final') return true;
+        if (base.includes('semi-final') || base.includes('semi final')) return true;
+        if (base.includes('quarter-final') || base.includes('quarter final')) return true;
+        return false;
+      });
+    }
+
+    if (!knockoutRounds.length) return [];
+
+    // Step 2: Fetch fixtures for every knockout round in parallel
+    const fixtureArrays = await Promise.all(
+      knockoutRounds.map(async (round) => {
+        try {
+          const data = await safeFetch(
+            `${BASE_URL}/fixtures?league=${leagueId}&season=${season}&round=${encodeURIComponent(round)}&timezone=Europe/Istanbul`,
+            { headers },
+          );
+          return (data.response ?? []).map(transformFixture) as Match[];
+        } catch {
+          return [] as Match[];
+        }
+      }),
+    );
+
+    // Step 3: Group fixtures by normalised base round (strip leg suffix + remap aliases)
+    //
+    // Returns null  → round should be silently ignored
+    // Returns string → canonical base key to group under
+    const normaliseBase = (raw: string): string | null => {
+      const lower = raw.toLowerCase();
+      const has3rd = lower.includes('3rd') || lower.includes('third');
+      const isPlayOff = lower.includes('play-off') || lower.includes('playoff');
+
+      // Second safety net: reject "Play-off Round" even after getRoundBase strips the leg suffix
+      if (lower.startsWith('play-off round') || lower.startsWith('playoff round')) return null;
+
+      // UCL / EL / ECL (new UEFA format) — only a play-off round that ALSO
+      // says "knockout" is the main-tournament round.
+      if (UEFA_NEW_FORMAT.has(leagueId) && isPlayOff && !lower.includes('knockout')) return null;
+
+      // All other leagues / UCL knockout-phase play-offs → Round of 32
+      if (!has3rd && (
+        isPlayOff ||
+        lower.includes('knockout phase') ||
+        lower.includes('knockout round')
+      )) return 'Round of 32';
+
+      return raw;
+    };
+
+    const matchesByBase = new Map<string, Match[]>();
+    knockoutRounds.forEach((round, i) => {
+      const rawBase = getRoundBase(round);
+      const base = normaliseBase(rawBase);
+      if (!base) return; // qualifying play-off — skip entirely
+      if (!matchesByBase.has(base)) matchesByBase.set(base, []);
+      matchesByBase.get(base)!.push(...fixtureArrays[i]);
+    });
+
+    // Türkiye Kupası (206) sanity cap: API occasionally dumps dozens of
+    // early-round fixtures under the "Final" label. Cap each late-stage round
+    // to its expected matchup count (taking the MOST RECENT matches only).
+    if (leagueId === '206') {
+      const MAX_MATCHES_BY_ROUND: Record<string, number> = {
+        'quarter-finals': 8,  // up to 4 pairs × 2 legs
+        'quarter-final':  8,
+        'semi-finals':    4,  // up to 2 pairs × 2 legs
+        'semi-final':     4,
+        'final':          1,  // single-leg
+      };
+      for (const [base, matches] of matchesByBase.entries()) {
+        const cap = MAX_MATCHES_BY_ROUND[base.toLowerCase().trim()];
+        if (cap && matches.length > cap) {
+          const sortedByDateDesc = [...matches].sort(
+            (a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime(),
+          );
+          matchesByBase.set(base, sortedByDateDesc.slice(0, cap));
+        }
+      }
+    }
+
+    // Round progression order (earliest → latest)
+    const ROUND_ORDER = [
+      'Round of 128', 'Round of 64', 'Round of 32',
+      'Round of 16',
+      'Quarter-finals', 'Quarter-Finals',
+      'Semi-finals', 'Semi-Finals',
+      '3rd Place Final', 'Final',
+    ];
+    const getOrder = (key: string) => {
+      const idx = ROUND_ORDER.findIndex((r) => r.toLowerCase() === key.toLowerCase());
+      return idx !== -1 ? idx : 50;
+    };
+
+    const bracketRounds: BracketRound[] = [];
+
+    for (const [base, matches] of matchesByBase.entries()) {
+      if (!matches.length) continue;
+
+      const leg1Matches = matches.filter((m) => isFirstLeg(m.league.round));
+      const leg2Matches = matches.filter((m) => isSecondLeg(m.league.round));
+      const noLegMarkers = !leg1Matches.length && !leg2Matches.length;
+
+      // When API returns no 1st/2nd Leg markers, auto-detect two-legged pairs
+      // by finding reversed home/away team ID pairings (A-vs-B and B-vs-A).
+      let effectiveLeg1 = leg1Matches;
+      let effectiveLeg2 = leg2Matches;
+      let hasPairedLegs = false;
+
+      if (noLegMarkers && !isSingleLegKnockout(base)) {
+        const used = new Set<string>();
+        const autoLeg1: Match[] = [];
+        const autoLeg2: Match[] = [];
+
+        for (const m of matches) {
+          if (used.has(m.id)) continue;
+          const reversed = matches.find(
+            (n) => !used.has(n.id) && n.id !== m.id &&
+              n.homeTeam.id === m.awayTeam.id && n.awayTeam.id === m.homeTeam.id,
+          );
+          if (reversed) {
+            used.add(m.id);
+            used.add(reversed.id);
+            // Earlier date = leg1, later date = leg2
+            if (new Date(m.startTime) <= new Date(reversed.startTime)) {
+              autoLeg1.push(m);
+              autoLeg2.push(reversed);
+            } else {
+              autoLeg1.push(reversed);
+              autoLeg2.push(m);
+            }
+          }
+        }
+
+        if (autoLeg1.length > 0) {
+          effectiveLeg1 = autoLeg1;
+          effectiveLeg2 = autoLeg2;
+          hasPairedLegs = true;
+        }
+      }
+
+      const singleLeg = isSingleLegKnockout(base) || (noLegMarkers && !hasPairedLegs);
+
+      const matchups: BracketMatchup[] = [];
+
+      if (singleLeg) {
+        for (const m of matches) {
+          let winner: 'team1' | 'team2' | null = null;
+          if (m.status === 'finished') {
+            if (m.winner === 'home') winner = 'team1';
+            else if (m.winner === 'away') winner = 'team2';
+            else if ((m.homeScore ?? -1) > (m.awayScore ?? -1)) winner = 'team1';
+            else if ((m.awayScore ?? -1) > (m.homeScore ?? -1)) winner = 'team2';
+          }
+          const legScore: BracketLegScore = {
+            matchId: m.id,
+            homeScore: m.homeScore,
+            awayScore: m.awayScore,
+            penHome: m.scorePenalty?.home,
+            penAway: m.scorePenalty?.away,
+            status: m.status,
+            date: m.startTime,
+          };
+          matchups.push({
+            id: m.id,
+            team1: { id: m.homeTeam.id, name: m.homeTeam.name, logoUrl: m.homeTeam.logoUrl },
+            team2: { id: m.awayTeam.id, name: m.awayTeam.name, logoUrl: m.awayTeam.logoUrl },
+            isSingleLeg: true,
+            leg1: legScore,
+            aggTeam1: m.homeScore ?? undefined,
+            aggTeam2: m.awayScore ?? undefined,
+            winner,
+          });
+        }
+      } else {
+        // Two-legged: pair leg1 with leg2 by matching team IDs (leg2 home = leg1 away)
+        for (const leg1 of effectiveLeg1) {
+          const leg2 = effectiveLeg2.find(
+            (l) => l.homeTeam.id === leg1.awayTeam.id && l.awayTeam.id === leg1.homeTeam.id,
+          );
+
+          const hasL1 = leg1.homeScore != null;
+          const hasL2 = !!leg2 && leg2.homeScore != null;
+
+          // team1 = leg1.home, team2 = leg1.away
+          // In leg2: team2 is home, team1 is away
+          const aggTeam1 = hasL1
+            ? (leg1.homeScore ?? 0) + (hasL2 ? (leg2!.awayScore ?? 0) : 0)
+            : undefined;
+          const aggTeam2 = hasL1
+            ? (leg1.awayScore ?? 0) + (hasL2 ? (leg2!.homeScore ?? 0) : 0)
+            : undefined;
+
+          let winner: 'team1' | 'team2' | null = null;
+          if (hasL2 && leg2!.status === 'finished') {
+            const a1 = aggTeam1 ?? 0;
+            const a2 = aggTeam2 ?? 0;
+            if (a1 > a2) winner = 'team1';
+            else if (a2 > a1) winner = 'team2';
+            else {
+              // leg2.penHome = team2 goals, leg2.penAway = team1 goals
+              const penT1 = leg2!.scorePenalty?.away;
+              const penT2 = leg2!.scorePenalty?.home;
+              if (penT1 != null && penT2 != null) {
+                winner = penT1 > penT2 ? 'team1' : 'team2';
+              } else if (leg2!.winner === 'home') winner = 'team2';
+              else if (leg2!.winner === 'away') winner = 'team1';
+            }
+          }
+
+          matchups.push({
+            id: leg1.id,
+            team1: { id: leg1.homeTeam.id, name: leg1.homeTeam.name, logoUrl: leg1.homeTeam.logoUrl },
+            team2: { id: leg1.awayTeam.id, name: leg1.awayTeam.name, logoUrl: leg1.awayTeam.logoUrl },
+            isSingleLeg: false,
+            leg1: {
+              matchId: leg1.id,
+              homeScore: leg1.homeScore,
+              awayScore: leg1.awayScore,
+              status: leg1.status,
+              date: leg1.startTime,
+            },
+            leg2: leg2
+              ? {
+                  matchId: leg2.id,
+                  homeScore: leg2.homeScore,
+                  awayScore: leg2.awayScore,
+                  penHome: leg2.scorePenalty?.home,
+                  penAway: leg2.scorePenalty?.away,
+                  status: leg2.status,
+                  date: leg2.startTime,
+                }
+              : undefined,
+            aggTeam1,
+            aggTeam2,
+            winner,
+          });
+        }
+      }
+
+      bracketRounds.push({ key: base, displayName: base, order: getOrder(base), matchups });
+    }
+
+    // ── Post-processing ────────────────────────────────────────────────────
+
+    // Türkiye Kupası (206) — tournament progression guard.
+    //
+    // API dumps old preliminary-round fixtures into "Final" / "Semi-finals"
+    // buckets before those stages are actually played. The key insight: a
+    // valid Semi-final team MUST be one of the Quarter-final teams (since SF
+    // is fed by QF winners). If not, the SF bucket is bogus. Same logic
+    // cascades to Final via SF teams.
+    if (leagueId === '206') {
+      const findRound = (matcher: (k: string) => boolean) =>
+        bracketRounds.find((r) => matcher(r.key.toLowerCase()));
+      const qf = findRound((k) => k.includes('quarter'));
+      const sf = findRound((k) => k.includes('semi'));
+      const fn = findRound((k) => k === 'final');
+
+      const collectTeamIds = (r?: BracketRound): Set<string> => {
+        const ids = new Set<string>();
+        if (!r) return ids;
+        for (const m of r.matchups) {
+          if (m.team1?.id) ids.add(String(m.team1.id));
+          if (m.team2?.id) ids.add(String(m.team2.id));
+        }
+        return ids;
+      };
+
+      const qfTeamIds = collectTeamIds(qf);
+
+      // Drop SF if every SF matchup has at least one team from QF squad
+      // (otherwise SF contains old mismatched data).
+      const sfValid = !!sf && sf.matchups.every((m) =>
+        qfTeamIds.has(String(m.team1?.id ?? '___')) ||
+        qfTeamIds.has(String(m.team2?.id ?? '___')),
+      );
+      if (sf && !sfValid) {
+        bracketRounds.splice(bracketRounds.indexOf(sf), 1);
+      }
+
+      // For Final: its teams must come from SF teams (which are QF teams).
+      // If SF was dropped or Final teams aren't in QF squad → drop Final.
+      const fnValid = !!fn && sfValid && fn.matchups.every((m) =>
+        qfTeamIds.has(String(m.team1?.id ?? '___')) ||
+        qfTeamIds.has(String(m.team2?.id ?? '___')),
+      );
+      if (fn && !fnValid) {
+        bracketRounds.splice(bracketRounds.indexOf(fn), 1);
+      }
+    }
+
+    // Sort all rounds by bracket progression order
+    bracketRounds.sort((a, b) => a.order - b.order);
+
+    // Separate 3rd-place match (not part of the main tree)
+    const thirdIdx = bracketRounds.findIndex((r) => r.key.toLowerCase().includes('3rd'));
+    const mainRounds = thirdIdx >= 0
+      ? bracketRounds.filter((_, i) => i !== thirdIdx)
+      : bracketRounds;
+
+    // Backwards pass: reorder each earlier round so adjacent pairs feed the
+    // correct next-round slot (winner-ID matching).
+    for (let r = mainRounds.length - 2; r >= 0; r--) {
+      mainRounds[r] = {
+        ...mainRounds[r],
+        matchups: sortMatchupsByNextRound(mainRounds[r].matchups, mainRounds[r + 1].matchups),
+      };
+    }
+
+    // Forward pass: synthesise TBD rounds for stages not yet in the API,
+    // pre-filling known winners into the placeholder slots.
+    let last = mainRounds[mainRounds.length - 1];
+    let safety = 0;
+    while (last && last.matchups.length > 1 && safety < 4) {
+      const tbd = buildTBDRound(last);
+      if (!tbd) break;
+      mainRounds.push(tbd);
+      last = tbd;
+      safety++;
+    }
+
+    // Recombine: main tree first, then 3rd-place (if any)
+    return thirdIdx >= 0
+      ? [...mainRounds, bracketRounds[thirdIdx]]
+      : mainRounds;
   },
 };

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useAppTheme } from '../../hooks/useAppTheme';
 import { useTranslation } from 'react-i18next';
 import { Match } from '../../types';
+import { getMatchResultForTeam } from '../../utils/matchUtils';
 
 interface Props {
   teamId: string;
@@ -22,15 +23,6 @@ function FormStrip({ teamId, matches }: Props) {
 
   if (finished.length === 0) return null;
 
-  const getResult = (match: Match): 'W' | 'D' | 'L' => {
-    const isHome = match.homeTeam.id === teamId;
-    const home = match.homeScore ?? 0;
-    const away = match.awayScore ?? 0;
-    if (home === away) return 'D';
-    if (isHome) return home > away ? 'W' : 'L';
-    return away > home ? 'W' : 'L';
-  };
-
   const colorMap = { W: '#00C851', D: '#FFBB33', L: '#FF4444' };
   const labelMap = { W: t('team.win'), D: t('team.draw'), L: t('team.loss') };
 
@@ -39,7 +31,7 @@ function FormStrip({ teamId, matches }: Props) {
       <Text style={[styles.label, { color: theme.colors.textSecondary }]}>{t('matchDetail.form')}</Text>
       <View style={styles.dots}>
         {finished.map((m, i) => {
-          const result = getResult(m);
+          const result = getMatchResultForTeam(m, teamId) ?? 'D';
           return (
             <View key={m.id} style={[styles.dot, { backgroundColor: colorMap[result] }]}>
               <Text style={styles.dotText}>{labelMap[result]}</Text>

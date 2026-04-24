@@ -1,0 +1,78 @@
+=== RealSociedad_p4 p4/4 ===
+  1561: Marc Bartra
+  3033: C. Bakambu
+
+=== Bournemouth_extra p1/3 ===
+  105: F. Ballo-Touré
+  131: Jorge Cuenca
+  657: K. Tete
+  727: R. Nelson
+  1438: B. Leno
+  2729: J. Andersen
+  18814: I. Diop
+  19004: B. De Cordova-Reid
+  19145: T. Adarabioyo
+  19657: M. Rodák
+  41104: João Palhinha
+  126690: K. Bowie
+  129705: L. Ashby-Hammond
+  138822: A. Broja
+  152967: C. Bassey
+  153420: G. Wickens
+  284470: M. Dibley-Dias
+  284475: L. Harris
+  297635: Devan Austin Tanton Pedraza
+  335116: K. Šekularac
+
+=== Bournemouth p1 ===
+  105: F. Ballo-Touré
+  131: Jorge Cuenca
+  657: K. Tete
+  727: R. Nelson
+  1438: B. Leno
+  2729: J. Andersen
+  18814: I. Diop
+  19004: B. De Cordova-Reid
+  19145: T. Adarabioyo
+  19657: M. Rodák
+  41104: João Palhinha
+  126690: K. Bowie
+  129705: L. Ashby-Hammond
+  138822: A. Broja
+  152967: C. Bassey
+  153420: G. Wickens
+  284470: M. Dibley-Dias
+  284475: L. Harris
+  297635: Devan Austin Tanton Pedraza
+  335116: K. Šekularac
+
+=== Bournemouth p2 ===
+  899: Andreas Pereira
+  1161: E. Smith Rowe
+  1455: A. Iwobi
+  1934: S. Berge
+  2823: S. Lukić
+  2887: R. Jiménez
+  2920: T. Castagne
+  18753: Adama Traoré
+  19025: T. Cairney
+  19032: R. Sessegnon
+  19221: H. Wilson
+  19312: S. Benda
+  19480: H. Reed
+  19549: A. Robinson
+  191971: J. Stansfield
+  195106: Rodrigo Muniz
+  284559: Alexander Paul Borto
+  359386: M. Godo
+  384981: S. Amissah
+  389315: Joshua King
+
+=== Bournemouth p3 ===
+  104: Carlos Vinícius
+  946: K. Mbabu
+  2294: Willian
+  19023: T. Ream
+  19043: T. Kongolo
+  327738: L. De Fougerolles
+

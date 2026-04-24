@@ -1,0 +1,66 @@
+=== Atalanta_p1 p1/4 ===
+  690: V. Kovalenko
+  711: S. Posch
+  2286: D. Zappacosta
+  2495: D. Zapata
+  30417: M. Carnesecchi
+  30418: P. Gollini
+  30419: F. Rossi
+  30421: B. Djimsiti
+  30427: C. Okoli
+  30438: N. Cambiaghi
+  30440: R. Piccoli
+  36899: T. Koopmeiners
+  48119: O. Kossounou
+  137976: I. Hien
+  162012: M. Ruggeri
+  162570: G. Cittadini
+  194750: E. Touré
+  278134: E. Kraja
+  336640: A. Oliveri
+  400530: R. ObriÄ
+
+=== Atalanta_p2 p2/4 ===
+  1639: M. Brescianini
+  2763: M. Pašalić
+  30505: M. Adopo
+  91422: R. Bellanova
+  128461: N. Zortea
+  134926: D. Maldini
+  147859: C. De Ketelaere
+  162011: A. Cortinovis
+  162347: B. Soppy
+  203474: N. Zalewski
+  264857: L. Bernasconi
+  289761: G. Scalvini
+  290807: V. Vlahović
+  338867: T. Bertini
+  341838: G. Bonfanti
+  353609: I. Sulemana
+  383017: D. Vavassori
+  383018: M. Palestra
+  394496: P. Tornaghi
+  485609: F. Steffanoni
+
+=== Atalanta_p3 p3/4 ===
+  484: A. Miranchuk
+  530: M. Bakker
+  786: N. Zaniolo
+  2465: J. Musso
+  6420: M. Retegui
+  10097: Éderson
+  19073: B. Godfrey
+  30423: H. Hateboer
+  30428: J. Palomino
+  30429: R. Tolói
+  162573: M. Dajcar
+  178749: L. Samardžić
+  338866: T. Del Lungo
+  350078: P. Vismara
+  383020: L. Riccio
+  392489: L. Mendicino
+  419423: A. Manzoni
+  436251: P. Comi
+  443501: F. Cassa
+  484411: J. Idele
+

@@ -20,14 +20,33 @@ export default function BannerAd() {
   const insets = useSafeAreaInsets();
   const [adFailed, setAdFailed] = useState(false);
   const [modules, setModules] = useState<{ BannerAd: any; BannerAdSize: any } | null>(null);
+  // true  → kişiselleştirilmemiş reklam (ATT yok / reddedildi)
+  // false → kişiselleştirilmiş reklam (iOS ATT 'authorized')
+  const [nonPersonalized, setNonPersonalized] = useState(Platform.OS !== 'android');
 
   useEffect(() => {
     if (isExpoGo || Platform.OS === 'web') return;
-    import('react-native-google-mobile-ads')
-      .then(({ BannerAd: NativeBannerAd, BannerAdSize }) => {
+
+    const load = async () => {
+      try {
+        // iOS'ta ATT durumunu sorgula — popup göstermez, sadece mevcut kararı okur.
+        // Android'de ATT yoktur; non-personalized default kalır.
+        if (Platform.OS === 'ios') {
+          const { getTrackingPermissionsAsync } =
+            await import('expo-tracking-transparency');
+          const { status } = await getTrackingPermissionsAsync();
+          setNonPersonalized(status !== 'granted');
+        }
+
+        const { BannerAd: NativeBannerAd, BannerAdSize } =
+          await import('react-native-google-mobile-ads');
         setModules({ BannerAd: NativeBannerAd, BannerAdSize });
-      })
-      .catch(() => setAdFailed(true));
+      } catch {
+        setAdFailed(true);
+      }
+    };
+
+    load();
   }, []);
 
   if (isExpoGo || Platform.OS === 'web') return null;
@@ -49,7 +68,7 @@ export default function BannerAd() {
       <NativeBannerAd
         unitId={AD_UNIT_ID}
         size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
-        requestOptions={{ requestNonPersonalizedAdsOnly: true }}
+        requestOptions={{ requestNonPersonalizedAdsOnly: nonPersonalized }}
         onAdFailedToLoad={() => setAdFailed(true)}
       />
     </View>

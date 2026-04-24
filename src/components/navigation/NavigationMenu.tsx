@@ -15,11 +15,29 @@ import { useAppTheme } from '../../hooks/useAppTheme';
 import { useTranslation } from 'react-i18next';
 
 const MENU_KEYS = [
-  { route: 'index', i18nKey: 'navigation.home', icon: 'football' as const },
-  { route: 'favorites', i18nKey: 'navigation.favorites', icon: 'heart' as const },
-  { route: 'leagues', i18nKey: 'navigation.leagues', icon: 'trophy' as const },
-  { route: 'settings', i18nKey: 'navigation.settings', icon: 'settings' as const },
+  { route: 'index',    i18nKey: 'navigation.home',     icon: 'football'    as const, custom: false },
+  { route: 'favorites',i18nKey: 'navigation.favorites', icon: 'heart'       as const, custom: false },
+  { route: 'analysis', i18nKey: 'navigation.analysis',  icon: 'analytics'   as const, custom: true  },
+  { route: 'arena',    i18nKey: 'navigation.arena',     icon: 'game-controller' as const, custom: false },
+  { route: 'settings', i18nKey: 'navigation.settings',  icon: 'settings'    as const, custom: false },
 ];
+
+// Analiz Merkezi ikonu: Maçlar'daki football ile aynı boyut + üstüne trending-up overlay
+function AnalysisIcon({ size, color }: { size: number; color: string }) {
+  return (
+    <View style={{ width: size, height: size }}>
+      {/* Football — Maçlar ikonuyla birebir aynı */}
+      <Ionicons name="football" size={size} color={color} />
+      {/* Trend oku — football'ın renginde overlay */}
+      <Ionicons
+        name="trending-up"
+        size={Math.round(size * 0.75)}
+        color={color}
+        style={{ position: 'absolute', top: -2, right: -2 }}
+      />
+    </View>
+  );
+}
 
 interface NavigationMenuProps {
   children?: React.ReactNode;
@@ -111,14 +129,6 @@ export default function NavigationMenu({ children }: NavigationMenuProps) {
               ]}
             >
               <Text style={styles.menuHeaderText}>MaçServisi</Text>
-              <View
-                style={[
-                  styles.betaBadge,
-                  { backgroundColor: 'rgba(255,255,255,0.3)' },
-                ]}
-              >
-                <Text style={styles.betaBadgeText}>BETA</Text>
-              </View>
             </View>
 
             {/* Menu Items */}
@@ -141,15 +151,17 @@ export default function NavigationMenu({ children }: NavigationMenuProps) {
                   onPress={() => handleMenuPress(item.route)}
                   activeOpacity={0.7}
                 >
-                  <Ionicons
-                    name={item.icon}
-                    size={20}
-                    color={
-                      isActive
-                        ? theme.colors.primary
-                        : theme.colors.textSecondary
-                    }
-                  />
+                  {item.custom
+                    ? <AnalysisIcon
+                        size={20}
+                        color={isActive ? theme.colors.primary : theme.colors.textSecondary}
+                      />
+                    : <Ionicons
+                        name={item.icon}
+                        size={20}
+                        color={isActive ? theme.colors.primary : theme.colors.textSecondary}
+                      />
+                  }
                   <Text
                     style={[
                       styles.menuItemLabel,
@@ -186,10 +198,13 @@ export default function NavigationMenu({ children }: NavigationMenuProps) {
             {/* Info Footer */}
             <View style={styles.footer}>
               <Text style={[styles.footerText, { color: theme.colors.textSecondary }]}>
-                v1.0.0
+                v1.1.2
               </Text>
               <Text style={[styles.footerText, { color: theme.colors.textSecondary }]}>
                 © 2026 MaçServisi
+              </Text>
+              <Text style={[styles.studioText, { color: theme.colors.primary }]}>
+                Lionx Studio
               </Text>
             </View>
           </Pressable>
@@ -296,5 +311,11 @@ const styles = StyleSheet.create({
   footerText: {
     fontSize: 11,
     fontWeight: '500',
+  },
+  studioText: {
+    fontSize: 12,
+    fontWeight: '800',
+    marginTop: 2,
+    letterSpacing: 0.5,
   },
 });

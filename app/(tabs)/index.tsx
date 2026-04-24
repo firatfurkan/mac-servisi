@@ -9,67 +9,26 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { useRouter } from "expo-router";
 import { HomeScreenSkeleton } from "../../src/components/common/SkeletonLoader";
 import DateStrip from "../../src/components/home/DateStrip";
 import LeagueSection from "../../src/components/home/LeagueSection";
 import MatchCard from "../../src/components/home/MatchCard";
 import SearchBar from "../../src/components/home/SearchBar";
 import { AppFooter } from "../../src/components/AppFooter";
-import BannerAd from "../../src/components/ads/BannerAd";
 import { useAppTheme } from "../../src/hooks/useAppTheme";
 import { useMatches } from "../../src/hooks/useMatches";
 import { useFavoritesStore } from "../../src/stores/favoritesStore";
 import { useMatchStore } from "../../src/stores/matchStore";
-import { groupMatchesByLeague } from "../../src/utils/matchUtils";
-
-
-
-// 1. UEFA Kupaları
-// 2. Türkiye Süper Lig
-// 3. Büyük 5 Lig
-// 4. Türkiye Alt Ligler & Kupalar
-const PRIORITY_LEAGUES = [
-  // ─── Türkiye Ligleri (her zaman en üstte) ───
-  "203", // Türkiye Süper Lig
-  "204", // Türkiye 1. Lig
-  // ─── UEFA Kulüp Turnuvaları ───
-  "2",   // UEFA Şampiyonlar Ligi
-  "3",   // UEFA Avrupa Ligi
-  "848", // UEFA Konferans Ligi
-  "531", // UEFA Süper Kupası
-  // ─── Uluslararası / Milli Takım ───
-  "1",   // FIFA Dünya Kupası
-  "32",  // FIFA Dünya Kupası Elemeleri - Avrupa
-  "4",   // Avrupa Şampiyonası (EURO)
-  "5",   // UEFA Uluslar Ligi
-  "6",   // Avrupa Şampiyonası Elemeleri
-  "34",  // Dünya Kupası Elemeleri - Güney Amerika
-  "9",   // Copa America
-  "33",  // Afrika Uluslar Kupası (AFCON)
-  // ─── Büyük 5 Lig ───
-  "39",  // İngiltere Premier Lig
-  "140", // İspanya La Liga
-  "135", // İtalya Serie A
-  "78",  // Almanya Bundesliga
-  "61",  // Fransa Ligue 1
-  // ─── Diğer Avrupa Ligleri ───
-  "94",  // Portekiz Primeira Liga
-  "88",  // Hollanda Eredivisie
-  "144", // Belçika Pro League
-  // ─── Türkiye Alt Ligler & Kupalar ───
-  "204", // Türkiye 1. Lig
-  "205", // Türkiye 2. Lig
-  "552", // Türkiye Kupası
-  "551", // Türkiye Süper Kupa
-];
+import { groupMatchesByLeague, PRIORITY_LEAGUES } from "../../src/utils/matchUtils";
 
 export default function HomeScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const router = useRouter();
   const theme = useAppTheme();
   const { selectedDate } = useMatchStore();
   const { favoriteTeamIds } = useFavoritesStore();
   const [liveOnly, setLiveOnly] = useState(false);
-
   const [manualRefreshing, setManualRefreshing] = useState(false);
 
   const {
@@ -98,9 +57,16 @@ export default function HomeScreen() {
       favoriteTeamIds.includes(m.awayTeam.id),
   );
 
-  // Sort leagues: priority leagues first (in order), then rest by start time
-  // Key format: "leagueId" or "leagueId__round" — extract leagueId for priority check
-  const leagueIdOf = (key: string) => key.split("__")[0];
+  // Sort leagues: priority leagues first (in order), then rest by start time.
+  // Key format: "leagueId" or "leagueId__round".
+  // Önce key prefix'ten ID al; bulunamazsa gerçek match.league.id'yi dene (API bazen
+  // kupa eleme turlarında farklı ID döner, bu fallback onu yakalar).
+  const leagueIdOf = (key: string) => {
+    const fromKey = key.split("__")[0];
+    if (PRIORITY_LEAGUES.includes(fromKey)) return fromKey;
+    const realId = String(grouped[key]?.[0]?.league?.id ?? "");
+    return realId || fromKey;
+  };
 
   const sortedLeagueIds = Object.keys(grouped).sort((a, b) => {
     const aPriority = PRIORITY_LEAGUES.indexOf(leagueIdOf(a));
@@ -126,7 +92,7 @@ export default function HomeScreen() {
       style={[styles.container, { backgroundColor: theme.colors.background }]}
     >
       <DateStrip />
-      <SearchBar />
+      <SearchBar matches={matches} />
 
       {/* Filter bar */}
       <View
@@ -204,14 +170,17 @@ export default function HomeScreen() {
           renderItem={({ item: key }) => {
             const leagueMatches = grouped[key];
             const realLeagueId = key.split("__")[0];
+
             return (
-              <LeagueSection
-                leagueId={realLeagueId}
-                leagueName={leagueMatches[0].league.name}
-                leagueLogo={leagueMatches[0].league.logoUrl}
-                leagueCountry={leagueMatches[0].league.country}
-                matches={leagueMatches}
-              />
+              <React.Fragment key={key}>
+                <LeagueSection
+                  leagueId={realLeagueId}
+                  leagueName={leagueMatches[0].league.name}
+                  leagueLogo={leagueMatches[0].league.logoUrl}
+                  leagueCountry={leagueMatches[0].league.country}
+                  matches={leagueMatches}
+                />
+              </React.Fragment>
             );
           }}
           ListHeaderComponent={
@@ -286,7 +255,6 @@ export default function HomeScreen() {
           ListFooterComponent={<AppFooter />}
         />
       )}
-      <BannerAd />
     </View>
   );
 }

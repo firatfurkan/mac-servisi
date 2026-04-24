@@ -1,0 +1,197 @@
+=== Brighton (51) page 1/4 ===
+  10329: João Pedro
+  18960: J. Steele
+  37276: K. Scherpen
+  64304: K. Kozłowski
+  129058: B. Verbruggen
+  135775: Ansu Fati
+  138815: T. Lamptey
+  167663: T. McGill
+  200233: Leigh Robert Kavanagh
+  202086: J. Sarmiento
+  206404: Samy Olivier Chouchane
+  284531: Benjamin Harvey Jackson
+  293643: I. Osman
+  296121: J. Hinchy
+  301771: S. Adingra
+  311334: F. Buonanotte
+  328095: Luca Barrington
+  336240: N. Atom
+  336599: Benicio Baker-Boaitey
+  342191: A. Mazilu
+
+=== Brighton_p2 (51) page 2/4 ===
+  296: J. Milner
+  537: J. Veltman
+  1361: F. Kadıoğlu
+  7600: Igor
+  18963: L. Dunk
+  18973: S. March
+  19030: M. O&apos;Riley
+  19265: A. Webster
+  38695: J. van Hecke
+  70747: J. Enciso
+  106835: K. Mitoma
+  137220: A. Moran
+  265820: Y. Ayari
+  278370: D. Gómez
+  305730: J. Hinshelwood
+  328076: C. Tasker
+  328225: B. Gruda
+  356041: C. Baleba
+  392610: H. Howell
+  412086: F. Simmonds
+
+=== Dortmund_p3 (165) page 3/3 ===
+  18: J. Sancho
+  25: M. Reus
+  249: D. Malen
+  264: T. Meunier
+  501: M. Hummels
+  637: F. Nmecha
+  864: E. Can
+  1159: M. Sabitzer
+  1826: S. Haller
+  18970: P. Groß
+  25391: N. Füllkrug
+  26626: A. Papadopoulos
+  138816: I. Maatsen
+  138935: C. Chukwuemeka
+  162568: S. Coulibaly
+  197448: Yan Couto
+  199936: Ole Pohlmann
+  286894: J. Bynoe-Gittens
+  386276: Paris Josua  Brunner
+  415723: Robin Lisewski
+
+=== Aston_Villa_p4 (66) page 4/4 ===
+  147: Philippe Coutinho
+  277: M. Diaby
+  746: Marco Asensio
+  766: R. Olsen
+  13489: J. Durán
+  21090: Diego Carlos
+  148270: O. Zych
+  158378: E. Barrenechea
+  169291: V. Sinisalo
+  376039: Y. Özcan
+
+=== Newcastle_p3 (34) page 3/4 ===
+  557: O. Vlachodimos
+  1463: J. Willock
+  2939: C. Wilson
+  18896: Javier Manquillo
+  18901: S. Longstaff
+  19163: J. Murphy
+  19192: J. Ramsey
+  19263: L. Kelly
+  138787: A. Gordon
+  138906: J. White
+  153430: A. Elanga
+  284278: Michael Ndiweni
+  284373: L. De Bolle
+  284375: James Alan Huntley
+  315237: W. Osula
+  328104: Ben Parkinson
+  337934: L. Shahar
+  349987: G. Kuol
+  394165: S. Neave
+  401389: T. Sanusi
+
+=== Newcastle_p4 (34) page 4/4 ===
+  2507: M. Almirón
+  19076: J. Lewis
+  293164: Amadou Diallo
+  384585: T. Hernes
+
+=== Leipzig_p3 (173) page 3/3 ===
+  1139: P. Gulácsi
+  1358: E. Elmas
+  37143: L. Geertruida
+  115589: B. Šeško
+  342320: K. Nedeljković
+
+=== Juventus_p3 (496) page 3/4 ===
+  333: A. Milik
+  858: M. De Sciglio
+  876: N. Fagioli
+  1138: T. Weah
+  1821: F. Kostić
+  30410: F. Chiesa
+  30497: Bremer
+  181806: N. Savona
+  330419: Alberto Baio
+  335117: G. Daffara
+  336671: Renato Veiga
+  340628: R. Turicchia
+  344773: A. Pietrelli
+  346866: S. Mbangula
+  349218: L. Anghelè
+  405298: N. Rizzo
+  410399: F. Pagnucco
+  414441: A. Montero
+  436927: A. Owusu
+  441552: D. Pugno
+
+=== Atletico_p4 (530) page 4/4 ===
+  39: S. Savić
+  48: Saúl
+  59: Álvaro Morata
+  133: C. Lenglet
+  583: João Félix
+  667: M. Depay
+  2280: César Azpilicueta
+  6009: J. Álvarez
+  8492: A. Sørloth
+  22225: Reinildo
+  67972: C. Gallagher
+
+=== Barcelona_p3 (529) page 3/3 ===
+  126: Iñaki Peña
+  127: M. ter Stegen
+  133: C. Lenglet
+  137: Sergi Roberto
+  521: R. Lewandowski
+  619: Eric García
+  633: İ. Gündoğan
+  851: W. Szczęsny
+  931: Ferran Torres
+  1323: Dani Olmo
+  1496: Raphinha
+  2282: A. Christensen
+  18949: Oriol Romeu
+  135775: Ansu Fati
+  294797: Ángel Alarcón
+  386827: Ángel Alarcón
+  412704: Noah Darvich
+
+=== Chelsea_p4 (49) page 4/5 ===
+  645: R. Sterling
+  907: R. Lukaku
+  21998: A. Disasi
+  286774: Ronnie Stutter
+  287868: Max Merrick
+  289618: Alex Matos
+  306263: Richard Olise
+  327733: Sam Rak-Sakyi
+  329347: O. Kellyman
+  331563: Mason Paul James Burstow
+  334042: Kaiden Wilson
+  359117: Shumaira Mheuka
+  360011: Ato Ampah
+  364048: Harrison Murray-Campbell
+  365660: K. Dyer
+  395762: M. Amougou
+  398000: G. Antwi
+  406303: K. Páez
+  454935: L. Emenalo
+  482888: R. Walsh
+
+=== Chelsea_p5 (49) page 5/5 ===
+  583: João Félix
+  67972: C. Gallagher
+  152955: L. Bergström
+  270507: C. Casadei
+  303667: E. Beach
+  335056: Diego Moreira
+

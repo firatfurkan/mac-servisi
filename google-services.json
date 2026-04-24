@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "1234567890",
+    "project_number": "587559065195",
     "project_id": "asistbeta53",
-    "storage_bucket": "asistbeta53.appspot.com"
+    "storage_bucket": "asistbeta53.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1234567890:android:abcdef1234567890",
+        "mobilesdk_app_id": "1:587559065195:android:b7e54a987e091ea8b2c32e",
         "android_client_info": {
           "package_name": "com.furkanf.asist"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBfsH0yD7FPcqXo0edh1aScVjaFrMQT9ms"
+          "current_key": "AIzaSyDhPv4usNAZuNCGwwPhN0HzJfftWJsRz6U"
         }
       ],
       "services": {

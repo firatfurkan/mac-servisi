@@ -1,13 +1,16 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
-  View,
-  Text,
+  ActivityIndicator,
+  Linking,
+  Modal,
+  Platform,
+  Pressable,
   ScrollView,
+  StyleSheet,
+  Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
-  Platform,
-  Linking,
+  View,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
@@ -15,10 +18,146 @@ import { useRouter } from 'expo-router';
 import { useAppTheme } from '../../src/hooks/useAppTheme';
 import { useThemeStore } from '../../src/stores/themeStore';
 import { useSettingsStore } from '../../src/stores/settingsStore';
+import { useEditorStore } from '../../src/stores/editorStore';
 import { ThemeMode, Language } from '../../src/types';
 import i18n from '../../src/i18n/config';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
+
+// ── Editör Giriş Modalı ───────────────────────────────────────────────────
+function EditorLoginModal({
+  visible,
+  onClose,
+  theme,
+  isTr,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  theme: any;
+  isTr: boolean;
+}) {
+  const { login, loggedInEditor } = useEditorStore();
+  const router = useRouter();
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [showPass, setShowPass] = useState(false);
+
+  const handleLogin = async () => {
+    setError('');
+    if (!username.trim() || !password.trim()) {
+      setError(isTr ? 'Kullanıcı adı ve şifre gerekli.' : 'Username and password required.');
+      return;
+    }
+    setLoading(true);
+    const result = await login(username.trim(), password);
+    setLoading(false);
+    if (!result.success) {
+      setError(result.error ?? (isTr ? 'Giriş başarısız.' : 'Login failed.'));
+      return;
+    }
+    onClose();
+    router.push('/(tabs)/analysis' as any);
+  };
+
+  const handleClose = () => {
+    setUsername(''); setPassword(''); setError('');
+    onClose();
+  };
+
+  return (
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={handleClose}>
+      <Pressable style={modalStyles.overlay} onPress={handleClose}>
+        <Pressable style={[modalStyles.card, { backgroundColor: theme.colors.surface }]} onPress={(e) => e.stopPropagation()}>
+          {/* İkon */}
+          <View style={[modalStyles.iconCircle, { backgroundColor: theme.colors.primary + '18' }]}>
+            <Ionicons name="shield-checkmark" size={32} color={theme.colors.primary} />
+          </View>
+          <Text style={[modalStyles.title, { color: theme.colors.textPrimary }]}>
+            {isTr ? 'Editör Girişi' : 'Editor Login'}
+          </Text>
+          <Text style={[modalStyles.subtitle, { color: theme.colors.textSecondary }]}>
+            {isTr ? 'Analiz Merkezi yetkilendirmesi' : 'Analysis Center authorization'}
+          </Text>
+
+          {/* E-posta */}
+          <TextInput
+            style={[modalStyles.input, { color: theme.colors.textPrimary, borderColor: theme.colors.divider, backgroundColor: theme.colors.background }]}
+            value={username}
+            onChangeText={setUsername}
+            placeholder={isTr ? 'E-posta' : 'Email'}
+            placeholderTextColor={theme.colors.textSecondary}
+            autoCapitalize="none"
+            keyboardType="email-address"
+          />
+
+          {/* Şifre */}
+          <View style={[modalStyles.passRow, { borderColor: theme.colors.divider, backgroundColor: theme.colors.background }]}>
+            <TextInput
+              style={[modalStyles.passInput, { color: theme.colors.textPrimary }]}
+              value={password}
+              onChangeText={setPassword}
+              placeholder={isTr ? 'Şifre' : 'Password'}
+              placeholderTextColor={theme.colors.textSecondary}
+              secureTextEntry={!showPass}
+            />
+            <TouchableOpacity onPress={() => setShowPass(!showPass)} style={modalStyles.eyeBtn}>
+              <Ionicons name={showPass ? 'eye-off-outline' : 'eye-outline'} size={18} color={theme.colors.textSecondary} />
+            </TouchableOpacity>
+          </View>
+
+          {/* Hata */}
+          {!!error && (
+            <View style={[modalStyles.errorRow, { backgroundColor: '#FF444418' }]}>
+              <Ionicons name="alert-circle-outline" size={14} color="#FF4444" />
+              <Text style={modalStyles.errorText}>{error}</Text>
+            </View>
+          )}
+
+          {/* Giriş butonu */}
+          <TouchableOpacity
+            style={[modalStyles.loginBtn, { backgroundColor: theme.colors.primary }]}
+            onPress={handleLogin}
+            disabled={loading}
+            activeOpacity={0.8}
+          >
+            {loading
+              ? <ActivityIndicator color="#fff" size="small" />
+              : <Text style={modalStyles.loginBtnText}>{isTr ? 'Giriş Yap' : 'Login'}</Text>
+            }
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={handleClose} style={modalStyles.cancelLink}>
+            <Text style={[modalStyles.cancelText, { color: theme.colors.textSecondary }]}>
+              {isTr ? 'Vazgeç' : 'Cancel'}
+            </Text>
+          </TouchableOpacity>
+        </Pressable>
+      </Pressable>
+    </Modal>
+  );
+}
+
+const modalStyles = StyleSheet.create({
+  overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center', padding: 24 },
+  card: { width: '100%', maxWidth: 360, borderRadius: 20, padding: 24, alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.25, shadowRadius: 16, elevation: 12 },
+  iconCircle: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
+  title: { fontSize: 22, fontWeight: '800', marginBottom: 4, letterSpacing: -0.5 },
+  subtitle: { fontSize: 13, marginBottom: 24 },
+  input: { width: '100%', borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15, marginBottom: 12 },
+  passRow: { width: '100%', borderWidth: 1, borderRadius: 12, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, marginBottom: 12 },
+  passInput: { flex: 1, paddingVertical: 12, fontSize: 15 },
+  eyeBtn: { padding: 4 },
+  errorRow: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 7, borderRadius: 8, marginBottom: 10, width: '100%' },
+  errorText: { color: '#FF4444', fontSize: 12, flex: 1 },
+  loginBtn: { width: '100%', paddingVertical: 14, borderRadius: 12, alignItems: 'center', marginBottom: 10 },
+  loginBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  cancelLink: { paddingVertical: 8 },
+  cancelText: { fontSize: 13 },
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 export default function SettingsScreen() {
   const { t } = useTranslation();
@@ -28,6 +167,24 @@ export default function SettingsScreen() {
   const { language, profile, setLanguage, updateProfile } = useSettingsStore();
   const isTr = language === 'tr';
   const [editingField, setEditingField] = useState<string | null>(null);
+
+  // ── Easter egg: 7 hızlı tıklama "Lionx Studio" yazısına ─────────────────
+  const [showEditorModal, setShowEditorModal] = useState(false);
+  const tapCountRef = useRef(0);
+  const tapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleStudioTap = () => {
+    tapCountRef.current += 1;
+    if (tapTimerRef.current) clearTimeout(tapTimerRef.current);
+    tapTimerRef.current = setTimeout(() => {
+      tapCountRef.current = 0;
+    }, 2000);
+    if (tapCountRef.current >= 7) {
+      tapCountRef.current = 0;
+      if (tapTimerRef.current) clearTimeout(tapTimerRef.current);
+      setShowEditorModal(true);
+    }
+  };
 
   const handleLanguageChange = (lang: Language) => {
     setLanguage(lang);
@@ -203,7 +360,7 @@ export default function SettingsScreen() {
         <InfoRow
           icon="information-circle-outline"
           label={t('settings.version')}
-          value="1.0.0"
+          value="1.1.2"
           theme={theme}
         />
         <View style={[styles.divider, { backgroundColor: theme.colors.divider }]} />
@@ -240,13 +397,23 @@ export default function SettingsScreen() {
         </TouchableOpacity>
 
         <View style={styles.footerTextContainer}>
-          <Text style={[styles.footerText, { color: theme.colors.textSecondary }]}>v.1.0.0</Text>
+          <Text style={[styles.footerText, { color: theme.colors.textSecondary }]}>v.1.1.2</Text>
           <Text style={[styles.footerText, { color: theme.colors.textSecondary }]}>2026 MaçServisi</Text>
-          <Text style={[styles.footerStudio, { color: theme.colors.primary }]}>Lionx Studio</Text>
+          <TouchableOpacity onPress={handleStudioTap} activeOpacity={1} hitSlop={{ top: 12, bottom: 12, left: 20, right: 20 }}>
+            <Text style={[styles.footerStudio, { color: theme.colors.primary }]}>Lionx Studio</Text>
+          </TouchableOpacity>
         </View>
       </View>
 
       <View style={{ height: 40 }} />
+
+      {/* Editör Giriş Modalı — easter egg */}
+      <EditorLoginModal
+        visible={showEditorModal}
+        onClose={() => setShowEditorModal(false)}
+        theme={theme}
+        isTr={isTr}
+      />
     </ScrollView>
   );
 }

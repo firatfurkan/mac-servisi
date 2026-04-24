@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
-import BrandMark from "../../src/components/common/BrandMark";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Image,
   ScrollView,
@@ -10,13 +10,13 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import BrandMark from "../../src/components/common/BrandMark";
 import { useAppTheme } from "../../src/hooks/useAppTheme";
 import { usePlayerFixtures } from "../../src/hooks/usePlayerFixtures";
 import { usePlayerProfile } from "../../src/hooks/usePlayerProfile";
-import { Match, PlayerSeason, PlayerTransfer } from "../../src/types";
 import { semanticColors } from "../../src/theme/tokens";
+import { Match, PlayerSeason, PlayerTransfer } from "../../src/types";
 import { formatMatchTime, toIstanbulDate, translateCountry } from "../../src/utils/matchUtils";
 
 type PlayerTab = "stats" | "career" | "transfers" | "matches";
@@ -265,7 +265,8 @@ export default function PlayerScreen() {
         },
       ]}
     >
-      <Text style={[styles.seasonYear, { color: theme.colors.primary }]}>
+      <Text style={[styles.seasonYear, { color: theme.dark ? '#4ADE80' : theme.colors.primary }]}>
+
         {formatSeason(item.season)}
       </Text>
       <TouchableOpacity
@@ -290,7 +291,7 @@ export default function PlayerScreen() {
       </TouchableOpacity>
       <Text style={[styles.statCell, { color: theme.colors.textPrimary }]}>{item.matches}</Text>
       <Text style={[styles.statCell, { color: theme.colors.textSecondary }]}>{item.starts}</Text>
-      <Text style={[styles.statCell, { color: item.goals > 0 ? semanticColors.win : theme.colors.textSecondary }]}>{item.goals}</Text>
+      <Text style={[styles.statCell, { color: item.goals > 0 ? (theme.dark ? '#4ADE80' : semanticColors.win) : theme.colors.textSecondary }]}>{item.goals}</Text>
       <Text style={[styles.statCell, { color: item.assists > 0 ? semanticColors.assist : theme.colors.textSecondary }]}>{item.assists}</Text>
       <Text style={[styles.statCell, { color: item.yellowCards > 0 ? semanticColors.draw : theme.colors.textSecondary }]}>{item.yellowCards}</Text>
       <Text style={[styles.statCell, { color: item.redCards > 0 ? semanticColors.loss : theme.colors.textSecondary }]}>{item.redCards}</Text>
@@ -445,8 +446,9 @@ export default function PlayerScreen() {
               {totalStats && (
                 <View style={styles.quickStats}>
                   <QuickStat label={isTr ? "Maç" : "Apps"} value={totalStats.matches} color={theme.colors.textPrimary} bg={theme.colors.surfaceVariant} />
-                  <QuickStat label={t("player.goals")} value={totalStats.goals} color={semanticColors.win} bg={semanticColors.win + "15"} />
-                  <QuickStat label={t("player.assists")} value={totalStats.assists} color={semanticColors.assist} bg={semanticColors.assist + "15"} />
+<QuickStat label={t("player.goals")} value={totalStats.goals} color={theme.dark ? '#4ADE80' : semanticColors.win} bg={theme.dark ? '#4ADE8020' : semanticColors.win + "15"} />
+<QuickStat label={t("player.assists")} value={totalStats.assists} color={theme.dark ? '#60A5FA' : semanticColors.assist} bg={theme.dark ? '#60A5FA20' : semanticColors.assist + "15"} />
+
                 </View>
               )}
             </View>

@@ -3,6 +3,8 @@
     "home": "Maçlar",
     "favorites": "Favoriler",
     "leagues": "Ligler",
+    "analysis": "Analiz Merkezi",
+    "arena": "Arena",
     "settings": "Ayarlar"
   },
   "home": {
@@ -70,8 +72,11 @@
     "injured": "Sakat",
     "doubtful": "Şüpheli",
     "commentaryNotStarted": "Henüz anlatım başlamadı",
-    "referee": "Hakem",
-    "assistantReferees": "Yardımcı Hakemler",
+    "referee": "Hakemler",
+    "mainReferee": "Baş Hakem",
+    "assistantReferee": "Yardımcı Hakem",
+    "fourthOfficial": "4. Hakem",
+    "varReferee": "VAR Hakemi",
     "broadcast": "Yayın Kanalları",
     "winner": "Öne Çıkan Senaryo",
     "lastHomeMatches": "{{name}} - Son Ev Maçları",
@@ -162,9 +167,11 @@
     "player": "Oyuncu",
     "table": "Puan Durumu",
     "topScorers": "Gol Krallığı",
+    "topAssists": "Asist Krallığı",
     "tableNotFound": "Puan durumu bulunamadı",
     "noStandingsThisSeason": "Bu sezon için puan durumu bulunmuyor",
     "topScorersNotFound": "Gol krallığı verisi bulunamadı",
+    "topAssistsNotFound": "Asist krallığı verisi bulunamadı",
     "win": "G",
     "draw": "B",
     "loss": "M",
@@ -176,7 +183,15 @@
     "vs": "vs",
     "played": "O",
     "goalDiff": "AV",
-    "points": "P"
+    "points": "P",
+    "bracketTab": "Eşleşmeler"
+  },
+  "bracket": {
+    "noBracket": "Bu turnuva için eleme ağacı bulunamadı",
+    "leg1": "1. Maç",
+    "leg2": "2. Maç",
+    "pen": "pen",
+    "tbd": "Belli Değil"
   },
   "player": {
     "notFound": "Oyuncu bilgisi bulunamadı",

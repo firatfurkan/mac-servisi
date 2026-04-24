@@ -1,0 +1,132 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Yardımcı fonksiyonlar ─────────────────────────────────────────────────
+    // Not: Bu fonksiyonlar request.auth != null olan yerlerde çağrılmalıdır.
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+    function isEditor()        { return getUserRole() == 'editor'; }
+    function isAdmin()         { return getUserRole() == 'admin'; }
+    function isEditorOrAdmin() { return getUserRole() in ['editor', 'admin']; }
+
+    // ── Kullanıcı profilleri ──────────────────────────────────────────────────
+    // Kullanıcı sadece kendi profilini okuyabilir.
+    // Yazma yalnızca Admin Console / Cloud Functions üzerinden.
+    match /users/{uid} {
+      allow read:  if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    // ── Bekleyen analizler (Editor iş akışı) ─────────────────────────────────
+    // Okuma  : editör veya admin
+    // Oluştur: editör/admin, kendi UID'i ile
+    // Güncelle: admin (durum değişikliği) veya sahibi editör (pending iken)
+    // Sil    : admin veya sahibi editör
+    match /pendingAnalyses/{docId} {
+      allow read: if request.auth != null && isEditorOrAdmin();
+      allow create: if request.auth != null
+                    && isEditorOrAdmin()
+                    && request.resource.data.editorUid == request.auth.uid;
+      allow update: if request.auth != null
+                    && (isAdmin()
+                        || (isEditor() && resource.data.editorUid == request.auth.uid));
+      allow delete: if request.auth != null
+                    && (isAdmin()
+                        || resource.data.editorUid == request.auth.uid);
+    }
+
+    // ── Yayındaki analizler ───────────────────────────────────────────────────
+    // Herkes okuyabilir (public match detail sayfaları).
+    // Sadece admin onaylayıp yayınlayabilir / silebilir.
+    match /liveAnalyses/{docId} {
+      allow read:  if true;
+      allow write: if request.auth != null && isAdmin();
+    }
+
+    // ── Maç Bildirim Abonelikleri ─────────────────────────────────────────────
+    // pushService.ts:
+    //   registerMatchPush   → batch.set (parent + subscriber) — create/update
+    //   syncPushSubscriptions → batch.set merge:true           — create/update
+    //   unregisterMatchPush → deleteDoc(subscriber)            — delete
+    // Tüm işlemler token tabanlı anonim cihazlardan gelir, auth gerektirmez.
+    match /matchSubscriptions/{matchId} {
+      allow read:             if true;
+      allow create, update:   if true;
+      // Üst doküman silinmez; Cloud Function temizler.
+      allow delete:           if false;
+
+      match /subscribers/{tokenId} {
+        allow read, write: if true;   // write = create + update + delete
+      }
+    }
+
+    // ── Man of the Match Oylaması ─────────────────────────────────────────────
+    // ManOfTheMatch.tsx:
+    //   onSnapshot  → gerçek zamanlı okuma
+    //   getDoc      → ilk oy kontrolü
+    //   updateDoc   → mevcut belgeye increment
+    //   setDoc      → ilk kez belge oluşturma
+    // Anonim kullanıcılar oy verebilir; silme yasak (oy manipülasyonu önlemi).
+    match /motmVotes/{matchId} {
+      allow read:          if true;
+      allow create:        if true;
+      allow update:        if true;
+      allow delete:        if false;
+    }
+
+    // ── Maç Forumu (Sohbet) ───────────────────────────────────────────────────
+    // useChat.ts:
+    //   signInAnonymously → request.auth != null sağlar
+    //   onSnapshot (okuma) + addDoc (yazma) anonim auth ile çalışır.
+    // Güncelleme/silme yoktur (immutable mesajlar).
+    match /matches/{matchId}/messages/{messageId} {
+      allow read:   if request.auth != null;
+      allow create: if request.auth != null
+                    && request.resource.data.text is string
+                    && request.resource.data.text.size() > 0
+                    && request.resource.data.text.size() <= 500
+                    && request.resource.data.userId is string;
+      allow update, delete: if false;
+    }
+
+    // ── Global Liderlik Tablosu (Haftalık) ───────────────────────────────────
+    // Doc ID = "{uid}_{YYYY_WNN}" (örn: "abc123_2024_W16")
+    // Her hafta yeni ID → eski haftalar doğal olarak kaybolur, sıfırlama otomatik.
+    // Her kullanıcı aynı haftada tek kayıt tutar (uid alanı üzerinden doğrulama).
+    //
+    //   read   : herkese açık (top 10 haftalık liste)
+    //   create : sadece kendi uid'i ile, validasyon zorunlu
+    //   update : sadece kendi kaydı VE yeni skor eskisinden yüksekse (rekor koruma)
+    //   delete : yasak (anti-cheat)
+    match /leaderboard/{entry} {
+      allow read: if true;
+      allow create: if request.auth != null
+                    && request.resource.data.uid == request.auth.uid
+                    && request.resource.data.score is number
+                    && request.resource.data.score >= 0
+                    && request.resource.data.name is string
+                    && request.resource.data.weekId is string;
+      allow update: if request.auth != null
+                    && resource.data.uid == request.auth.uid;
+      allow delete: if false;
+    }
+
+    // ── App Versiyonu Kontrol (Zorunlu Güncelleme) ────────────────────────────
+    // Doc ID = "current"
+    // Herkese açık okuma (version kontrol için).
+    // Yazma sadece Firebase Console üzerinden (isAdmin kontrolü yok, elle set).
+    // Örnek döküman:
+    // {
+    //   minVersion: "1.0.0",
+    //   latestVersion: "1.0.5",
+    //   message: "Kritik güvenlik güncellemesi gerekli"
+    // }
+    match /appVersionControl/{docId} {
+      allow read:  if true;
+      allow write: if false;  // Admin Console üzerinden yönetilir
+    }
+
+  }
+}

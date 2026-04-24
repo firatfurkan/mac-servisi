@@ -1,8 +1,8 @@
-import * as Notifications from 'expo-notifications';
-import { Platform } from 'react-native';
-import { doc, setDoc, deleteDoc, writeBatch, serverTimestamp } from 'firebase/firestore';
-import { db } from './firebase';
 import Constants from 'expo-constants';
+import * as Notifications from 'expo-notifications';
+import { deleteDoc, doc, serverTimestamp, writeBatch } from 'firebase/firestore';
+import { Platform } from 'react-native';
+import { db } from './firebase';
 
 let cachedToken: string | null = null;
 
@@ -45,12 +45,20 @@ export async function registerMatchPush(matchId: string, startTime?: string): Pr
 }
 
 export async function unregisterMatchPush(matchId: string): Promise<void> {
-  const token = await getPushToken();
-  if (!token) return;
   try {
+    const token = await getPushToken();
+
+     // Token alınamazsa işlem yapma (güvenlik hatasını engeller)
+    if (!token) {
+      return;
+    }
+
+
     const ref = doc(db, 'matchSubscriptions', matchId, 'subscribers', encodeToken(token));
     await deleteDoc(ref);
-  } catch {}
+  } catch (err) {
+    if (__DEV__) console.error(`Failed to unregister match push ${matchId}:`, err);
+  }
 }
 
 export interface MatchMeta { id: string; startTime?: string }

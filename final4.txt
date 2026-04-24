@@ -1,0 +1,122 @@
+=== Hamburg_p2 p2/3 ===
+  1827: B. Hrgota
+  25026: R. Massimo
+  25384: E. Prib
+  25437: F. Higl
+  25452: N. Gießelmann
+  25802: L. Grill
+  26521: O. Kiomourtzoglou
+  108575: J. Mause
+  119204: D. Michalski
+  125681: J. Consbruch
+  162485: M. Schulze
+  196500: N. Futkeu
+  202909: K. Çalhanoğlu
+  203333: D. Angleberger
+  280337: N. Motika
+  282953: O. Mhamdi
+  327973: P. Müller
+  341246: Leander Nicolas Popp
+  364997: Matti Wagner
+  433089: Denis Pfaffenrot
+
+=== Hamburg_p3 p3/3 ===
+  19087: D. Srbeny
+  24867: G. Jung
+  202729: M. Mustapha
+
+=== Como_p2 p2/3 ===
+  7755: D. Cancola
+  30633: Raúl Asencio
+  30650: L. Ghiringhelli
+  31133: E. Lancini
+  31143: L. Morosini
+  31184: S. Ganz
+  31239: E. Jelenič
+  31411: S. Minelli
+  32162: R. Ranieri
+  56273: M. Anzolin
+  61501: A. Pálsson
+  107116: L. Koblar
+  161974: M. Da Graca
+  290688: O. Khailoti
+  335112: Tommaso Maressa
+  378969: N. Camolese
+  384496: A. Cannavaro
+  419041: L. Gagliardi
+  432055: A. Hemsley
+  484011: E. Negri
+
+=== Como_p3 p3/3 ===
+  30819: A. Desjardins
+  31729: D. Riccardi
+  32094: D. Bertoncini
+  341836: F. Migliardi
+
+=== Marseille_p3 p3/4 ===
+  272: A. Rabiot
+  412: A. Harit
+  926: G. Kondogbia
+  943: U. Garcia
+  1775: S. Gigot
+  1847: Luiz Felipe
+  7318: A. Dedić
+  10077: Luis Henrique
+  30525: Pol Lirola
+  36827: J. de Lange
+  47296: G. Rulli
+  47426: Rubén Blanco
+  102447: F. Moumbagna
+  126757: L. Brassier
+  145060: S. Ngapandouetnbu
+  161929: K. de La Fuente
+  162707: E. Wahi
+  322879: R. Nyakossi
+  336654: J. Van Neck
+  341646: V. Carboni
+
+=== Marseille_p4 p4/4 ===
+  6: L. Balerdi
+  375: C. Mbemba
+  896: A. Gomes
+  897: M. Greenwood
+  1465: P. Aubameyang
+  1557: Pau López
+  2218: I. Sarr
+  2735: P. Højbjerg
+  3173: I. Bennacer
+  19364: N. Maupay
+  30409: J. Veretout
+  51295: D. Cornelius
+  278095: J. Rowe
+
+=== RealSociedad_p3 p3/4 ===
+  1439: Héctor Bellerín
+  1450: S. Papastathopoulos
+  1578: G. Lo Celso
+  1631: R. Rodríguez
+  1697: Pablo Fornals
+  2469: G. Pezzella
+  9971: Antony
+  18812: Adrián
+  20600: R. Perraud
+  46672: Rui Silva
+  47302: Diego Llorente
+  47320: Juanmi
+  47341: Marc Roca
+  47348: Borja Iglesias
+  47582: C. Hernández
+  195100: Natan
+  340279: Vitor Roque
+  400948: Assane Diao
+  413502: Mateo Flores
+  443162: Jesús Rodríguez
+
+=== Bournemouth_p3 p3/3 ===
+  104: Carlos Vinícius
+  946: K. Mbabu
+  2294: Willian
+  19023: T. Ream
+  19043: T. Kongolo
+  327738: L. De Fougerolles
+

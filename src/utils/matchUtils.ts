@@ -4,172 +4,172 @@ import { Match } from "../types";
 // API-Sports İngilizce isim döndürür; Türkçe seçildiğinde bu harita kullanılır.
 const TEAM_NAMES_TR: Record<string, string> = {
   // ── Avrupa ──────────────────────────────────────────────────────────────
-  "albania": "Arnavutluk",
-  "andorra": "Andorra",
-  "armenia": "Ermenistan",
-  "austria": "Avusturya",
-  "azerbaijan": "Azerbaycan",
-  "belarus": "Belarus",
-  "belgium": "Belçika",
-  "bosnia": "Bosna Hersek",
+  albania: "Arnavutluk",
+  andorra: "Andorra",
+  armenia: "Ermenistan",
+  austria: "Avusturya",
+  azerbaijan: "Azerbaycan",
+  belarus: "Belarus",
+  belgium: "Belçika",
+  bosnia: "Bosna Hersek",
   "bosnia and herzegovina": "Bosna Hersek",
   "bosnia & herzegovina": "Bosna Hersek",
-  "bulgaria": "Bulgaristan",
-  "croatia": "Hırvatistan",
-  "cyprus": "Kıbrıs",
+  bulgaria: "Bulgaristan",
+  croatia: "Hırvatistan",
+  cyprus: "Kıbrıs",
   "czech republic": "Çek Cumhuriyeti",
-  "czechia": "Çek Cumhuriyeti",
-  "denmark": "Danimarka",
-  "england": "İngiltere",
-  "estonia": "Estonya",
+  czechia: "Çek Cumhuriyeti",
+  denmark: "Danimarka",
+  england: "İngiltere",
+  estonia: "Estonya",
   "faroe islands": "Faroe Adaları",
-  "finland": "Finlandiya",
-  "france": "Fransa",
-  "georgia": "Gürcistan",
-  "germany": "Almanya",
-  "gibraltar": "Cebelitarık",
-  "greece": "Yunanistan",
-  "hungary": "Macaristan",
-  "iceland": "İzlanda",
-  "ireland": "İrlanda",
+  finland: "Finlandiya",
+  france: "Fransa",
+  georgia: "Gürcistan",
+  germany: "Almanya",
+  gibraltar: "Cebelitarık",
+  greece: "Yunanistan",
+  hungary: "Macaristan",
+  iceland: "İzlanda",
+  ireland: "İrlanda",
   "rep of ireland": "İrlanda",
   "rep. of ireland": "İrlanda",
   "republic of ireland": "İrlanda",
-  "israel": "İsrail",
-  "italy": "İtalya",
-  "kazakhstan": "Kazakistan",
-  "kosovo": "Kosova",
-  "latvia": "Letonya",
-  "liechtenstein": "Lihtenştayn",
-  "lithuania": "Litvanya",
-  "luxembourg": "Lüksemburg",
-  "malta": "Malta",
-  "moldova": "Moldova",
-  "montenegro": "Karadağ",
-  "netherlands": "Hollanda",
+  israel: "İsrail",
+  italy: "İtalya",
+  kazakhstan: "Kazakistan",
+  kosovo: "Kosova",
+  latvia: "Letonya",
+  liechtenstein: "Lihtenştayn",
+  lithuania: "Litvanya",
+  luxembourg: "Lüksemburg",
+  malta: "Malta",
+  moldova: "Moldova",
+  montenegro: "Karadağ",
+  netherlands: "Hollanda",
   "north macedonia": "Kuzey Makedonya",
   "northern ireland": "Kuzey İrlanda",
-  "norway": "Norveç",
-  "poland": "Polonya",
-  "portugal": "Portekiz",
-  "romania": "Romanya",
-  "russia": "Rusya",
+  norway: "Norveç",
+  poland: "Polonya",
+  portugal: "Portekiz",
+  romania: "Romanya",
+  russia: "Rusya",
   "san marino": "San Marino",
-  "scotland": "İskoçya",
-  "serbia": "Sırbistan",
-  "slovakia": "Slovakya",
-  "slovenia": "Slovenya",
-  "spain": "İspanya",
-  "sweden": "İsveç",
-  "switzerland": "İsviçre",
-  "turkey": "Türkiye",
-  "ukraine": "Ukrayna",
-  "wales": "Galler",
+  scotland: "İskoçya",
+  serbia: "Sırbistan",
+  slovakia: "Slovakya",
+  slovenia: "Slovenya",
+  spain: "İspanya",
+  sweden: "İsveç",
+  switzerland: "İsviçre",
+  turkey: "Türkiye",
+  ukraine: "Ukrayna",
+  wales: "Galler",
   // ── Güney Amerika ──────────────────────────────────────────────────────
-  "argentina": "Arjantin",
-  "bolivia": "Bolivya",
-  "brazil": "Brezilya",
-  "chile": "Şili",
-  "colombia": "Kolombiya",
-  "ecuador": "Ekvador",
-  "paraguay": "Paraguay",
-  "peru": "Peru",
-  "uruguay": "Uruguay",
-  "venezuela": "Venezuela",
+  argentina: "Arjantin",
+  bolivia: "Bolivya",
+  brazil: "Brezilya",
+  chile: "Şili",
+  colombia: "Kolombiya",
+  ecuador: "Ekvador",
+  paraguay: "Paraguay",
+  peru: "Peru",
+  uruguay: "Uruguay",
+  venezuela: "Venezuela",
   // ── Kuzey/Orta Amerika & Karayipler ─────────────────────────────────
-  "canada": "Kanada",
+  canada: "Kanada",
   "costa rica": "Kosta Rika",
-  "cuba": "Küba",
+  cuba: "Küba",
   "el salvador": "El Salvador",
-  "guatemala": "Guatemala",
-  "haiti": "Haiti",
-  "honduras": "Honduras",
-  "jamaica": "Jamaika",
-  "mexico": "Meksika",
-  "nicaragua": "Nikaragua",
-  "panama": "Panama",
+  guatemala: "Guatemala",
+  haiti: "Haiti",
+  honduras: "Honduras",
+  jamaica: "Jamaika",
+  mexico: "Meksika",
+  nicaragua: "Nikaragua",
+  panama: "Panama",
   "trinidad and tobago": "Trinidad ve Tobago",
   "trinidad & tobago": "Trinidad ve Tobago",
   "united states": "ABD",
-  "usa": "ABD",
+  usa: "ABD",
   // ── Afrika ─────────────────────────────────────────────────────────
-  "algeria": "Cezayir",
-  "angola": "Angola",
+  algeria: "Cezayir",
+  angola: "Angola",
   "burkina faso": "Burkina Faso",
-  "cameroon": "Kamerun",
+  cameroon: "Kamerun",
   "cape verde": "Yeşil Burun Adaları",
   "central african rep.": "Orta Afrika Cumhuriyeti",
   "central african republic": "Orta Afrika Cumhuriyeti",
-  "comoros": "Komoros",
+  comoros: "Komoros",
   "côte d'ivoire": "Fildişi Sahili",
   "ivory coast": "Fildişi Sahili",
   "dr congo": "Demokratik Kongo Cumhuriyeti",
-  "egypt": "Mısır",
-  "ethiopia": "Etiyopya",
-  "gabon": "Gabon",
-  "gambia": "Gambiya",
-  "ghana": "Gana",
-  "guinea": "Gine",
-  "kenya": "Kenya",
-  "libya": "Libya",
-  "madagascar": "Madagaskar",
-  "mali": "Mali",
-  "mauritania": "Moritanya",
-  "morocco": "Fas",
-  "mozambique": "Mozambik",
-  "namibia": "Namibya",
-  "niger": "Nijer",
-  "nigeria": "Nijerya",
-  "senegal": "Senegal",
+  egypt: "Mısır",
+  ethiopia: "Etiyopya",
+  gabon: "Gabon",
+  gambia: "Gambiya",
+  ghana: "Gana",
+  guinea: "Gine",
+  kenya: "Kenya",
+  libya: "Libya",
+  madagascar: "Madagaskar",
+  mali: "Mali",
+  mauritania: "Moritanya",
+  morocco: "Fas",
+  mozambique: "Mozambik",
+  namibia: "Namibya",
+  niger: "Nijer",
+  nigeria: "Nijerya",
+  senegal: "Senegal",
   "sierra leone": "Sierra Leone",
   "south africa": "Güney Afrika",
-  "sudan": "Sudan",
-  "tanzania": "Tanzanya",
-  "togo": "Togo",
-  "tunisia": "Tunus",
-  "uganda": "Uganda",
-  "zambia": "Zambiya",
-  "zimbabwe": "Zimbabve",
+  sudan: "Sudan",
+  tanzania: "Tanzanya",
+  togo: "Togo",
+  tunisia: "Tunus",
+  uganda: "Uganda",
+  zambia: "Zambiya",
+  zimbabwe: "Zimbabve",
   // ── Asya ──────────────────────────────────────────────────────────
-  "afghanistan": "Afganistan",
-  "australia": "Avustralya",
-  "bahrain": "Bahreyn",
-  "china": "Çin",
+  afghanistan: "Afganistan",
+  australia: "Avustralya",
+  bahrain: "Bahreyn",
+  china: "Çin",
   "china pr": "Çin",
   "hong kong": "Hong Kong",
-  "india": "Hindistan",
-  "indonesia": "Endonezya",
-  "iran": "İran",
+  india: "Hindistan",
+  indonesia: "Endonezya",
+  iran: "İran",
   "ir iran": "İran",
-  "iraq": "Irak",
-  "japan": "Japonya",
-  "jordan": "Ürdün",
+  iraq: "Irak",
+  japan: "Japonya",
+  jordan: "Ürdün",
   "korea dpr": "Kuzey Kore",
   "korea republic": "Güney Kore",
   "south korea": "Güney Kore",
-  "kuwait": "Kuveyt",
-  "kyrgyzstan": "Kırgızistan",
-  "lebanon": "Lübnan",
-  "malaysia": "Malezya",
-  "myanmar": "Miyanmar",
+  kuwait: "Kuveyt",
+  kyrgyzstan: "Kırgızistan",
+  lebanon: "Lübnan",
+  malaysia: "Malezya",
+  myanmar: "Miyanmar",
   "new zealand": "Yeni Zelanda",
   "north korea": "Kuzey Kore",
-  "oman": "Umman",
-  "pakistan": "Pakistan",
-  "palestine": "Filistin",
-  "philippines": "Filipinler",
-  "qatar": "Katar",
+  oman: "Umman",
+  pakistan: "Pakistan",
+  palestine: "Filistin",
+  philippines: "Filipinler",
+  qatar: "Katar",
   "saudi arabia": "Suudi Arabistan",
-  "singapore": "Singapur",
-  "syria": "Suriye",
-  "tajikistan": "Tacikistan",
-  "thailand": "Tayland",
-  "turkmenistan": "Türkmenistan",
+  singapore: "Singapur",
+  syria: "Suriye",
+  tajikistan: "Tacikistan",
+  thailand: "Tayland",
+  turkmenistan: "Türkmenistan",
   "united arab emirates": "Birleşik Arap Emirlikleri",
-  "uae": "Birleşik Arap Emirlikleri",
-  "uzbekistan": "Özbekistan",
-  "vietnam": "Vietnam",
-  "yemen": "Yemen",
+  uae: "Birleşik Arap Emirlikleri",
+  uzbekistan: "Özbekistan",
+  vietnam: "Vietnam",
+  yemen: "Yemen",
 };
 
 /**
@@ -186,17 +186,17 @@ export function translateTeamName(name: string, lang: string): string {
 // ─── Ülke / Kıta İsimleri (lig country alanı için) ─────────────────────────
 // TEAM_NAMES_TR zaten çoğu ülkeyi kapsıyor; burada eksik kalanlar ekleniyor.
 const EXTRA_COUNTRY_TR: Record<string, string> = {
-  "world": "Dünya",
-  "europe": "Avrupa",
+  world: "Dünya",
+  europe: "Avrupa",
   "south america": "Güney Amerika",
   "north america": "Kuzey Amerika",
   "central america": "Orta Amerika",
-  "africa": "Afrika",
-  "asia": "Asya",
-  "oceania": "Okyanusya",
-  "concacaf": "CONCACAF",
-  "conmebol": "CONMEBOL",
-  "international": "Uluslararası",
+  africa: "Afrika",
+  asia: "Asya",
+  oceania: "Okyanusya",
+  concacaf: "CONCACAF",
+  conmebol: "CONMEBOL",
+  international: "Uluslararası",
 };
 
 /** Ülke/kıta adını Türkçeye çevirir (lig ülkesi için). */
@@ -212,12 +212,14 @@ const LEAGUE_NAMES_TR: Record<string, string> = {
   "fifa world cup": "FIFA Dünya Kupası",
   "world cup": "Dünya Kupası",
   "world cup - qualification europe": "Dünya Kupası Elemeleri - Avrupa",
-  "world cup - qualification south america": "Dünya Kupası Elemeleri - Güney Amerika",
+  "world cup - qualification south america":
+    "Dünya Kupası Elemeleri - Güney Amerika",
   "world cup - qualification asia": "Dünya Kupası Elemeleri - Asya",
   "world cup - qualification africa": "Dünya Kupası Elemeleri - Afrika",
   "world cup - qualification concacaf": "Dünya Kupası Elemeleri - CONCACAF",
   "world cup - qualification oceania": "Dünya Kupası Elemeleri - Okyanusya",
-  "world cup - qualification intercontinental": "Dünya Kupası Elemeleri - Kıtalar Arası",
+  "world cup - qualification intercontinental":
+    "Dünya Kupası Elemeleri - Kıtalar Arası",
   "world cup - qualification": "Dünya Kupası Elemeleri",
   // ── UEFA ──────────────────────────────────────────────────────────────
   "uefa champions league": "UEFA Şampiyonlar Ligi",
@@ -246,7 +248,7 @@ const LEAGUE_NAMES_TR: Record<string, string> = {
   "türkiye süper kupası": "Türkiye Süper Kupası",
   // ── İngiltere ─────────────────────────────────────────────────────────
   "premier league": "Premier Lig",
-  "championship": "Championship",
+  championship: "Championship",
   "league one": "League One",
   "league two": "League Two",
   "fa cup": "FA Kupası",
@@ -259,11 +261,11 @@ const LEAGUE_NAMES_TR: Record<string, string> = {
   "copa del rey": "Copa del Rey",
   "supercopa de españa": "İspanya Süper Kupası",
   // ── Almanya ────────────────────────────────────────────────────────────
-  "bundesliga": "Bundesliga",
+  bundesliga: "Bundesliga",
   "2. bundesliga": "2. Bundesliga",
   "dfb pokal": "DFB Kupası",
   "dfb-pokal": "DFB Kupası",
-  "supercup": "Almanya Süper Kupası",
+  supercup: "Almanya Süper Kupası",
   // ── İtalya ─────────────────────────────────────────────────────────────
   "serie a": "Serie A",
   "serie b": "Serie B",
@@ -275,7 +277,7 @@ const LEAGUE_NAMES_TR: Record<string, string> = {
   "coupe de france": "Fransa Kupası",
   "trophée des champions": "Fransa Süper Kupası",
   // ── Hollanda ───────────────────────────────────────────────────────────
-  "eredivisie": "Eredivisie",
+  eredivisie: "Eredivisie",
   "eerste divisie": "Eerste Divisie",
   "knvb cup": "KNVB Kupası",
   // ── Portekiz ───────────────────────────────────────────────────────────
@@ -287,7 +289,7 @@ const LEAGUE_NAMES_TR: Record<string, string> = {
   "pro league": "Belçika Pro Ligi",
   "belgian first division a": "Belçika 1. Ligi",
   // ── İskoçya ────────────────────────────────────────────────────────────
-  "premiership": "İskoçya Premier Ligi",
+  premiership: "İskoçya Premier Ligi",
   "scottish premiership": "İskoçya Premier Ligi",
   "scottish fa cup": "İskoçya FA Kupası",
   // ── Rusya ──────────────────────────────────────────────────────────────
@@ -303,7 +305,7 @@ const LEAGUE_NAMES_TR: Record<string, string> = {
   "liga profesional argentina": "Arjantin Profesyonel Ligi",
   // ── Afrika ─────────────────────────────────────────────────────────────
   "africa cup of nations": "Afrika Uluslar Kupası",
-  "afcon": "Afrika Uluslar Kupası",
+  afcon: "Afrika Uluslar Kupası",
   "africa cup of nations - qualification": "Afrika Uluslar Kupası Elemeleri",
   "caf champions league": "CAF Şampiyonlar Ligi",
   // ── Asya ───────────────────────────────────────────────────────────────
@@ -312,8 +314,8 @@ const LEAGUE_NAMES_TR: Record<string, string> = {
   "asian cup - qualification": "Asya Kupası Elemeleri",
   "afc asian cup": "AFC Asya Kupası",
   // ── Diğer Uluslararası ─────────────────────────────────────────────────
-  "friendly": "Hazırlık Maçı",
-  "friendlies": "Hazırlık Maçları",
+  friendly: "Hazırlık Maçı",
+  friendlies: "Hazırlık Maçları",
   "international friendly": "Uluslararası Hazırlık Maçı",
   "club friendly": "Kulüp Hazırlık Maçı",
   "club friendlies": "Kulüp Hazırlık Maçları",
@@ -355,7 +357,25 @@ export function formatMatchTime(startTime: string): string {
 /** Eleme turu mu? (Tur atlama rozeti göstermek için) */
 export function isKnockoutRound(round?: string): boolean {
   if (!round) return false;
-  const r = round.toLowerCase();
+  const r = round.toLowerCase().trim();
+
+  // ── Hard exclusions: pre-tournament phases, promotion play-offs ──────────
+  if (
+    r.includes("qualifying") ||
+    r.includes("preliminary") ||
+    r.includes("qualification") ||
+    r.includes("promotion") ||
+    r.includes("league stage") ||
+    r.includes("league phase") ||
+    r.includes("group stage")
+  ) return false;
+
+  // "Play-off Round" / "Playoff Round" is a qualifying play-off, NOT the main
+  // knockout draw — reject it even though it contains "play-off".
+  // Also catches "Play-off Round - 1st Leg" etc. via startsWith.
+  if (r.startsWith("play-off round") || r.startsWith("playoff round")) return false;
+
+  // ── Accept main-draw knockout rounds ──────────────────────────────────────
   return (
     r.includes("final") ||
     r.includes("semi") ||
@@ -384,13 +404,17 @@ const ROUND_TR: [string, string][] = [
   ["Group Stage", "Grup Aşaması"],
   ["Preliminary Round", "Ön Eleme"],
   ["Qualifying Round", "Ön Eleme"],
-  ["Play-offs", "Playoff"],
+  ["Play-offs", "Son 32"],
+  ["Play-Offs", "Son 32"],
   ["Playoff Round", "Playoff"],
   ["Regular Season", "Normal Sezon"],
   ["League Stage", "Lig Aşaması"],
 ];
 
-export function translateRound(round: string | undefined, lang: string): string {
+export function translateRound(
+  round: string | undefined,
+  lang: string,
+): string {
   if (!round) return "";
   if (lang !== "tr") return round;
 
@@ -403,14 +427,19 @@ export function translateRound(round: string | undefined, lang: string): string 
   }
 
   // "Regular Season - 28" / "Regular Season - Round 28" → "28. Hafta" / "Hafta 28"
-  const regularWeekMatch = round.match(/Regular Season\s*[-–]\s*(?:Round\s+)?(\d+)$/i);
+  const regularWeekMatch = round.match(
+    /Regular Season\s*[-–]\s*(?:Round\s+)?(\d+)$/i,
+  );
   if (regularWeekMatch) return `${regularWeekMatch[1]}. Hafta`;
 
   // "Regular Season - ..." (diğer tüm Regular Season alt tipleri)
-  if (round.startsWith("Regular Season")) return round.replace("Regular Season", "Normal Sezon");
+  if (round.startsWith("Regular Season"))
+    return round.replace("Regular Season", "Normal Sezon");
 
   // "League Stage - Round X" → "Lig Aşaması - Hafta X"
-  const leagueRoundMatch = round.match(/League Stage\s*[-–]\s*(?:Round\s+)?(\d+)$/i);
+  const leagueRoundMatch = round.match(
+    /League Stage\s*[-–]\s*(?:Round\s+)?(\d+)$/i,
+  );
   if (leagueRoundMatch) return `Lig Aşaması - ${leagueRoundMatch[1]}. Hafta`;
 
   // "Group X" / "group-X" → "Grup X"
@@ -418,7 +447,9 @@ export function translateRound(round: string | undefined, lang: string): string 
   if (groupMatch) return `Grup ${groupMatch[1]}`;
 
   // "Regular Season - Group X" → "Grup X"
-  const regularGroupMatch = round.match(/Regular Season\s*[-–]\s*[Gg]roup[\s\-_]*(\S+)$/i);
+  const regularGroupMatch = round.match(
+    /Regular Season\s*[-–]\s*[Gg]roup[\s\-_]*(\S+)$/i,
+  );
   if (regularGroupMatch) return `Grup ${regularGroupMatch[1]}`;
 
   // "1st Leg" / "2nd Leg" suffix içeriyorsa base'i çevir
@@ -463,7 +494,7 @@ export function isSingleLegKnockout(round?: string): boolean {
   if (!round) return false;
   const r = round.toLowerCase();
   // "Final" ve "3rd Place Final" tek maçtır
-  return (r === "final" || r.includes("3rd place"));
+  return r === "final" || r.includes("3rd place");
 }
 
 /**
@@ -500,21 +531,32 @@ export function getAggregateAdvancer(
   // Aggregate skor hesapla (match.home takımı perspektifinden)
   const aggHome =
     (match.homeScore ?? 0) +
-    (thisHomeIsPairedHome ? (pairedMatch.homeScore ?? 0) : (pairedMatch.awayScore ?? 0));
+    (thisHomeIsPairedHome
+      ? (pairedMatch.homeScore ?? 0)
+      : (pairedMatch.awayScore ?? 0));
   const aggAway =
     (match.awayScore ?? 0) +
-    (thisHomeIsPairedHome ? (pairedMatch.awayScore ?? 0) : (pairedMatch.homeScore ?? 0));
+    (thisHomeIsPairedHome
+      ? (pairedMatch.awayScore ?? 0)
+      : (pairedMatch.homeScore ?? 0));
 
   // 2nd leg'de penaltı atıldıysa (aggregate berabere)
   const secondLeg = isThisSecondLeg ? match : pairedMatch;
-  if (secondLeg.scorePenalty?.home != null && secondLeg.scorePenalty?.away != null) {
+  if (
+    secondLeg.scorePenalty?.home != null &&
+    secondLeg.scorePenalty?.away != null
+  ) {
     // Penaltı skorunu bu maçın home/away perspektifine çevir
     const penHome = isThisSecondLeg
       ? secondLeg.scorePenalty.home
-      : (match.homeTeam.id === secondLeg.homeTeam.id ? secondLeg.scorePenalty.home : secondLeg.scorePenalty.away);
+      : match.homeTeam.id === secondLeg.homeTeam.id
+        ? secondLeg.scorePenalty.home
+        : secondLeg.scorePenalty.away;
     const penAway = isThisSecondLeg
       ? secondLeg.scorePenalty.away
-      : (match.homeTeam.id === secondLeg.homeTeam.id ? secondLeg.scorePenalty.away : secondLeg.scorePenalty.home);
+      : match.homeTeam.id === secondLeg.homeTeam.id
+        ? secondLeg.scorePenalty.away
+        : secondLeg.scorePenalty.home;
     if (penHome > penAway) return "home";
     if (penAway > penHome) return "away";
   }
@@ -591,8 +633,80 @@ export function groupKey(match: Match): string {
   if (isKnockoutRound(round)) return `${match.league.id}__${round}`;
   // "Regular Season - Group A" / "Group 1" gibi grup ayrımlarını key'e ekle
   const groupPart = round.match(/[Gg]roup[\s\-_]*(\S+)/)?.[1];
-  if (groupPart) return `${match.league.id}__${match.league.name}__group_${groupPart}`;
+  if (groupPart)
+    return `${match.league.id}__${match.league.name}__group_${groupPart}`;
   return `${match.league.id}__${match.league.name}`;
+}
+
+// ─── Lig Öncelik Sıralaması ───────────────────────────────────────────────────
+// Maçlar ekranı ve Analiz Merkezi'nde liglerin gösterim sırası.
+// Listede olmayan ligler en sona, aralarında başlangıç saatine göre sıralanır.
+export const PRIORITY_LEAGUES = [
+  // ─── Türkiye Zirvesi ───
+  "203", // Süper Lig
+  "552", // Türkiye Kupası (grup aşaması)
+  "206", // Türkiye Kupası (eleme turları)
+  "204", // Türkiye 1. Lig
+  "205", // Türkiye 2. Lig
+  // ─── Avrupa Dev Kupaları ───
+  "2",   // Şampiyonlar Ligi
+  "3",   // Avrupa Ligi
+  "848", // Konferans Ligi
+  // ─── Milli Takım ───
+  "1",   // FIFA Dünya Kupası
+  "4",   // Avrupa Şampiyonası (EURO)
+  "5",   // UEFA Uluslar Ligi
+  "6",   // Avrupa Şampiyonası Elemeleri
+  "32",  // Dünya Kupası Elemeleri - Avrupa
+  "34",  // Dünya Kupası Elemeleri - Güney Amerika
+  "9",   // Copa America
+  "33",  // Afrika Uluslar Kupası (AFCON)
+  // ─── Majör Ligler ───
+  "39",  // Premier League
+  "140", // La Liga
+  "135", // Serie A
+  "78",  // Bundesliga
+  "61",  // Ligue 1
+  "94",  // Portekiz Primeira Liga
+  // ─── Majör Kupalar (ayrı blok) ───
+  "45",  // FA Cup
+  "143", // Copa del Rey
+  "137", // Coppa Italia
+  "81",  // DFB Pokal
+  "66",  // Coupe de France
+  "96",  // Portekiz Kupası
+  // ─── İkinci Katman ───
+  "40",  // Championship (EFL)
+  "141", // Segunda División
+  "136", // Serie B
+  "79",  // 2. Bundesliga
+  "62",  // Ligue 2
+  "88",  // Hollanda Eredivisie
+  "144", // Belçika Pro League
+  "205", // Türkiye 2. Lig
+  "531", // UEFA Süper Kupası
+  "551", // Türkiye Süper Kupa
+];
+
+/**
+ * Ligleri PRIORITY_LEAGUES sırasına göre sıralar.
+ * Listede olmayan ligler en sona, ilk maçın başlangıç saatine göre sıralanır.
+ * leagueId: string (ligin id'si)
+ * firstMatchTime: o ligdeki ilk maçın startTime string'i (fallback sort için)
+ */
+export function sortLeaguesByPriority<T extends { leagueId: string; firstMatchTime?: string }>(
+  leagues: T[],
+): T[] {
+  return [...leagues].sort((a, b) => {
+    const ai = PRIORITY_LEAGUES.indexOf(a.leagueId);
+    const bi = PRIORITY_LEAGUES.indexOf(b.leagueId);
+    if (ai !== -1 && bi !== -1) return ai - bi;
+    if (ai !== -1) return -1;
+    if (bi !== -1) return 1;
+    const at = new Date(a.firstMatchTime ?? "").getTime();
+    const bt = new Date(b.firstMatchTime ?? "").getTime();
+    return at - bt;
+  });
 }
 
 export function groupMatchesByLeague(
@@ -623,7 +737,10 @@ export function groupMatchesByLeague(
   return grouped;
 }
 
-export function formatPlayerName(fullName: string, nationality?: string): string {
+export function formatPlayerName(
+  fullName: string,
+  nationality?: string,
+): string {
   if (!fullName || fullName.trim() === "") return fullName;
   const isTurkish = nationality === "Turkey";
   const maxLen = 14;
@@ -652,15 +769,30 @@ export function formatPlayerName(fullName: string, nationality?: string): string
   return `${firstName[0]}. ${lastPart}`;
 }
 
-
-function applyTurkishTerms(text: string, homeTeamName?: string, awayTeamName?: string): string {
+function applyTurkishTerms(
+  text: string,
+  homeTeamName?: string,
+  awayTeamName?: string,
+): string {
   let t = text;
   // Milli takım maçları: gerçek takım adını ev sahibi/deplasman ile değiştir
   if (homeTeamName) {
-    t = t.replace(new RegExp(`\\b${homeTeamName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "gi"), "ev sahibi");
+    t = t.replace(
+      new RegExp(
+        `\\b${homeTeamName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`,
+        "gi",
+      ),
+      "ev sahibi",
+    );
   }
   if (awayTeamName) {
-    t = t.replace(new RegExp(`\\b${awayTeamName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "gi"), "deplasman");
+    t = t.replace(
+      new RegExp(
+        `\\b${awayTeamName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`,
+        "gi",
+      ),
+      "deplasman",
+    );
   }
   return t
     .replace(/\bdouble chance\b/gi, "çifte şans")
@@ -733,7 +865,10 @@ export function translatePrediction(
   }
 }
 
-export function translateH2H(text: string | undefined | null, language: string): string {
+export function translateH2H(
+  text: string | undefined | null,
+  language: string,
+): string {
   if (!text) return "";
   if (language !== "tr") return text;
 
@@ -765,8 +900,109 @@ export function translateH2H(text: string | undefined | null, language: string):
     .replace(/\bwin\b/gi, "galibiyet")
     .replace(/\bwins\b/gi, "galibiyet")
     .replace(/\bagainst\b/gi, "karşısında")
-    .replace(/\bin \d+ of these\b/gi, (m) => m.replace("in", "").replace("of these", "tanesinde").trim())
+    .replace(/\bin \d+ of these\b/gi, (m) =>
+      m.replace("in", "").replace("of these", "tanesinde").trim(),
+    )
     .replace(/\balso\b/gi, "aynı zamanda")
     .replace(/\bthey\b/gi, "ev sahibi takım")
     .replace(/\bthe team\b/gi, "takım");
+}
+
+// ─── Standings Description: Renk & Çeviri ───────────────────────────────────
+
+/**
+ * Lig bazlı sıra rengi: API description'ı yetersiz kaldığında rank + leagueId'ye göre renk döner.
+ *
+ * TFF 1. Lig (204):
+ *   1-2  → Süper Lig direkt yükselme  (koyu yeşil)
+ *   3    → Play-off Final              (teal/açık yeşil)
+ *   4-7  → Play-off Çeyrek Final       (turuncu)
+ *   son3 → Küme düşme                 (kırmızı)
+ *
+ * Diğer ligler: getDescriptionColor(row.description) fallback.
+ */
+export function getLeagueRankColor(
+  leagueId: string,
+  rank: number,
+  totalRows: number,
+  description?: string | null,
+): string {
+  if (String(leagueId) === '204') {
+    const relegationStart = totalRows - 2; // 16, 17, 18 (18 takımlı lig)
+    if (rank <= 2)                                    return '#2E7D32'; // Süper Lig direkt
+    if (rank === 3)                                   return '#00897B'; // Play-off Final
+    if (rank >= 4 && rank <= 7)                       return '#F57C00'; // Play-off Çeyrek Final
+    if (totalRows > 0 && rank >= relegationStart)     return '#FF4444'; // Küme düşme
+    return 'transparent';
+  }
+  return getDescriptionColor(description);
+}
+
+/**
+ * API description string'inden sıra noktası rengini döndür.
+ * Örn: "Promotion - Champions League" → yeşil
+ */
+export function getDescriptionColor(
+  description: string | undefined | null,
+): string {
+  if (!description) return "transparent";
+  const d = description.toLowerCase();
+  if (d.includes("champions league")) return "#00C851";
+  if (d.includes("europa league")) return "#2196F3";
+  if (d.includes("conference league")) return "#4FC3F7";
+  if (d.includes("relegation") && d.includes("play")) return "#FFC107";
+  if (d.includes("relegation")) return "#FF4444";
+  if (d.includes("promotion") && d.includes("play")) return "#FFC107";
+  if (d.includes("promotion")) return "#4CAF50";
+  return "transparent";
+}
+
+/**
+ * API description string'ini Türkçeye çevir.
+ * İngilizce seçiliyse veya eşleşme yoksa orijinali döndür.
+ */
+export function translateDescription(
+  description: string | undefined | null,
+  language: string,
+): string {
+  if (!description) return "";
+  if (language !== "tr") return description;
+  const d = description.toLowerCase();
+  if (d.includes("champions league")) return "Şampiyonlar Ligi";
+  if (d.includes("europa league")) return "Avrupa Ligi";
+  if (d.includes("conference league")) return "Konferans Ligi";
+  // Yükselme
+  if (d.includes("super lig")) return "Süper Lig'e Yükselme";
+  if (d.includes("1. lig") || d.includes("1. league"))
+    return "TFF 1. Lig'e Yükselme";
+  if (d.includes("2. lig") || d.includes("2. league"))
+    return "TFF 2. Lig'e Yükselme";
+  if (d.includes("3. lig") || d.includes("3. league"))
+    return "TFF 3. Lig'e Yükselme";
+  if (d.includes("promotion") && d.includes("play")) return "Yükselme Play-off";
+  if (d.includes("promotion")) return "Yükselme";
+  // Küme düşme
+  if (d.includes("relegation") && d.includes("play"))
+    return "Küme Düşme Play-off";
+  if (d.includes("relegation")) return "Küme Düşme";
+  return description;
+}
+
+/**
+ * Bitmiş bir maçta belirtilen takımın sonucunu hesapla.
+ * Takım sayfası ile puan durumu sayfasının aynı mantığı kullanması için ortak utility.
+ * Live / yarıda kalmış / puan bilgisi yoksa null döner.
+ */
+export function getMatchResultForTeam(
+  match: Match,
+  teamId: string,
+): "W" | "D" | "L" | null {
+  if (match.status !== "finished") return null;
+  if (match.homeScore == null || match.awayScore == null) return null;
+  const isHome = String(match.homeTeam.id) === String(teamId);
+  const my  = isHome ? match.homeScore : match.awayScore;
+  const opp = isHome ? match.awayScore : match.homeScore;
+  if (my > opp) return "W";
+  if (my === opp) return "D";
+  return "L";
 }

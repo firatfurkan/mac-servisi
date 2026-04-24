@@ -76,7 +76,10 @@
       "WebFetch(domain:furkanf.github.io)",
       "WebFetch(domain:furkandemir.me)",
       "Bash(grep -n \"<ScrollView\" /c/Users/firat/macapp/app/team/[id].tsx)",
-      "Bash(npx expo-doctor:*)"
+      "Bash(npx expo-doctor:*)",
+      "WebFetch(domain:firatfurkan.github.io)",
+      "Bash(eas secret:list)",
+      "Read(//c/tmp/**)"
     ]
   }
 }

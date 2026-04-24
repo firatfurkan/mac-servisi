@@ -30,9 +30,12 @@ export interface Match {
   };
   referee?: string | Referee;
   assistantReferees?: Referee[];
+  fourthOfficial?: Referee;
+  varReferee?: Referee;
   broadcast?: string[];
   winner?: "home" | "away" | null;
   scorePenalty?: { home: number | null; away: number | null };
+  scoreHalfTime?: { home: number | null; away: number | null };
 }
 
 export interface Team {
@@ -166,6 +169,7 @@ export interface StandingRow {
   goalDifference: number;
   points: number;
   form: string; // e.g. "WWDLW"
+  description?: string; // e.g. "Promotion - Champions League", "Relegation"
 }
 
 export interface TopScorer {
@@ -342,4 +346,57 @@ export interface Transfer {
       logo: string;
     };
   };
+}
+
+// ─── Tournament Bracket ──────────────────────────────────────────────────────
+
+export interface BracketTeamEntry {
+  id: string;
+  name: string;
+  logoUrl: string;
+}
+
+export interface BracketLegScore {
+  matchId: string;
+  homeScore: number | null;
+  awayScore: number | null;
+  /** Penalty shootout goals for the home side of this leg */
+  penHome?: number | null;
+  /** Penalty shootout goals for the away side of this leg */
+  penAway?: number | null;
+  status: string;
+  date: string;
+}
+
+/**
+ * A single matchup in a bracket round.
+ * team1 = home side in leg1 (or home side in single-leg match).
+ * team2 = away side in leg1 (home side in leg2).
+ *
+ * For two-legged ties:
+ *   aggTeam1 = leg1.homeScore + leg2.awayScore
+ *   aggTeam2 = leg1.awayScore + leg2.homeScore
+ *
+ * isTBD = true for synthesised placeholder slots (next round not yet in API).
+ * TBD team entry has id === '__tbd__'.
+ */
+export interface BracketMatchup {
+  id: string;
+  team1: BracketTeamEntry;
+  team2: BracketTeamEntry;
+  isSingleLeg: boolean;
+  /** true → this slot was synthesised; no real fixture exists yet */
+  isTBD?: boolean;
+  leg1?: BracketLegScore;
+  leg2?: BracketLegScore;
+  aggTeam1?: number;
+  aggTeam2?: number;
+  winner?: 'team1' | 'team2' | null;
+}
+
+export interface BracketRound {
+  key: string;
+  displayName: string;
+  order: number;
+  matchups: BracketMatchup[];
 }

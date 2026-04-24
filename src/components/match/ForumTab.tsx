@@ -258,7 +258,12 @@ export default function ForumTab({ matchId }: { matchId: string }) {
                 {item.createdAt && (
                   <Text style={[styles.msgTime, { color: theme.colors.textSecondary }]}>
                     {(() => {
-                      const ist = toIstanbulDate(new Date(item.createdAt.toMillis()));
+                      const ms = typeof item.createdAt.toMillis === 'function'
+                        ? item.createdAt.toMillis()
+                        : typeof item.createdAt.toDate === 'function'
+                          ? item.createdAt.toDate().getTime()
+                          : Date.now();
+                      const ist = toIstanbulDate(new Date(ms));
                       return `${String(ist.getUTCHours()).padStart(2, '0')}:${String(ist.getUTCMinutes()).padStart(2, '0')}`;
                     })()}
                   </Text>

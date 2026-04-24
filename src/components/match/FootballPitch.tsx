@@ -539,10 +539,10 @@ function FootballPitch({ lineup, events, statsMap }: Props) {
         <View style={[s.goalBottom,       { borderColor: lc }]} />
         <Text style={s.watermark}>Maç Servisi</Text>
 
-        {/* Away — üst yarı: fieldHeight*0.05 → fieldHeight*0.48 */}
-        <TeamHalf players={away.startXI} color={awayColor} isTop={true}  events={events} statsMap={statsMap} fieldHeight={fieldHeight} />
-        {/* Home — alt yarı: fieldHeight*0.52 → fieldHeight*0.95 */}
-        <TeamHalf players={home.startXI} color={homeColor} isTop={false} events={events} statsMap={statsMap} fieldHeight={fieldHeight} />
+        {/* Home — üst yarı */}
+        <TeamHalf players={home.startXI} color={homeColor} isTop={true}  events={events} statsMap={statsMap} fieldHeight={fieldHeight} />
+        {/* Away — alt yarı */}
+        <TeamHalf players={away.startXI} color={awayColor} isTop={false} events={events} statsMap={statsMap} fieldHeight={fieldHeight} />
       </View>
 
       {/* Manager Bar */}

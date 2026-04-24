@@ -1,0 +1,138 @@
+=== Sporting_p3 p3/4 ===
+  7712: M. Hjulmand
+  18748: Pote
+  18979: V. Gyökeres
+  37148: J. St. Juste
+  37882: M. Edwards
+  41179: Matheus Reis
+  47237: L. Suárez
+  56266: F. Israel
+  70336: V. Kovačević
+  135842: S. Alexandropoulos
+  161879: K. Koindredi
+  262845: Eduardo Quaresma
+  305817: Biel
+  308678: Dário Essugo
+  310943: Alisson Santos
+  330296: Diego Callai
+  336585: Mateus Fernandes
+  345426: Henrique Arreiol
+  361417: Francisco Silva
+  419916: C. Harder
+
+=== Sporting_p4 p4/4 ===
+  1203: Luís Neto
+  41099: Ricardo Esgaio
+  41112: Trincão
+  341641: Rodrigo Ribeiro
+
+=== RealSociedad_p2 p2/4 ===
+  745: Isco
+  1264: Y. Sabaly
+  1580: William Carvalho
+  18906: Ayoze Pérez
+  47119: Aitor Ruibal
+  47579: E. Ávila
+  128985: Iker Losada
+  133185: J. Cardoso
+  179996: Fran Vieites
+  181421: A. Ezzalzouli
+  286084: Sergi Altimira
+  325785: R. Kohon
+  334574: Ángel Ortiz
+  347885: Marcos Fernández
+  351127: Xavi Pleguezuelo
+  351131: Dani Pérez
+  358431: N. Mendy
+  392455: Germán García
+  443163: Pablo García
+  456619: Manu González
+
+=== Marseille_p1 p1/4 ===
+  1854: J. Correa
+  1901: J. Amavi
+  18592: I. Ndiaye
+  20696: P. Gueye
+  21102: V. Rongier
+  25008: J. Clauss
+  41748: J. Onana
+  85041: A. Gouiri
+  193619: S. Ben Seghir
+  272460: Q. Merlin
+  281408: Vítinha
+  308803: B. Negouai
+  325963: A. Caprice
+  333000: L. Jousselin
+  343321: A. Kabamba
+  345524: R. Daou
+  370870: A. Laaziri
+  519493: S. Ahamada
+  519494: M. Andrianaivo
+  519495: E. Mailly
+
+=== Marseille_p2 p2/4 ===
+  2973: A. Murillo
+  26694: S. Sidi Ali
+  41302: S. Sparagna
+  129678: A. Ounahi
+  179918: P. Sciortino
+  193501: B. Meité
+  283216: B. Nadir
+  327701: Y. Said M&apos;Madi
+  328046: I. Koné
+  343211: E. Soglo
+  365545: Iuri Alexandre da Silva Moreira
+  369953: A. Tunkadi
+  387533: F. Mughe
+  392683: E. Mbondo
+  393926: Gaël Lafont
+  435482: R. Vaz
+  449158: K. Abdallah
+  449660: E. Sternal
+  455245: D. Bakola
+  497107: R. Baheng
+
+=== Hamburg_p1 p1/3 ===
+  25165: J. Green
+  25285: S. Asta
+  25401: G. Itter
+  25411: F. Klaus
+  26317: N. Körber
+  38108: P. Boevink
+  48629: N. Loosli
+  113591: M. Meyerhöfer
+  140612: M. Olesen
+  162723: M. John
+  202774: M. Dietz
+  203329: N. Noll
+  278917: D. Kasper
+  327848: N. Grimbs
+  334353: J. Quarshie
+  375983: S. Bansé
+  380595: Silas Joel Prüfrock
+  382329: Reno Münz
+  432553: Lukas Reich
+  432604: Jakob Engel
+
+=== Como_p1 p1/3 ===
+  31784: F. Lorenzini
+  56244: R.  Calcagni
+  78539: E. Ongaro
+  106204: A. Di Munno
+  162780: K. Manseri
+  209738: F. Gerardini
+  301378: G. Issa
+  326876: M. Speranza
+  331070: G. Basso
+  336631: E. Owusu
+  349217: M. Brkić
+  379335: G. Agyemang
+  395879: Antoni Caravaca Comino
+  401874: A. Virisario
+  432472: A. Valenti
+  432473: C. Donadio
+  438300: R. Sibilio
+  454557: João Vitor
+  471099: E. De Mori
+  490690: Francesco Pio Attanasio
+

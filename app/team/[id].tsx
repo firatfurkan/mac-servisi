@@ -31,7 +31,8 @@ import { useNotificationStore } from "../../src/stores/notificationStore";
 import { cancelMatchReminder, scheduleMatchReminder } from "../../src/services/goalTracker";
 import { registerMatchPush, unregisterMatchPush } from "../../src/services/pushService";
 import { Match, SquadPlayer, StandingRow } from "../../src/types";
-
+import { useMatches } from "../../src/hooks/useMatches";
+import { applyProjections } from "../../src/utils/standingsProjection";
 type TeamTab = "matches" | "squad" | "standings";
 
 const CURRENT_YEAR = new Date().getFullYear();
@@ -88,12 +89,24 @@ function MatchRow({ match, teamId }: MatchRowProps) {
   }, [finished, isNotified, match.id, removeNotification]);
 
   useEffect(() => {
-    if (!isFavMatch || finished || unfinished || isNotified) return;
-    toggleNotificationRaw({ id: match.id, startTime: match.startTime, homeTeamName: match.homeTeam.name, awayTeamName: match.awayTeam.name });
-    registerMatchPush(match.id, match.startTime).catch(() => {});
-    if (notStarted) scheduleMatchReminder(match).catch(() => {});
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [match.id, isFavMatch]);
+    // Biten maçlar: hiçbir şey yapma
+    if (finished || unfinished) return;
+
+    // isFavMatch true oldu → register & add notification
+    if (isFavMatch && !isNotified) {
+      toggleNotificationRaw({ id: match.id, startTime: match.startTime, homeTeamName: match.homeTeam.name, awayTeamName: match.awayTeam.name });
+      registerMatchPush(match.id, match.startTime).catch(() => {});
+      if (notStarted) scheduleMatchReminder(match).catch(() => {});
+    }
+    // isFavMatch false oldu ve isNotified true → unregister & remove notification
+    else if (!isFavMatch && isNotified) {
+      removeNotification(match.id);
+      unregisterMatchPush(match.id).catch(() => {});
+      if (notStarted) {
+        cancelMatchReminder(match.id).catch(() => {});
+      }
+    }
+  }, [match.id, isFavMatch, isNotified, finished, unfinished, notStarted, toggleNotificationRaw, removeNotification]);
 
   const bellActive = !finished && !unfinished && (isNotified || isFavMatch);
 
@@ -573,7 +586,18 @@ export default function TeamScreen() {
     undefined,
     id as string,
   );
-  const standings = standingsData?.rows ?? [];
+
+  const today = new Date().toISOString().split("T")[0];
+  const { data: todayMatches = [] } = useMatches(today);
+
+  const leagueMatches = useMemo(() => {
+    return todayMatches.filter((m) => String(m.league.id) === String(primaryLeagueId));
+  }, [todayMatches, primaryLeagueId]);
+
+  const { rows: standings } = useMemo(() => {
+    const raw = standingsData?.rows ?? [];
+    return applyProjections(raw, leagueMatches);
+  }, [standingsData?.rows, leagueMatches]);
 
   const sorted = useMemo(() => {
     const copy = [...matches];

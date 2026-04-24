@@ -1,0 +1,286 @@
+=== West_Ham_p1 p1/3 ===
+  253: A. Areola
+  665: M. Cornet
+  1736: W. Foderingham
+  2284: Emerson
+  2997: Ł. Fabiański
+  15911: M. Kudus
+  18817: A. Ogbonna
+  18823: B. Johnson
+  19130: K. Phillips
+  21694: N. Aguerd
+  129643: E. Ferguson
+  144709: J. Anang
+  144723: K. Hegyi
+  284409: D. Mubama
+  284444: Junior Robinson
+  284536: J. Knightbridge
+  310529: G. Kodua
+  315767: Patrick Kelly
+  337932: F. Herrick
+  401278: M. Kanté
+
+=== West_Ham_p2 p2/3 ===
+  138: J. Todibo
+  1243: T. Souček
+  1445: K. Mavropanos
+  1646: Lucas Paquetá
+  2476: G. Rodríguez
+  2938: J. Ward-Prowse
+  18744: M. Kilman
+  18846: A. Wan-Bissaka
+  19428: J. Bowen
+  25391: N. Füllkrug
+  37724: C. Summerville
+  68466: A. Irving
+  144725: K. Simon-Swyer
+  284446: F. Potts
+  288118: L. Orford
+  288125: R. Clayton
+  291363: George Earthy
+  327730: O. Scarles
+  344707: C. Marshall
+  404574: Luis Guilherme
+
+=== Athletic_Bilbao_p1 p1/3 ===
+  2672: Muniain
+  47275: De Marcos
+  47277: Unai Núñez
+  47281: Dani García
+  47282: Raúl García
+  104853: Asier Villalibre
+  179153: Javi Martón
+  182588: Juan Artola
+  182639: Unai Vencedor
+  182641: Imanol García de Albéniz
+  190489: Álvaro Djaló
+  287438: Ekain Azkune
+  332302: Oier Gastesi
+  332307: Beñat Gerenabarrena
+  354762: Iker Varela
+  377257: Endika Bujan
+  384262: Aimar Duñabeitia
+  437643: Peio Canales
+  440413: Aingeru Olabarrieta
+  495038: Javier Zabala
+
+=== Athletic_Bilbao_p2 p2/3 ===
+  47007: Ruíz de Galarreta
+  47271: Yeray
+  47291: Gorka Guruzeta
+  47294: I. Williams
+  47299: Gorosabel
+  47418: Mikel Vesga
+  84086: Robert Navarro
+  128398: Oihan Sancet
+  182617: Beñat Prados
+  183799: Nico Williams
+  183848: Julen Agirrezabala
+  286593: Nico Serrano
+  287680: Maroan Sannadi
+  288525: Malcom Adu
+  313025: Hugo Rincón
+  332305: Unai Eguíluz
+  332308: Unai Gómez
+  332309: Alejandro Rego
+  383780: Mikel Jauregizar
+  440428: Ander Izagirre
+
+=== Everton_p1 p1/3 ===
+  83: A. Danjuma
+  172: D. Alli
+  2932: J. Pickford
+  2934: M. Keane
+  2936: J. Tarkowski
+  17661: J. Branthwaite
+  18758: S. Coleman
+  18765: André Gomes
+  18860: M. Travers
+  19073: B. Godfrey
+  20069: B. Crellin
+  20224: A. Lonergan
+  82855: T. King
+  138417: N. Patterson
+  138844: H. Tyrer
+  153425: L. Dobbin
+  162714: A. Onana
+  270139: J. O&apos;Brien
+  297641: Jenson Metcalfe
+  298099: Mackenzie Hunt
+
+=== Everton_p2 p2/3 ===
+  895: J. Garner
+  2165: V. Mykolenko
+  2990: I. Gueye
+  18592: I. Ndiaye
+  18766: D. Calvert-Lewin
+  18858: A. Begović
+  18929: D. McNeil
+  19128: J. Harrison
+  19364: N. Maupay
+  24882: O. Mangala
+  125743: Beto
+  138822: A. Broja
+  167657: T. Onyango
+  195993: C. Alcaraz
+  284326: Žan-Luk Leban
+  284385: Elijah Xavier Campbell
+  284500: T. Iroegbunam
+  296664: Isaac Heath
+  330412: Youssef Chermiti
+  405360: H. Armstrong
+
+=== Real_Sociedad_p1 p1/4 ===
+  134: Juan Miranda
+  146: Álex Collado
+  614: C. Bravo
+  668: N. Fekir
+  2476: G. Rodríguez
+  9700: Abner
+  47319: Willian José
+  185477: Rodri
+  188413: Visus
+  270973: Lucas Alcázar
+  278898: C. Riad
+  286561: Sergio Arribas
+  305797: Enrique Fernández
+  329663: Guilherme Fernandes
+  330443: Isma Sierra
+  347886: Félix Garreta
+  347887: Ginés Sorroche
+  388032: Carlos Guirao
+  400947: Carlos Reina
+  439994: Pablo Busto
+
+=== Sporting_p1 p1/4 ===
+  1477: S. Coates
+  1494: Jovane Cabral
+  303467: A. Fatawu
+  330411: Miguel Menino
+  336575: Diogo Travassos
+  338748: Samuel Justo
+  361415: João Muniz
+  371915: Manuel Ascenção Bebiano Mendonça
+  385674: Mauro Couto
+  386820: Rafael Ferreira Nel
+  411693: David Moreira
+  423300: Miguel Monteiro Alves
+  427063: Rafael Silva
+  430774: Alexandre Miguel Soares Carvalho Brito
+  431660: Lucas Taibo
+  449624: Gabriel Silva
+  449626: Eduardo Felicíssimo
+  449631: Denilson Santos
+  458197: José Silva
+  460471: Kauã Oliveira
+
+=== Sporting_p2 p2/4 ===
+  32960: H. Morita
+  41194: Nuno Santos
+  41324: Ricardo Mangas
+  41892: Daniel Bragança
+  46672: Rui Silva
+  51776: M. Araújo
+  119795: G. Kochorashvili
+  154839: Geny Catamo
+  265595: Gonçalo Inácio
+  289445: M. Tanlongo
+  304228: Z. Debast
+  336676: Diogo Pinto
+  341700: Iván Fresneda
+  345388: Afonso Moreira
+  354753: O. Diomande
+  400509: João Simões
+  404243: Bruno Ramos
+  416862: Lucas Rodrigues Carvalho Anjos
+  419582: Geovany Tcherno Quenda
+  430775: Luís Maria Viegas Abreu Campos Gomes
+
+=== Porto_p1 p1/3 ===
+  384: M. Loum
+  35570: S. Eustáquio
+  41208: Fábio Cardoso
+  41715: Francisco Meixedo
+  46828: Iván Jaime
+  128385: Gonçalo Borges
+  130256: André Franco
+  161693: Bernardo Folha
+  237165: Domingos Andrade
+  336683: Gabriel Brás
+  354585: Gonçalo Ribeiro
+  358628: Samu
+  386871: Dinis Rodrigues
+  388570: D. Gül
+  392252: André Oliveira
+  400544: João Pedro Moreira Teixeira
+  400550: Gonçalo Santos Sousa
+  404097: Rodrigo Mora
+  414544: T. Pérez
+  449630: Martim Cunha
+
+=== Porto_p2 p2/3 ===
+  37: N. Pérez
+  369: Diogo Costa
+  773: Iván Marcano
+  936: Fran Navarro
+  1479: Tiago Djaló
+  41197: Galeno
+  41432: Cláudio Ramos
+  41730: Romário Baró
+  41734: João Mário
+  41964: Zé Pedro
+  41966: Francisco Moura
+  80522: Wendel
+  126899: Z. Sanusi
+  161585: Francisco Conceição
+  180235: Gabriel Veron
+  278375: A. Varela
+  325830: Vasco Sousa
+  336596: Martim Fernandes
+  345413: Diogo Fernandes
+  449243: William
+
+=== Fiorentina_p1 p1/3 ===
+  1265: Y. Adli
+  1852: D. Cataldi
+  30394: P. Terracciano
+  30396: C. Biraghi
+  30532: A. Duncan
+  30810: R. Mandragora
+  31507: R. Sottil
+  31642: L. Ranieri
+  43096: L. Munteanu
+  56851: M. Folorunsho
+  136087: F. Parisi
+  196843: C. Dalle Mura
+  286475: E. Bove
+  311071: N. Valentini
+  340700: J. Fazzini
+  342067: F. Distefano
+  383267: T. Martinelli
+  396637: P. Comuzzo
+  437093: N. Fortini
+  448977: E. Kouadio
+
+=== Fiorentina_p2 p2/3 ===
+  876: N. Fagioli
+  2799: A. Guðmundsson
+  6000: L. Martínez
+  6010: L. Beltrán
+  22229: J. Ikoné
+  30789: C. Kouamé
+  30803: A. Barák
+  31318: M&apos;Bala Nzola
+  31615: G. Castrovilli
+  289447: G. Infantino
+  302432: A. Bianco
+  311083: C. Ndour
+  314231: A. Richardson
+  346865: L. Amatucci
+  346867: L. Romani
+  392379: L. Baroncelli
+  411161: T. Vannucchi
+  418334: M. Caprini
+  421807: M. Moreno
+  458413: P. Leonardelli
+

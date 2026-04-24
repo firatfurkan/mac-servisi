@@ -87,7 +87,11 @@ export default function EventTimeline({
       {normalEvents.map((event, index) => {
         const config =
           (eventConfig as any)[event.type] ?? (eventConfig as any).goal;
-        const isHome = event.team === "home";
+        // Own goal: golü kendi kalesine atan takımın KARŞI tarafına göster
+        // (gol karşı takıma yazılır, olayın o tarafta görünmesi gerekir)
+        const isHome = event.type === "own_goal"
+          ? event.team === "away"
+          : event.team === "home";
         const isGoalType =
           event.type === "goal" ||
           event.type === "penalty" ||
@@ -159,6 +163,7 @@ export default function EventTimeline({
       {/* ── SERİ PENALTİ ATIŞLARI ── */}
       {hasShootout && (
         <>
+        {/* 
           <View
             style={[
               styles.shootoutHeader,
@@ -177,7 +182,7 @@ export default function EventTimeline({
               ⚽  SERİ PENALTİ ATIŞLARI
             </Text>
           </View>
-
+*/}
           {shootoutEvents.map((event, index) => {
             const isHome = event.team === "home";
             const scored = event.type === "penalty";

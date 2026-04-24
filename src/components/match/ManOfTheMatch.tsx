@@ -1,6 +1,8 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { doc, getDoc, increment, onSnapshot, setDoc, updateDoc } from "firebase/firestore";
 import React, { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Image,
@@ -10,10 +12,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useTranslation } from "react-i18next";
-import { doc, getDoc, onSnapshot, setDoc, updateDoc, increment } from "firebase/firestore";
-import { db } from "../../services/firebase";
 import { useAppTheme } from "../../hooks/useAppTheme";
+import { db } from "../../services/firebase";
 import { MatchEvent, MatchLineup } from "../../types";
 
 const MOTM_COLOR = "#03422d";
@@ -118,16 +118,9 @@ export default function ManOfTheMatch({ matchId, lineup, events = [] }: Props) {
         await setDoc(ref, { votes: { [playerId]: 1 } });
       }
     } catch {
-      // Hata durumunda yerel değişikliği geri al
-      setMyVote(null);
-      setVotes(prev => {
-        const updated = { ...prev };
-        if ((updated[playerId] ?? 0) > 1) updated[playerId] -= 1;
-        else delete updated[playerId];
-        return updated;
-      });
-      await AsyncStorage.removeItem(LOCAL_VOTE_KEY(matchId)).catch(() => {});
+      // Firebase yazma başarısız → optimistik UI olarak kalır, AsyncStorage'da kayıtlı
     }
+
   }, [myVote, matchId]);
 
   if (loading) {

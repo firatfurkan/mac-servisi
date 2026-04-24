@@ -1,20 +1,20 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { memo, useCallback, useEffect, useRef, useState } from "react";
+import React, { memo, useCallback, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import {
-    Animated,
-    Image,
-    Share,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Animated,
+  Image,
+  Share,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { useAppTheme } from "../../hooks/useAppTheme";
 import {
-    cancelMatchReminder,
-    scheduleMatchReminder,
+  cancelMatchReminder,
+  scheduleMatchReminder,
 } from "../../services/goalTracker";
 import { registerMatchPush, unregisterMatchPush } from "../../services/pushService";
 import { useFavoritesStore } from "../../stores/favoritesStore";
@@ -157,50 +157,58 @@ function MatchCard({ match, events, pairedMatch }: Props) {
     }
   }, [finished, isNotified, match.id, removeNotification]);
 
-  // Favori takım maçlarını otomatik kaydet (bitmemiş maçlar)
+  // Favori takım maçlarını otomatik kaydet
   useEffect(() => {
-    if (!isFavMatch || finished || unfinished) return;
-    if (isNotified) return; // zaten kayıtlı
-    toggleNotificationRaw({
-      id: match.id,
-      startTime: match.startTime,
-      homeTeamName: match.homeTeam.name,
-      awayTeamName: match.awayTeam.name,
-    });
-    registerMatchPush(match.id, match.startTime).catch(() => {});
-    if (notStarted) {
-      scheduleMatchReminder(match).catch(() => {});
+    // Biten maçlar: hiçbir şey yapma
+    if (finished || unfinished) return;
+
+    // Sadece isFavMatch true ise ve bildirimlerde henüz yoksa ekle.
+    if (isFavMatch && !isNotified) {
+      toggleNotificationRaw({
+        id: match.id,
+        startTime: match.startTime,
+        homeTeamName: match.homeTeam.name,
+        awayTeamName: match.awayTeam.name,
+      });
+      registerMatchPush(match.id, match.startTime).catch(() => {});
+      if (notStarted) {
+        scheduleMatchReminder(match).catch(() => {});
+      }
     }
-  // Sadece match.id ve isFavMatch değiştiğinde çalış
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [match.id, isFavMatch]);
+    // NOT: Kullanıcı manuel bildirim açtığında bu useEffect'in 
+    // onu geri silmemesi için "else if" kısmını tamamen kaldırdık!
+  }, [match.id, isFavMatch, isNotified, finished, unfinished, notStarted, toggleNotificationRaw]);
 
-  // Zil aktif mi: bitmemiş/iptal olmamış maçlarda isNotified veya favori
-  const bellActive = !finished && !unfinished && (isNotified || isFavMatch);
+  // Zil aktif mi görsel kontrolü: Artık doğrudan kullanıcının zili açıp açmadığına bakıyoruz
+  const bellActive = !finished && !unfinished && isNotified;
 
-  const handleBellPress = useCallback(
+
+   const handleBellPress = useCallback(
     (e: any) => {
       e.stopPropagation?.();
       const wasNotified = isNotified;
-      const willEnable = !isNotified && !isFavMatch;
+      const willEnable = !isNotified;
       toggleNotification();
-      // Schedule or cancel match start reminder
+      
+      // Bildirim hatırlatmalarını planla veya iptal et
       if (notStarted) {
-        if (willEnable || isFavMatch) {
+        if (willEnable) {
           scheduleMatchReminder(match).catch(() => {});
         } else {
           cancelMatchReminder(match.id).catch(() => {});
         }
       }
-      // Register or unregister server-side push subscription
-      if (!wasNotified && !isFavMatch) {
+      
+      // Sunucu tarafında anlık push aboneliğini kaydet veya sil
+      if (!wasNotified) {
         registerMatchPush(match.id, match.startTime).catch(() => {});
       } else if (wasNotified) {
         unregisterMatchPush(match.id).catch(() => {});
       }
     },
-    [match, isNotified, isFavMatch, notStarted, toggleNotification],
+    [match, isNotified, notStarted, toggleNotification],
   );
+
 
   useEffect(() => {
     if (!live) return;

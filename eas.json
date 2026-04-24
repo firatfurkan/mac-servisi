@@ -29,7 +29,6 @@
         "appleTeamId": "Y47C3B46WS"
       },
       "android": {
-        "serviceAccountKeyPath": "./google-services.json",
         "track": "production"
       }
     }

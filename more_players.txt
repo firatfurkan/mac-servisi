@@ -1,0 +1,193 @@
+=== Besiktas_p3_correct (549) page 3/4 ===
+  549: V. Černý
+  1746: J. Worrall
+  1831: A. Rebić
+  1998: K. Yılmaz
+  14721: A. Hasić
+  18780: R. Ghezzal
+  21701: V. Rosier
+  25406: F. Uduokhai
+  50006: A. Hadžiahmetović
+  50046: E. Topçu
+  50223: U. Meraş
+  128928: E. Uzunhan
+  144656: J. Muleka
+  336570: E. Tıknaz
+  364816: É. Ricardo
+  393242: Adnan Karahisar
+  393243: Efe Can Mete
+  465644: Y. Calayır
+  465646: A. Mengi
+  477141: D. Tuğrul
+
+=== Trabzonspor_p1_correct (998) page 1/4 ===
+  2615: M. Gómez
+  7625: T. Fountas
+  10033: Flávio
+  21087: B. Mendy
+  21447: U. Bozok
+  47487: Joaquín Fernández
+  49865: A. Akbulut
+  49868: K. Moradaoğlu
+  49877: C. Akpınar
+  62512: V. Sönmezsoy
+  119749: S. Asan
+  128920: B. Kör
+  182463: M. Lahtimi
+  286543: K. Şen
+  303947: H. Aydın
+  338816: A. Yılmaz
+  394188: O. Yılmaz
+  422405: A. Bayram
+  463101: O. ÃakıroÄlu
+  475203: Zekeriya Berk Bulut
+
+=== Trabzonspor_p2_correct (998) page 2/4 ===
+  67: S. Denswil
+  264: T. Meunier
+  1738: B. Barišić
+  14346: T. Teklić
+  26751: D. Kourbelis
+  47461: E. Bardhi
+  49860: E. Višća
+  49876: H. Türkmen
+  49891: A. Nwakaeme
+  50057: E. Elmalı
+  63627: A. Batagov
+  119182: R. Baniya
+  128968: U. Güneş
+  162102: G. Gürpüz
+  167659: K. Olaigbe
+  182422: E. Destan
+  306854: Felipe Augusto
+  371930: P. Yıldırım
+  422404: S. Malkoçoğlu
+  479721: A. Yıldırım
+
+=== Fenerbahce_p1 (611) page 1/4 ===
+  1305: D. Livaković
+  21633: A. Djiku
+  30562: J. Galvão
+  41973: Miguel Crespo
+  50059: Ç. Kurukalıp
+  50246: U. Nayir
+  210244: E. Çetin
+  284141: E. Akcan
+  292363: E. Ortakaya
+  340727: O. MimoviÄ
+  355991: E. Çağdaş
+  364594: Y. Demir
+  368141: F. Akyüz
+  381812: Omar Fayed
+  394216: Emirhan Arkutcu
+  465287: Emir Akyildiz
+  465291: Mehmet Can Gülerer
+  465292: Yiğit Epözdemir
+  500083: Muharrem Çizgili
+  501262: M. Akkaş
+
+=== Fenerbahce_p2 (611) page 2/4 ===
+  71: Luan Peres
+  829: Rodrigo Becão
+  1369: M. Zajc
+  1719: M. Müldür
+  10497: Lincoln
+  19588: B. Osayi-Samuel
+  31054: R. Krunić
+  40403: S. Szymański
+  49857: İ. Kahveci
+  50097: M. Yandaş
+  50221: B. Kapacak
+  62137: İ. Eğribayat
+  62490: S. Akaydin
+  162004: B. Elmaz
+  214463: İ. Yüksek
+  272721: J. Oosterwolde
+  364597: Jo Jin-Ho
+  412703: Yusuf Akçiçek
+  413017: K. Akyazı
+  500088: E. Biterge
+
+=== Fenerbahce_p3 (611) page 3/4 ===
+  74: S. Amrabat
+  198: M. Škriniar
+  554: D. Tadić
+  785: C. Ünder
+  790: E. Džeko
+  905: Fred
+  1361: F. Kadıoğlu
+  1756: R. Kent
+  2927: M. Batshuayi
+  12724: Talisca
+  18768: C. Tosun
+  18776: Ç. Söyüncü
+  18881: J. King
+  25053: S. Dursun
+  47446: E. Mor
+  127609: L. Mercan
+  134590: O. Aydın
+  309815: T. Çukur
+  401427: D. Demir
+  413015: M. İmre
+
+=== Leverkusen_p3 (168) page 3/3 ===
+  1464: G. Xhaka
+  47516: Aleix García
+  48119: O. Kossounou
+  138804: M. Kovář
+  158698: J. Quansah
+  231029: N. Tella
+
+=== PSG_p1 (85) page 1/3 ===
+  260: C. Dagba
+  263: L. Kurzawa
+  278: Kylian Mbappé
+  731: K. Navas
+  20568: A. Letellier
+  41585: Gonçalo Ramos
+  161904: B. Barcola
+  162016: X. Simons
+  162473: Arnau Tenas
+  198398: L. Lavallée
+  336561: A. Kari
+  343027: D. Doué
+  386275: I. Housni
+  386285: Yoram\t Zague
+  386287: E. Mbappé
+  409215: Kouakou Joane Gadou
+  409217: Serif Nhaga
+  446249: I. Mbaye
+  471107: Quentin Ndjantou Mbitcha
+  493032: W. Slama
+
+=== PSG_p3 (85) page 3/3 ===
+  9: A. Hakimi
+  33: L. Hernández
+  153: O. Dembélé
+  258: Juan Bernat
+  513: Renato Sanches
+  746: Marco Asensio
+  930: Carlos Soler
+  1146: N. Mukiele
+  1622: G. Donnarumma
+  16367: W. Pacho
+  19014: Sergio Rico
+  21104: R. Kolo Muani
+  51494: M. Ugarte
+  128384: Vitinha
+  338856: N. Lemina
+  491103: A. Tape
+
+=== Atletico_p4 (530) page 4/4 ===
+  39: S. Savić
+  48: Saúl
+  59: Álvaro Morata
+  133: C. Lenglet
+  583: João Félix
+  667: M. Depay
+  2280: César Azpilicueta
+  6009: J. Álvarez
+  8492: A. Sørloth
+  22225: Reinildo
+  67972: C. Gallagher
+

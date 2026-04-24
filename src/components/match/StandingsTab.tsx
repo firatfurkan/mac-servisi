@@ -1,5 +1,4 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import React from "react";
 import { useTranslation } from "react-i18next";
@@ -13,10 +12,13 @@ import {
   View,
 } from "react-native";
 import { useAppTheme } from "../../hooks/useAppTheme";
+import { buildTeamFormMap, useLeagueRecentFixtures } from "../../hooks/useLeagueFixtures";
+import { useMatches } from "../../hooks/useMatches";
 import { useRoundFixtures } from "../../hooks/useRoundFixtures";
 import { useStandings } from "../../hooks/useStandings";
-import { Match, StandingRow } from "../../types";
-import { formatMatchTime, isKnockoutRound, translateRound } from "../../utils/matchUtils";
+import { Match } from "../../types";
+import { formatMatchTime, getDescriptionColor, getLeagueRankColor, isKnockoutRound, translateDescription, translateRound } from "../../utils/matchUtils";
+import { applyProjections } from "../../utils/standingsProjection";
 
 const FORM_COLORS: Record<string, string> = {
   W: "#00C851",
@@ -54,142 +56,43 @@ export default function StandingsTab({
   const { t, i18n } = useTranslation();
   const theme = useAppTheme();
   const router = useRouter();
-  const queryClient = useQueryClient();
 
   const isKnockout = isKnockoutRound(round);
   const baseRound = round?.replace(/\s*-\s*(1st|2nd)\s*Leg/i, "").trim() ?? "";
 
+  // Canlı + biten maçlarda 90s'de bir yeniden fetch et (API gecikmesini yakalamak için)
   const { data: standingsData, isLoading, isError, refetch } = useStandings(
     leagueId,
     season,
     !isKnockout,
-    isLive ? 60_000 : false,
+    (isLive || isFinished) ? 90_000 : false,
     homeTeamId,
   );
-  const rawStandings = standingsData?.rows ?? [];
   const groupName = standingsData?.groupName ?? "";
 
-  // ─── SYNC: Bugünkü tüm bitmiş/canlı maçları standings'e yansıt ───
-  // API-Sports standings'i maç bittikten 30dk-2saat sonra günceller.
-  // Çözüm: React Query cache'indeki tüm ['matches', date] sorgularını tarayıp
-  // aynı ligden biten maçları standings'e manuel olarak uygula.
-  const standings = React.useMemo(() => {
-    if (rawStandings.length === 0) return rawStandings;
+  // Bugünkü tüm lig maçlarını çek — lig sayfasıyla aynı projeksiyon mantığı.
+  // useMatches cache'de varsa ağ isteği yapmaz (staleTime: 30s).
+  const today = new Date().toISOString().split("T")[0];
+  const { data: todayMatches = [] } = useMatches(today);
 
-    // Standings'in en son ne zaman fetch edildiğini al
-    const standingsUpdatedAt = queryClient.getQueryState(
-      ['standings', leagueId, season, homeTeamId]
-    )?.dataUpdatedAt ?? 0;
+  const leagueMatches = React.useMemo(
+    () => todayMatches.filter((m) => String(m.league.id) === String(leagueId)),
+    [todayMatches, leagueId],
+  );
 
-    // Tüm 'matches' cache'lerini tara (farklı tarihler için birden fazla olabilir)
-    const allMatchCaches = queryClient.getQueriesData<Match[]>({ queryKey: ['matches'] });
-    const FINISHED = new Set(['finished', 'ft', 'aet', 'pen']);
+  // Projeksiyon: canlı veya biten maçlarda bugünkü tüm lig maçlarını yansıt.
+  const { rows: standings, isProjecting } = React.useMemo(() => {
+    const raw = standingsData?.rows ?? [];
+    if (!isLive && !isFinished) return { rows: raw, isProjecting: false };
+    return applyProjections(raw, leagueMatches);
+  }, [standingsData?.rows, isLive, isFinished, leagueMatches]);
 
-    // Bu ligden biten veya canlı maçları topla.
-    // Double-count koruması: matches cache'i standings'ten DAHA ESKİ bir fetch'e aitse
-    // (yani standings fetch'inden önce maç bitmişti) API zaten saymış olabilir.
-    // Bu durumu tespit etmek için: matches query'sinin dataUpdatedAt'ını kontrol et.
-    const relevantMatches: Match[] = [];
-    for (const [queryKey, matches] of allMatchCaches) {
-      if (!matches) continue;
-      // Bu matches query'sinin ne zaman fetch edildiğini al
-      const matchesUpdatedAt = queryClient.getQueryState(queryKey)?.dataUpdatedAt ?? 0;
-      for (const m of matches) {
-        if (m.league.id !== leagueId) continue;
-        const isMatchLive = m.status === 'live' || m.status === 'half_time';
-        const isMatchFinished = FINISHED.has(m.status);
-        if (!((isMatchFinished || isMatchLive) && m.homeScore != null && m.awayScore != null)) continue;
-
-        // Double-count koruması: standings bu matches fetch'inden SONRA güncellendiyse
-        // API büyük olasılıkla maçı standings'e saymış demektir — projeksiyon yapma
-        if (isMatchFinished && standingsUpdatedAt > matchesUpdatedAt + 60_000) {
-          // Standings, matches fetch'inden 1+ dakika sonra güncellendiyse API'ye güven
-          continue;
-        }
-
-        relevantMatches.push(m);
-      }
-    }
-
-    // Cache boşsa fallback: sadece CANLI maçlarda geçici projeksiyon yap.
-    // Biten maçlar için cache boşsa (30dk+ geçmiş demek) API'ye güven — double-count riski var.
-    if (relevantMatches.length === 0) {
-      const currentMatchActive = isLive && homeScore != null && awayScore != null;
-      if (!currentMatchActive) return rawStandings;
-      // Sahte bir match objesi oluştur (sadece gerekli alanlar)
-      relevantMatches.push({
-        id: 'current',
-        league: { id: leagueId, season, name: '', logoUrl: '', round: round ?? '' },
-        homeTeam: { id: homeTeamId, name: '', logoUrl: '', shortName: '' },
-        awayTeam: { id: awayTeamId, name: '', logoUrl: '', shortName: '' },
-        homeScore,
-        awayScore,
-        status: isFinished ? 'finished' : 'live',
-        startTime: '',
-        minute: null,
-        extra: null,
-      } as unknown as Match);
-    }
-
-    // Her takım için uygulanan düzeltmeleri topla
-    const adjustments = new Map<string, {
-      points: number; played: number; won: number; drawn: number;
-      lost: number; goalsFor: number; goalsAgainst: number; gd: number;
-    }>();
-
-    for (const m of relevantMatches) {
-      const hId = m.homeTeam.id;
-      const aId = m.awayTeam.id;
-      const hScore = m.homeScore!;
-      const aScore = m.awayScore!;
-      const hPoints = hScore > aScore ? 3 : hScore === aScore ? 1 : 0;
-      const aPoints = aScore > hScore ? 3 : hScore === aScore ? 1 : 0;
-
-      const addAdj = (id: string, pts: number, gf: number, ga: number) => {
-        const prev = adjustments.get(id) ?? { points: 0, played: 0, won: 0, drawn: 0, lost: 0, goalsFor: 0, goalsAgainst: 0, gd: 0 };
-        adjustments.set(id, {
-          points: prev.points + pts,
-          played: prev.played + 1,
-          won: prev.won + (pts === 3 ? 1 : 0),
-          drawn: prev.drawn + (pts === 1 ? 1 : 0),
-          lost: prev.lost + (pts === 0 ? 1 : 0),
-          goalsFor: prev.goalsFor + gf,
-          goalsAgainst: prev.goalsAgainst + ga,
-          gd: prev.gd + (gf - ga),
-        });
-      };
-
-      addAdj(hId, hPoints, hScore, aScore);
-      addAdj(aId, aPoints, aScore, hScore);
-    }
-
-    // Standings'teki mevcut "played" ile adjustment'taki "played" toplamını karşılaştır.
-    // Eğer standings.played + adj.played çok yüksekse (>sezon uzunluğu) double-count var.
-    // Pratik sınır: bir takım sezonda en fazla 38-42 maç oynar.
-    const MAX_SEASON_MATCHES = 46;
-
-    const projected = rawStandings.map((row) => {
-      const adj = adjustments.get(row.team.id);
-      if (!adj) return row;
-      // Double-count koruması: toplam played makul bir sınırı aşmamalı
-      if (row.played + adj.played > MAX_SEASON_MATCHES) return row;
-      return {
-        ...row,
-        points: row.points + adj.points,
-        played: row.played + adj.played,
-        won: row.won + adj.won,
-        drawn: row.drawn + adj.drawn,
-        lost: row.lost + adj.lost,
-        goalsFor: row.goalsFor + adj.goalsFor,
-        goalsAgainst: row.goalsAgainst + adj.goalsAgainst,
-        goalDifference: row.goalDifference + adj.gd,
-      };
-    }).sort((a, b) => b.points - a.points || b.goalDifference - a.goalDifference)
-      .map((row, idx) => ({ ...row, rank: idx + 1 }));
-
-    return projected;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rawStandings, leagueId, season, homeTeamId]);
+  // Ligin son 60 fikstüründen form → API row.form yerine gerçek skor verisi kullanılır.
+  const { data: recentFixtures = [] } = useLeagueRecentFixtures(leagueId, season);
+  const teamFormMap = React.useMemo(
+    () => buildTeamFormMap(recentFixtures),
+    [recentFixtures],
+  );
 
   // For knockout: fetch both legs
   const firstLegRound = baseRound ? `${baseRound} - 1st Leg` : "";
@@ -351,29 +254,31 @@ export default function StandingsTab({
           { backgroundColor: theme.colors.surfaceVariant },
         ]}
       >
-        <Text style={[styles.thRank, { color: theme.colors.textSecondary }]}>
+        <Text style={[styles.thRank, { color: theme.colors.textSecondary }]} adjustsFontSizeToFit numberOfLines={1}>
           #
         </Text>
         <Text style={[styles.thTeam, { color: theme.colors.textSecondary }]}>
           {t("standings.team")}
         </Text>
-        <Text style={[styles.thStat, { color: theme.colors.textSecondary }]}>
+        <Text style={[styles.thStat, { color: theme.colors.textSecondary }]} adjustsFontSizeToFit numberOfLines={1}>
           {t("standings.played")}
         </Text>
-        <Text style={[styles.thStat, { color: theme.colors.textSecondary }]}>
+        <Text style={[styles.thStat, { color: theme.colors.textSecondary }]} adjustsFontSizeToFit numberOfLines={1}>
           {t("standings.win")}
         </Text>
-        <Text style={[styles.thStat, { color: theme.colors.textSecondary }]}>
+        <Text style={[styles.thStat, { color: theme.colors.textSecondary }]} adjustsFontSizeToFit numberOfLines={1}>
           {t("standings.draw")}
         </Text>
-        <Text style={[styles.thStat, { color: theme.colors.textSecondary }]}>
+        <Text style={[styles.thStat, { color: theme.colors.textSecondary }]} adjustsFontSizeToFit numberOfLines={1}>
           {t("standings.loss")}
         </Text>
-        <Text style={[styles.thStat, { color: theme.colors.textSecondary }]}>
+        <Text style={[styles.thStat, { color: theme.colors.textSecondary }]} adjustsFontSizeToFit numberOfLines={1}>
           {t("standings.goalDiff")}
         </Text>
         <Text
           style={[styles.thPoints, { color: theme.colors.textSecondary }]}
+          adjustsFontSizeToFit
+          numberOfLines={1}
         >
           {t("standings.points")}
         </Text>
@@ -408,19 +313,10 @@ export default function StandingsTab({
               <View
                 style={[
                   styles.rankDot,
-                  {
-                    backgroundColor:
-                      index < 4
-                        ? "#00C851"
-                        : index < 6
-                          ? "#2196F3"
-                          : index >= standings.length - 3
-                            ? "#FF4444"
-                            : "transparent",
-                  },
+                  { backgroundColor: getLeagueRankColor(leagueId, row.rank, standings.length, row.description) },
                 ]}
               />
-              <Text style={[styles.rank, { color: theme.colors.textPrimary }]}>
+              <Text style={[styles.rank, { color: theme.colors.textPrimary }]} adjustsFontSizeToFit numberOfLines={1}>
                 {row.rank}
               </Text>
             </View>
@@ -442,24 +338,45 @@ export default function StandingsTab({
               >
                 {row.team.name}
               </Text>
+              {isLive && isHighlighted && homeScore != null && awayScore != null && (() => {
+                const isHome = row.team.id === homeTeamId;
+                const myScore = isHome ? homeScore : awayScore;
+                const theirScore = isHome ? awayScore : homeScore;
+                const badgeColor =
+                  myScore > theirScore ? "#00C851" :
+                  myScore < theirScore ? "#FF4444" :
+                  "#FFC107";
+                return (
+                  <View style={[styles.liveBadge, { backgroundColor: badgeColor }]}>
+                    <View style={styles.liveDot} />
+                    <Text style={styles.liveBadgeText}>
+                      {`${myScore}-${theirScore}`}
+                    </Text>
+                  </View>
+                );
+              })()}
             </View>
             <Text
               style={[styles.stat, { color: theme.colors.textSecondary }]}
+              adjustsFontSizeToFit numberOfLines={1}
             >
               {row.played}
             </Text>
             <Text
               style={[styles.stat, { color: theme.colors.textPrimary }]}
+              adjustsFontSizeToFit numberOfLines={1}
             >
               {row.won}
             </Text>
             <Text
               style={[styles.stat, { color: theme.colors.textSecondary }]}
+              adjustsFontSizeToFit numberOfLines={1}
             >
               {row.drawn}
             </Text>
             <Text
               style={[styles.stat, { color: theme.colors.textSecondary }]}
+              adjustsFontSizeToFit numberOfLines={1}
             >
               {row.lost}
             </Text>
@@ -475,6 +392,7 @@ export default function StandingsTab({
                         : theme.colors.textSecondary,
                 },
               ]}
+              adjustsFontSizeToFit numberOfLines={1}
             >
               {row.goalDifference > 0
                 ? `+${row.goalDifference}`
@@ -482,11 +400,12 @@ export default function StandingsTab({
             </Text>
             <Text
               style={[styles.points, { color: theme.colors.textPrimary }]}
+              adjustsFontSizeToFit numberOfLines={1}
             >
               {row.points}
             </Text>
             <View style={styles.formCol}>
-              {row.form
+              {(teamFormMap.get(String(row.team.id)) ?? "")
                 .split("")
                 .slice(-5)
                 .map((f, fi) => (
@@ -508,49 +427,82 @@ export default function StandingsTab({
       })}
 
       {/* Legend */}
-      <View
-        style={[
-          styles.legend,
-          { borderTopColor: theme.colors.divider },
-        ]}
-      >
-        <View style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: "#00C851" }]} />
-          <Text
-            style={[
-              styles.legendText,
-              { color: theme.colors.textSecondary },
-            ]}
-          >
-            {t("standings.championsLeague")}
-          </Text>
-        </View>
-        <View style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: "#2196F3" }]} />
-          <Text
-            style={[
-              styles.legendText,
-              { color: theme.colors.textSecondary },
-            ]}
-          >
-            {t("standings.europaLeague")}
-          </Text>
-        </View>
-        <View style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: "#FF4444" }]} />
-          <Text
-            style={[
-              styles.legendText,
-              { color: theme.colors.textSecondary },
-            ]}
-          >
-            {t("standings.relegation")}
-          </Text>
-        </View>
-      </View>
+      <DynamicLegend rows={standings} leagueId={leagueId} language={i18n.language} theme={theme} />
     </ScrollView>
   );
 }
+
+// ─── Dynamic Legend ──────────────────────────────────────────────────────────
+
+const TFF1_LEGEND = [
+  { color: '#2E7D32', tr: 'Süper Lig\'e Yükselme',    en: 'Promotion to Süper Lig' },
+  { color: '#00897B', tr: 'Play-off Final',             en: 'Play-off Final' },
+  { color: '#F57C00', tr: 'Play-off Çeyrek Final',      en: 'Play-off Quarter-Final' },
+  { color: '#FF4444', tr: 'Küme Düşme',                 en: 'Relegation' },
+];
+
+function DynamicLegend({
+  rows,
+  leagueId,
+  language,
+  theme,
+}: {
+  rows: { description?: string }[];
+  leagueId: string;
+  language: string;
+  theme: any;
+}) {
+  const items = React.useMemo(() => {
+    // TFF 1. Lig için sabit açıklama listesi
+    if (String(leagueId) === '204') {
+      return TFF1_LEGEND.map(item => ({
+        label: language === 'tr' ? item.tr : item.en,
+        color: item.color,
+      }));
+    }
+    // Diğer ligler: API description bazlı
+    const seen = new Map<string, string>();
+    for (const row of rows) {
+      const desc = row.description;
+      if (!desc) continue;
+      const color = getDescriptionColor(desc);
+      if (color === "transparent") continue;
+      const label = translateDescription(desc, language);
+      if (!seen.has(label)) seen.set(label, color);
+    }
+    return Array.from(seen.entries()).map(([label, color]) => ({ label, color }));
+  }, [rows, leagueId, language]);
+
+  if (items.length === 0) return null;
+
+  return (
+    <View style={[legendStyles.wrapper, { borderTopColor: theme.colors.divider }]}>
+      {items.map((item, i) => (
+        <View key={i} style={legendStyles.item}>
+          <View style={[legendStyles.dot, { backgroundColor: item.color }]} />
+          <Text style={[legendStyles.text, { color: theme.colors.textSecondary }]}>
+            {item.label}
+          </Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+const legendStyles = StyleSheet.create({
+  wrapper: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    gap: 12,
+    paddingVertical: 14,
+    marginHorizontal: 12,
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
+  item: { flexDirection: "row", alignItems: "center", gap: 5 },
+  dot: { width: 8, height: 8, borderRadius: 4 },
+  text: { fontSize: 10 },
+});
 
 // ─── Knockout matchup types & helpers ───
 
@@ -889,6 +841,26 @@ const styles = StyleSheet.create({
   retryBtn: { marginTop: 16, paddingHorizontal: 24, paddingVertical: 10, borderRadius: 8 },
   retryBtnText: { color: "#fff", fontSize: 14, fontWeight: "700" },
 
+  // Canlı projeksiyon banner
+  liveProjectionBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderBottomWidth: 1,
+    gap: 7,
+  },
+  liveDotBig: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: "#FF4444",
+  },
+  liveProjectionText: {
+    fontSize: 11,
+    fontWeight: "600",
+  },
+
   // Group name header (multi-group leagues)
   groupHeader: {
     paddingHorizontal: 12,
@@ -909,10 +881,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 10,
   },
-  thRank: { width: 30, fontSize: 10, fontWeight: "700", textAlign: "center" },
+  thRank: { width: 30, fontSize: 10, fontWeight: "700", textAlign: "center", minWidth: 30 },
   thTeam: { flex: 1, fontSize: 10, fontWeight: "700" },
-  thStat: { width: 26, fontSize: 10, fontWeight: "700", textAlign: "center" },
-  thPoints: { width: 28, fontSize: 10, fontWeight: "700", textAlign: "center" },
+  thStat: { width: 26, fontSize: 10, fontWeight: "700", textAlign: "center", minWidth: 26 },
+  thPoints: { width: 28, fontSize: 10, fontWeight: "700", textAlign: "center", minWidth: 28 },
   thForm: { width: 72, fontSize: 10, fontWeight: "700", textAlign: "center" },
 
   // Table row
@@ -922,14 +894,30 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 10,
   },
-  rankCol: { width: 30, flexDirection: "row", alignItems: "center", gap: 4 },
+  rankCol: { width: 30, flexDirection: "row", alignItems: "center", gap: 4, minWidth: 30 },
   rankDot: { width: 3, height: 14, borderRadius: 2 },
   rank: { fontSize: 12, fontWeight: "700" },
   teamCol: { flex: 1, flexDirection: "row", alignItems: "center", gap: 8 },
   teamLogo: { width: 20, height: 20 },
   teamName: { fontSize: 12, flex: 1 },
-  stat: { width: 26, fontSize: 12, textAlign: "center" },
-  points: { width: 28, fontSize: 13, fontWeight: "800", textAlign: "center" },
+  liveBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 4,
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    gap: 3,
+    marginLeft: 2,
+  },
+  liveDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: "#fff",
+  },
+  liveBadgeText: { color: "#fff", fontSize: 9, fontWeight: "800" },
+  stat: { width: 26, fontSize: 12, textAlign: "center", minWidth: 26 },
+  points: { width: 28, fontSize: 13, fontWeight: "800", textAlign: "center", minWidth: 28 },
   formCol: {
     width: 72,
     flexDirection: "row",
@@ -944,19 +932,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   formDotText: { color: "#fff", fontSize: 8, fontWeight: "700" },
-
-  // Legend
-  legend: {
-    flexDirection: "row",
-    justifyContent: "center",
-    gap: 16,
-    paddingVertical: 16,
-    marginHorizontal: 12,
-    borderTopWidth: StyleSheet.hairlineWidth,
-  },
-  legendItem: { flexDirection: "row", alignItems: "center", gap: 4 },
-  legendDot: { width: 8, height: 8, borderRadius: 4 },
-  legendText: { fontSize: 10 },
 
   // ─── Knockout styles ───
 

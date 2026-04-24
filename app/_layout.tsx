@@ -11,6 +11,9 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useRef, useState } from 'react';
 import { Image, Platform, StyleSheet, Text, View } from 'react-native';
+import { useVersionCheck } from '../src/hooks/useVersionCheck';
+import { useVersionCheckStore } from '../src/stores/versionCheckStore';
+import HardUpdateModal from '../src/components/common/HardUpdateModal';
 
 if (Text.defaultProps == null) Text.defaultProps = {};
 Text.defaultProps.maxFontSizeMultiplier = 1.3;
@@ -65,6 +68,10 @@ export default function RootLayout() {
   const [ready, setReady] = useState(false);
   const [banner, setBanner] = useState<BannerData | null>(null);
   const onboardingChecked = useRef(false);
+
+  // Version check (hard update blocker)
+  const versionChecked = useVersionCheck();
+  const { hardUpdateNeeded, message } = useVersionCheckStore();
 
   const [fontsLoaded, fontsError] = useFonts({
     Rajdhani_400Regular,
@@ -123,6 +130,18 @@ export default function RootLayout() {
       if (!isExpoGo && Platform.OS !== 'web') {
         (async () => {
           try {
+            // iOS: ATT izni iste, SONRA AdMob'u başlat.
+            // iOS, kullanıcı bir kez yanıtladıktan sonra popup'ı bir daha göstermez —
+            // sonraki açılışlarda requestTrackingPermissionsAsync() anında önbelleği döndürür.
+            // Android: ATT gerekmez, doğrudan AdMob'u başlat.
+            if (Platform.OS === 'ios') {
+              const { requestTrackingPermissionsAsync } =
+                await import('expo-tracking-transparency');
+              await requestTrackingPermissionsAsync();
+              // İzin verilse de verilmese de devam et — SDK bunu otomatik algılar:
+              //   authorized  → kişiselleştirilmiş reklam (daha yüksek eCPM)
+              //   denied      → kişiselleştirilmemiş reklam (yine de gösterilir)
+            }
             const { default: mobileAds } = await import('react-native-google-mobile-ads');
             await mobileAds().initialize();
           } catch {}
@@ -239,6 +258,8 @@ export default function RootLayout() {
             </View>
             <BannerAd />
           </View>
+          {/* Hard update modal (overlaid, geçilemeyen) */}
+          <HardUpdateModal visible={hardUpdateNeeded && versionChecked} message={message} />
         </LoadingProvider>
       </QueryClientProvider>
       </SafeAreaProvider>

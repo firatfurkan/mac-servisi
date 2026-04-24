@@ -3,22 +3,22 @@ import { useRouter } from "expo-router";
 import React, { memo, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-    Image,
-    LayoutAnimation,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Image,
+  LayoutAnimation,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { useRoundFixtures } from "../../hooks/useRoundFixtures";
 import { useAppTheme } from "../../hooks/useAppTheme";
+import { useRoundFixtures } from "../../hooks/useRoundFixtures";
 import { Match } from "../../types";
 import {
-    getFirstLegRound,
-    isKnockoutRound,
-    isSecondLeg,
-    isSingleLegKnockout,
-    translateRound,
+  getFirstLegRound,
+  isKnockoutRound,
+  isSecondLeg,
+  isSingleLegKnockout,
+  translateRound,
 } from "../../utils/matchUtils";
 import MatchCard from "./MatchCard";
 
@@ -81,12 +81,16 @@ function LeagueSection({
     return map;
   }, [matches, roundFixtures, isTwoLeggedKnockout]);
 
-  const goToStandings = () => {
-    const currentSeason = String(new Date().getFullYear() - 1);
+   const goToStandings = () => {
+    // Statik hesaplama yerine o an ekranda olan maçın gerçek sezon bilgisini alıyoruz
+    const matchSeason = matches[0]?.league?.season;
+    const currentSeason = matchSeason || String(new Date().getFullYear() - 1);
+    
     router.push(
       `/standings/${leagueId}?name=${encodeURIComponent(leagueName)}&logo=${encodeURIComponent(leagueLogo)}&season=${currentSeason}`,
     );
   };
+
 
   return (
     <View
@@ -138,7 +142,10 @@ function LeagueSection({
               </View>
             ) : (
               <Text
-                style={[styles.countryName, { color: theme.colors.textSecondary }]}
+                style={[
+                  styles.countryName,
+                  { color: theme.dark ? "#FFFFFF" : "#000000" },
+                ]}
                 numberOfLines={1}
                 maxFontSizeMultiplier={1.1}
               >
@@ -260,7 +267,10 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   countryName: {
-    fontSize: 10,
+    fontSize: 11,
+    fontWeight: "600",
+    letterSpacing: 0.3,
+    opacity: 1,
     marginTop: 0,
   },
   roundBadge: {

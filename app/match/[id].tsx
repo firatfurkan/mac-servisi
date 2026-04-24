@@ -3,42 +3,41 @@ import dayjs from "dayjs";
 import "dayjs/locale/en";
 import "dayjs/locale/tr";
 import utc from "dayjs/plugin/utc";
-dayjs.extend(utc);
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-    Image,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import BannerAd from "../../src/components/ads/BannerAd";
 import BrandMark from "../../src/components/common/BrandMark";
 import EventTimeline from "../../src/components/match/EventTimeline";
 import FootballPitch from "../../src/components/match/FootballPitch";
+import ForumTab from "../../src/components/match/ForumTab";
+import ManOfTheMatch from "../../src/components/match/ManOfTheMatch";
+import StandingsTab from "../../src/components/match/StandingsTab";
 import StatBar from "../../src/components/match/StatBar";
 import TimeRangeSelector from "../../src/components/match/TimeRangeSelector";
 import { useAppTheme } from "../../src/hooks/useAppTheme";
+import { useFixtureBroadcasts } from "../../src/hooks/useFixtureBroadcasts";
 import { useH2H } from "../../src/hooks/useH2H";
 import { useInjuries } from "../../src/hooks/useInjuries";
 import { useLineup } from "../../src/hooks/useLineup";
 import { useMatchDetail } from "../../src/hooks/useMatchDetail";
 import { usePlayerMatchStats } from "../../src/hooks/usePlayerMatchStats";
 import { usePredictions } from "../../src/hooks/usePredictions";
-import { translatePrediction, translateH2H } from "../../src/utils/matchUtils";
+import { useRoundFixtures } from "../../src/hooks/useRoundFixtures";
 import {
-    useTeamLastAwayMatches,
-    useTeamLastHomeMatches,
+  useTeamLastAwayMatches,
+  useTeamLastHomeMatches,
 } from "../../src/hooks/useTeamLastMatches";
 import { PlayerMatchStats } from "../../src/types";
-import { getStatusText, getFirstLegRound, getAggregateAdvancer, getRoundBase, isKnockoutRound, isLive, isSecondLeg, isSingleLegKnockout, translateRound } from "../../src/utils/matchUtils";
-import { useRoundFixtures } from "../../src/hooks/useRoundFixtures";
-import ForumTab from "../../src/components/match/ForumTab";
-import StandingsTab from "../../src/components/match/StandingsTab";
-import ManOfTheMatch from "../../src/components/match/ManOfTheMatch";
+import { getAggregateAdvancer, getFirstLegRound, getRoundBase, getStatusText, isKnockoutRound, isLive, isSecondLeg, isSingleLegKnockout, translateH2H, translatePrediction, translateRound } from "../../src/utils/matchUtils";
+dayjs.extend(utc);
 
 type Tab = "summary" | "statistics" | "lineup" | "h2h" | "standings" | "analysis" | "forum";
 
@@ -90,6 +89,10 @@ export default function MatchDetailScreen() {
     !!id && activeTab === "analysis",
   );
   const { data: injuries = [], isLoading: injuriesLoading } = useInjuries(
+    id ?? "",
+    !!id && activeTab === "summary",
+  );
+  const { data: broadcastChannels = [] } = useFixtureBroadcasts(
     id ?? "",
     !!id && activeTab === "summary",
   );
@@ -197,7 +200,9 @@ export default function MatchDetailScreen() {
   const statsMap = React.useMemo(() => {
     const map = new Map<number, PlayerMatchStats>();
     for (const stat of playerMatchStats) {
-      map.set(stat.playerId, stat);
+      if (stat.playerId) {
+  map.set(Number(stat.playerId), stat);
+}
     }
     return map;
   }, [playerMatchStats]);
@@ -728,7 +733,7 @@ export default function MatchDetailScreen() {
                 </View>
               )}
 
-              {(match.referee || (match.assistantReferees && match.assistantReferees.length > 0)) && (
+              {(match.referee || (match.assistantReferees && match.assistantReferees.length > 0) || match.fourthOfficial || match.varReferee) && (
                 <View
                   style={[
                     styles.venueSection,
@@ -751,38 +756,38 @@ export default function MatchDetailScreen() {
                     </Text>
                   </View>
                   {match.referee && (
-                    <Text
-                      style={[
-                        styles.venueText,
-                        { color: theme.colors.textPrimary },
-                      ]}
-                    >
-                      {typeof match.referee === "string"
-                        ? match.referee
-                        : match.referee.name}
+                    <Text style={[styles.venueText, { color: theme.colors.textPrimary }]}>
+                      {typeof match.referee === "string" ? match.referee : match.referee.name}
                     </Text>
                   )}
-                  {match.assistantReferees && match.assistantReferees.length > 0 && (
-                    <View style={{ marginTop: match.referee ? 6 : 0 }}>
-                      <Text
-                        style={[
-                          styles.sectionTitle,
-                          { color: theme.colors.textSecondary, marginBottom: 3 },
-                        ]}
-                      >
-                        {t("matchDetail.assistantReferees")}
+                  {match.assistantReferees && match.assistantReferees.map((ref, idx) => (
+                    <View key={`ar-${idx}`} style={styles.refereeRow}>
+                      <Text style={[styles.refereeRole, { color: theme.colors.textSecondary }]}>
+                        {t("matchDetail.assistantReferee")} {idx + 1}
                       </Text>
-                      {match.assistantReferees.map((ref, idx) => (
-                        <Text
-                          key={idx}
-                          style={[
-                            styles.venueSubText,
-                            { color: theme.colors.textPrimary, marginBottom: 2 },
-                          ]}
-                        >
-                          {ref.name}
-                        </Text>
-                      ))}
+                      <Text style={[styles.refereeName, { color: theme.colors.textPrimary }]}>
+                        {ref.name}
+                      </Text>
+                    </View>
+                  ))}
+                  {match.fourthOfficial && (
+                    <View style={styles.refereeRow}>
+                      <Text style={[styles.refereeRole, { color: theme.colors.textSecondary }]}>
+                        {t("matchDetail.fourthOfficial")}
+                      </Text>
+                      <Text style={[styles.refereeName, { color: theme.colors.textPrimary }]}>
+                        {match.fourthOfficial.name}
+                      </Text>
+                    </View>
+                  )}
+                  {match.varReferee && (
+                    <View style={styles.refereeRow}>
+                      <Text style={[styles.refereeRole, { color: theme.colors.textSecondary }]}>
+                        {t("matchDetail.varReferee")}
+                      </Text>
+                      <Text style={[styles.refereeName, { color: theme.colors.textPrimary }]}>
+                        {match.varReferee.name}
+                      </Text>
                     </View>
                   )}
                 </View>
@@ -792,43 +797,53 @@ export default function MatchDetailScreen() {
                 <ManOfTheMatch matchId={match.id} lineup={lineup} events={correctedEvents} />
               )}
 
-              {match.broadcast && match.broadcast.length > 0 && (
-                <View
-                  style={[
-                    styles.venueSection,
-                    { backgroundColor: theme.colors.card },
-                  ]}
-                >
-                  <View style={styles.sectionHeader}>
-                    <Ionicons
-                      name="tv-outline"
-                      size={18}
-                      color={theme.colors.primary}
-                    />
-                    <Text
-                      style={[
-                        styles.sectionTitle,
-                        { color: theme.colors.textPrimary },
-                      ]}
-                    >
-                      {t("matchDetail.broadcast")}
-                    </Text>
-                  </View>
-                  <View style={styles.broadcastList}>
-                    {match.broadcast.map((channel, index) => (
+              {(() => {
+                // Merge fixture-inline channels + dedicated broadcasts endpoint (deduplicated)
+                const allChannels = [
+                  ...(match.broadcast ?? []),
+                  ...broadcastChannels,
+                ].filter((ch, i, arr) => arr.indexOf(ch) === i);
+                if (allChannels.length === 0) return null;
+                return (
+                  <View
+                    style={[
+                      styles.venueSection,
+                      { backgroundColor: theme.colors.card },
+                    ]}
+                  >
+                    <View style={styles.sectionHeader}>
+                      <Ionicons
+                        name="tv-outline"
+                        size={18}
+                        color={theme.colors.primary}
+                      />
                       <Text
-                        key={index}
                         style={[
-                          styles.venueText,
+                          styles.sectionTitle,
                           { color: theme.colors.textPrimary },
                         ]}
                       >
-                        {channel}
+                        {t("matchDetail.broadcast")}
                       </Text>
-                    ))}
+                    </View>
+                    <View style={styles.broadcastList}>
+                      {allChannels.map((channel, index) => (
+                        <View key={index} style={styles.broadcastRow}>
+                          <Ionicons name="tv-outline" size={13} color={theme.colors.primary} />
+                          <Text
+                            style={[
+                              styles.venueText,
+                              { color: theme.colors.textPrimary },
+                            ]}
+                          >
+                            {channel}
+                          </Text>
+                        </View>
+                      ))}
+                    </View>
                   </View>
-                </View>
-              )}
+                );
+              })()}
 
               {match.events.length === 0 ? (
                 <EmptyState
@@ -2176,7 +2191,6 @@ export default function MatchDetailScreen() {
       {activeTab === "forum" && (
         <ForumTab matchId={id as string} />
       )}
-      <BannerAd />
       </View>
     </>
   );
@@ -2613,7 +2627,29 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   broadcastList: {
-    gap: 3,
+    gap: 4,
+  },
+  broadcastRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  refereeRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 3,
+  },
+  refereeRole: {
+    fontSize: 11,
+    fontWeight: "500",
+    flex: 1,
+  },
+  refereeName: {
+    fontSize: 13,
+    fontWeight: "600",
+    flex: 2,
+    textAlign: "right",
   },
 
   // Injury Section

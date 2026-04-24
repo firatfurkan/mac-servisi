@@ -1,0 +1,25 @@
+=== Teams named Atalanta ===
+  id=499: Atalanta (Italy)
+
+=== Galatasaray_p1 ===
+  332: D. Mertens
+  691: Tetê
+  2375: Sérgio Oliveira
+  15717: M. Ross
+  43050: A. Cicâldău
+  49866: U. Çakır
+  50202: T. Antalyalı
+  131294: Y. Demir
+  145057: K. Karataş
+  162001: K. Arslan
+  162513: E. Bayram
+  327517: J. Yılmaz
+  339951: A. Bülbül
+  348213: E. Aydın
+  364378: H. Akman
+  364379: B. Aksaka
+  388868: B. Demiroğlu
+  394223: Recep Yalın Dilek
+  498673: F. Koçak
+  508419: Ç. Balta
+

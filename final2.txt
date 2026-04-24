@@ -1,0 +1,153 @@
+=== Arsenal_p3 p3/3 ===
+  49: T. Partey
+  645: R. Sterling
+  912: Neto
+  1117: K. Tierney
+  2289: Jorginho
+  2597: T. Tomiyasu
+  20355: A. Ramsdale
+  127769: Gabriel Martinelli
+  153407: N. Butler-Oyedeji
+  278074: S. Oulad M&apos;Hand
+  284463: Jack Henry-Francis
+  284557: Z. Monlouis
+  309506: J. Robinson
+  313229: J. Gower
+  337933: Alexei Rojas Fedorushchenko
+  339175: M. Rosiak
+  348818: B. Clarke
+  380696: Joshua Nichols
+  416697: J. Porter
+
+=== Lyon_p1 p1/3 ===
+  647: Anthony Lopes
+  6067: T. Almada
+  20762: R. Descamps
+  41323: Mama Baldé
+  162198: F. Da Silva
+  162265: W. Omari
+  162466: S. Diomandé
+  180496: G. Mikautadze
+  193952: J. Lepenant
+  270812: I. Lomami
+  270814: J. Bengui João
+  276184: M. Sarr
+  345531: C. El Djebali
+  350856: E. Nuamah
+  361348: M. Fofana
+  368260: G. Orban
+  386284: Mahamadou Diawara
+  409794: Alejandro Gomes Rodriguez
+  471106: E. Molébé
+  497080: M. Da Silva
+
+=== Lyon_p2 p2/3 ===
+  68: Clinton Mata
+  519: C. Tolisso
+  529: N. Tagliafico
+  659: M. Caqueret
+  1568: P. Akouokou
+  9566: Adryelson
+  9700: Abner
+  10561: Henrique
+  80296: Lucas Perri
+  80752: T. Tessmann
+  156477: R. Cherki
+  198389: M. Patouillet
+  236955: A. Sarr
+  238391: Jeffinho
+  270139: J. O&apos;Brien
+  270811: M. El Arouch
+  334914: S. Kumbedi
+  353482: T. Barišić
+  392671: L. Diarra
+  438692: M. de Carvalho
+
+=== Bournemouth_p1 p1/3 ===
+  105: F. Ballo-Touré
+  131: Jorge Cuenca
+  657: K. Tete
+  727: R. Nelson
+  1438: B. Leno
+  2729: J. Andersen
+  18814: I. Diop
+  19004: B. De Cordova-Reid
+  19145: T. Adarabioyo
+  19657: M. Rodák
+  41104: João Palhinha
+  126690: K. Bowie
+  129705: L. Ashby-Hammond
+  138822: A. Broja
+  152967: C. Bassey
+  153420: G. Wickens
+  284470: M. Dibley-Dias
+  284475: L. Harris
+  297635: Devan Austin Tanton Pedraza
+  335116: K. Šekularac
+
+=== Bournemouth_p2 p2/3 ===
+  899: Andreas Pereira
+  1161: E. Smith Rowe
+  1455: A. Iwobi
+  1934: S. Berge
+  2823: S. Lukić
+  2887: R. Jiménez
+  2920: T. Castagne
+  18753: Adama Traoré
+  19025: T. Cairney
+  19032: R. Sessegnon
+  19221: H. Wilson
+  19312: S. Benda
+  19480: H. Reed
+  19549: A. Robinson
+  191971: J. Stansfield
+  195106: Rodrigo Muniz
+  284559: Alexander Paul Borto
+  359386: M. Godo
+  384981: S. Amissah
+  389315: Joshua King
+
+=== Frankfurt_p1 p1/3 ===
+  24792: N. Katterbach
+  24880: B. Jatta
+  24914: R. Glatzel
+  24965: J. Meffert
+  25033: Daniel Heuer Fernandes
+  25307: M. Richter
+  26356: M. Heyer
+  41799: Guilherme Ramos
+  47736: M. Johansson
+  48475: S. Hefti
+  48489: M. Muheim
+  145480: L. Oppermann
+  177849: D. Beleme
+  262815: M. Raab
+  302632: W. Mikelbrencis
+  327908: N. Oliveira
+  380937: J. Agyekum
+  380940: H. Hermann
+  384861: A. Souhmahoro
+  432523: Saido Balde
+
+=== Frankfurt_p2 p2/3 ===
+  8483: J. Dompé
+  14335: M. Vušković
+  14351: E. Sahiti
+  24863: T. Mickel
+  24874: J. David
+  25922: L. Öztunalı
+  40533: Ł. Poręba
+  67953: L. Perrin
+  129693: R. Philippe
+  161899: A. Németh
+  161923: I. Pherai
+  162773: R. Königsdörffer
+  177780: A. Suhonen
+  202561: V. Zumberi
+  281904: E. Krahn
+  324019: Daniel Elfadli
+  327915: L. Seifert
+  380939: Fabio Amadu Uri Baldé
+  444962: Otto Emerson Stange
+  470282: Alexander Røssing-Lelesiit
+

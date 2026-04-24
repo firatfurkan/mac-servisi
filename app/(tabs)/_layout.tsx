@@ -51,6 +51,14 @@ export default function TabLayout() {
           options={{ title: t("navigation.leagues"), headerTitle: "" }}
         />
         <Tabs.Screen
+          name="analysis"
+          options={{ title: t("navigation.analysis"), headerTitle: "" }}
+        />
+        <Tabs.Screen
+          name="arena"
+          options={{ title: t("navigation.arena"), headerTitle: "" }}
+        />
+        <Tabs.Screen
           name="settings"
           options={{ title: t("navigation.settings"), headerTitle: "" }}
         />

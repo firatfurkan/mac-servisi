@@ -52,7 +52,7 @@ exports.trackLiveMatches = onSchedule(
     const matchDocs = await db.collection('matchSubscriptions').listDocuments();
     if (matchDocs.length === 0) return;
 
-    const CONCURRENCY = 3;
+    const CONCURRENCY = 8;
     for (let i = 0; i < matchDocs.length; i += CONCURRENCY) {
       const batch = matchDocs.slice(i, i + CONCURRENCY);
       await Promise.all(batch.map(ref => processMatch(ref.id, apiKey).catch(err => {
@@ -232,12 +232,15 @@ async function processMatch(matchId, apiKey) {
     updatedAt: FieldValue.serverTimestamp(),
   });
 
-  // ── 7. Push gönder ─────────────────────────────────────────────
+  // ── 7. Push gönder + Error Handling ────────────────────────────
   if (notifications.length > 0) {
     const messages = [];
+    const tokenToDocRef = new Map(); // token → docRef mapping
+
     subscribersSnap.forEach(subDoc => {
       const { token } = subDoc.data();
       if (!Expo.isExpoPushToken(token)) return;
+      tokenToDocRef.set(token, subDoc.ref);
       for (const notif of notifications) {
         messages.push({
           to: token,
@@ -253,9 +256,43 @@ async function processMatch(matchId, apiKey) {
 
     if (messages.length > 0) {
       const chunks = expo.chunkPushNotifications(messages);
+      const invalidTokens = [];
+
       for (const chunk of chunks) {
-        await expo.sendPushNotificationsAsync(chunk).catch(err => {
+        const results = await expo.sendPushNotificationsAsync(chunk).catch(err => {
           console.error('Push send error:', err.message);
+          return [];
+        });
+
+        // Expo error response'larını kontrol et
+        // results[i] → chunk[i] bire bir eşleşiyor
+        results.forEach((result, idx) => {
+          if (result.status === 'error') {
+            const code = result.details?.error;
+            // DeviceNotRegistered: Cihaz push servisine kayıtlı değil
+            // InvalidToken: Token geçersiz/süresi dolmuş
+            if (code === 'DeviceNotRegistered' || code === 'InvalidToken') {
+              const msg = chunk[idx];
+              if (msg?.to && !invalidTokens.includes(msg.to)) {
+                invalidTokens.push(msg.to);
+              }
+            }
+          }
+        });
+      }
+
+      // Geçersiz token'ları Firestore'dan sil
+      if (invalidTokens.length > 0) {
+        const batch = db.batch();
+        invalidTokens.forEach(token => {
+          const docRef = tokenToDocRef.get(token);
+          if (docRef) {
+            batch.delete(docRef);
+            console.log(`[cleanup:invalid-token] ${matchId} token=${token}`);
+          }
+        });
+        await batch.commit().catch(err => {
+          console.error('Failed to delete invalid tokens:', err.message);
         });
       }
     }

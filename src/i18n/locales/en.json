@@ -3,6 +3,8 @@
     "home": "Matches",
     "favorites": "Favorites",
     "leagues": "Leagues",
+    "analysis": "Analysis Center",
+    "arena": "Arena",
     "settings": "Settings"
   },
   "home": {
@@ -70,8 +72,11 @@
     "injured": "Injured",
     "doubtful": "Doubtful",
     "commentaryNotStarted": "Commentary not started yet",
-    "referee": "Referee",
-    "assistantReferees": "Assistant Referees",
+    "referee": "Referees",
+    "mainReferee": "Main Referee",
+    "assistantReferee": "Assistant Referee",
+    "fourthOfficial": "Fourth Official",
+    "varReferee": "VAR Referee",
     "broadcast": "Broadcast Channels",
     "winner": "Projected Outcome",
     "lastHomeMatches": "{{name}} - Last Home Matches",
@@ -162,9 +167,11 @@
     "player": "Player",
     "table": "Standings",
     "topScorers": "Top Scorers",
+    "topAssists": "Top Assists",
     "tableNotFound": "Standings not found",
     "noStandingsThisSeason": "No standings available for this season",
     "topScorersNotFound": "Top scorers data not found",
+    "topAssistsNotFound": "Top assists data not found",
     "win": "W",
     "draw": "D",
     "loss": "L",
@@ -176,7 +183,15 @@
     "vs": "vs",
     "played": "P",
     "goalDiff": "GD",
-    "points": "Pts"
+    "points": "Pts",
+    "bracketTab": "Bracket"
+  },
+  "bracket": {
+    "noBracket": "No bracket available for this tournament",
+    "leg1": "1st Leg",
+    "leg2": "2nd Leg",
+    "pen": "pen",
+    "tbd": "TBD"
   },
   "player": {
     "notFound": "Player info not found",

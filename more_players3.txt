@@ -1,0 +1,212 @@
+=== Napoli_p3 (492) p3/3 ===
+  903: S. McTominay
+  907: R. Lukaku
+  2734: P. Billing
+  2780: V. Osimhen
+  3406: A. Zambo Anguissa
+  15797: J. Cajuste
+  15884: J. Lindstrøm
+  18967: L. Østigård
+  30731: E. Caprile
+  48389: N. Okafor
+  50054: S. Scuffet
+  130423: B. Gilmour
+
+=== Atalanta_p1 (482) p1/3 ===
+  5224: D. Achucarro
+  5231: D. Martínez
+  5369: C. Aracena
+  5605: G. Jaqué
+  5661: A. Alegre
+  5695: L. Ferreyra
+  5925: A. Cuello
+  6283: J. Silva
+  6375: D. Brizuela
+  6405: A. Ayala
+  6413: F. Sivetti
+  59175: M. Vaccaneo
+  137452: E. Fernández
+  147980: A. Schönfeld
+  195998: A. Maidana
+  210132: M. Guzmán
+  237207: L. Varaldo
+  269444: J. Ramírez
+  294532: M. Rogoski
+  427867: E. SolÃ­s
+
+=== Atalanta_p2 (482) p2/3 ===
+  5263: N. Basualdo
+  16445: Sergio Daniel López
+  36174: L. Jerez Silva
+  46841: N. Champagne
+  58355: F. Pérez
+  59214: M. Molina
+  125179: E. González
+  126856: L. Falabella
+  136248: P. Pérez
+  180290: M. Montenegro
+  281069: G. Silva
+  294465: E. De Luca
+  294801: F. Vedoya
+  298214: J. Mendoza
+  311346: R. Conechny
+  362734: N. Troncoso
+  405995: T. Dornell
+  406375: D. Vásquez
+  424631: A. Giordano
+  486532: M. Tappero
+
+=== Monaco_p1 (91) p1/3 ===
+  109: A. Golovin
+  421: B. Embolo
+  2059: W. Ben Yedder
+  7754: M. Camara
+  22254: Y. Fofana
+  40384: R. Majecki
+  274300: M. Akliouche
+  325594: F. Lemaréchal
+  326079: M. Bamba
+  326174: N. Babaï
+  343319: L. Michal
+  361426: R. Valme
+  361881: Antonin Cartillier
+  374499: Malamine Efekele
+  395040: G. Ilenikhena
+  399893: B. Kiwa
+  419584: J. Tincres
+  430044: J. Bery
+  449676: S. Nibombé
+  453792: A. Bamba
+
+=== Monaco_p2 (91) p2/3 ===
+  81: K. Diatta
+  231: J. Teze
+  963: L. Hrádecký
+  2553: G. Maripán
+  7313: P. Köhn
+  10316: Caio Henrique
+  36907: M. Boadu
+  162991: E. Matazo
+  163039: C. Matsima
+  274296: Y. Lienard
+  291649: Vanderson
+  326080: A. Platret
+  333137: K. Ouattara
+  371916: C. Mawissa Elebi
+  374058: L. Camara
+  374361: E. Diop
+  412711: Saïmon Bouabré
+  419035: M. Coulibaly
+  422407: Mayssam Benama
+  440070: J. Stawiecki
+
+=== Nottm_Forest_p1 (65) p1/3 ===
+  279: L. Mbe Soh
+  305: D. Origi
+  371: Felipe
+  557: O. Vlachodimos
+  2468: G. Montiel
+  2807: R. Freuler
+  14206: B. Aguilera
+  18904: J. Shelvey
+  24882: O. Mangala
+  25916: M. Niakhaté
+  41577: Nuno Tavares
+  47547: Álex Moreno
+  129712: A. Mighten
+  153430: A. Elanga
+  158697: J. McAtee
+  161921: G. Reyna
+  325851: F. Back
+  339138: D. Taylor
+  341641: Rodrigo Ribeiro
+  430835: Tyler Bindon
+
+=== Nottm_Forest_p2 (65) p2/3 ===
+  2298: C. Hudson-Odoi
+  2771: O. Aina
+  2817: N. Milenković
+  2919: M. Sels
+  6056: N. Domínguez
+  8598: T. Awoniyi
+  10373: Carlos Miguel
+  18739: W. Boly
+  18746: M. Gibbs-White
+  18931: C. Wood
+  19305: R. Yates
+  19610: O. Richards
+  22149: I. Sangaré
+  67943: Morato
+  83029: J. Bowler
+  138780: N. Williams
+  138908: E. Anderson
+  329357: Z. Abbott
+  363695: Murillo
+  380492: Eric Emanuel da Silva Moreira
+
+=== Crystal_Palace_p1 (52) p1/4 ===
+  2933: B. Chilwell
+  13736: D. Muñoz
+  18853: J. Riedewald
+  19088: D. Henderson
+  19586: E. Eze
+  19617: M. Olise
+  19684: R. Matthews
+  20995: M. Lacroix
+  22157: W. Benítez
+  67971: M. Guéhi
+  126949: C. Richards
+  127605: N. Ferguson
+  144741: L. Moulden
+  182201: T. Mitchell
+  278898: C. Riad
+  284493: T. Adaramola
+  284554: O. Goodman
+  298129: M. Boateng
+  304319: Ademola Oladipupo Ola-Adebomi
+  380702: M. Jemide
+
+=== Crystal_Palace_p2 (52) p2/4 ===
+  1135: O. Édouard
+  1468: E. Nketiah
+  2490: J. Lerma
+  2601: D. Kamada
+  3339: C. Doucouré
+  18862: N. Clyne
+  25927: J. Mateta
+  26303: B. Sosa
+  152418: N. Ahamada
+  284449: J. Rak-Sakyi
+  286458: J. Devenny
+  288102: A. Wharton
+  301295: K. Rodney
+  311157: Matheus França
+  340136: F. Umeh
+  363974: Z. Marsh
+  367634: A. Agbinone
+  380679: C. Kporha
+  380703: Rio Cardines
+  402640: R. Esse
+
+=== Brentford_p1 (55) p1/3 ===
+  2699: S. Ghoddos
+  18945: S. Armstrong
+  19364: N. Maupay
+  19465: David Raya
+  20110: S. Baptiste
+  20589: B. Mbeumo
+  20649: Y. Wissa
+  30407: C. Nørgaard
+  61742: H. Valdimarsson
+  138832: B. Winterbottom
+  153422: E. Brierley
+  276263: F. Stevens
+  281975: Val Adedokun
+  284797: D. Ouattara
+  327726: R. Owen
+  349288: Vincent Angelini
+  364980: Conor McManus
+  388509: Isaac Holland
+  389579: J. Eyestone
+  393311: R. Rose
+
