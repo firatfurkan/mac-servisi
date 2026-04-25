@@ -475,28 +475,24 @@ export default function ValueQuizGame({ theme }: Props) {
           setPhase('correct');
           setScore(prev => prev + 1);
 
-          const loser = side === 'left' ? 'right' : 'left';
-          const lOp = loser === 'left' ? opacityL : opacityR;
-          const lSc = loser === 'left' ? scaleL   : scaleR;
-          lOp.value = withTiming(0,   { duration: FADE_OUT_MS });
-          lSc.value = withTiming(0.8, { duration: FADE_OUT_MS });
+          // Both cards fade out — no card survives, every round is fresh
+          opacityL.value = withTiming(0,   { duration: FADE_OUT_MS });
+          scaleL.value   = withTiming(0.8, { duration: FADE_OUT_MS });
+          opacityR.value = withTiming(0,   { duration: FADE_OUT_MS });
+          scaleR.value   = withTiming(0.8, { duration: FADE_OUT_MS });
 
           timerRef.current = setTimeout(() => {
-            const seen = seenRef.current;
-            seen.add(chosen.id);
-            const next = balancedNext(chosen, seen, scoreRef.current);
-            seen.add(next.id);
-            if (seen.size >= PLAYERS.length - 2)
-              seenRef.current = new Set([chosen.id, next.id]);
-            const newPair = side === 'left'
-              ? { left: chosen, right: next }
-              : { left: next, right: chosen };
-            setPair(newPair);
+            const next = balancedPair(scoreRef.current);
+            seenRef.current = new Set([next.left.id, next.right.id]);
+            setPair(next);
             resetAnim();
             setPhase('guessing');
-            lOp.value = 0; lSc.value = 0.82;
-            lOp.value = withTiming(1, { duration: FADE_IN_MS });
-            lSc.value = withSpring(1, { damping: 10, stiffness: 140 });
+            opacityL.value = 0; scaleL.value = 0.82;
+            opacityR.value = 0; scaleR.value = 0.82;
+            opacityL.value = withTiming(1, { duration: FADE_IN_MS });
+            scaleL.value   = withSpring(1, { damping: 10, stiffness: 140 });
+            opacityR.value = withTiming(1, { duration: FADE_IN_MS });
+            scaleR.value   = withSpring(1, { damping: 10, stiffness: 140 });
           }, FADE_OUT_MS + 60);
         } else {
           triggerWrong(side);
