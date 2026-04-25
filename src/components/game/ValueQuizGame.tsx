@@ -840,8 +840,8 @@ function LeaderboardList({ leaderboard, lbLoading, highScore, playerName, theme 
       }]}>
         <Ionicons name="person-circle-outline" size={16} color={theme.colors.primary} />
         <Text style={[styles.myLabel, { color: theme.colors.textPrimary, fontFamily: 'Rajdhani_600SemiBold' }]}>{playerName}</Text>
-        <Text style={[styles.myScore, { color: theme.colors.primary, ...SCORE_SHADOW }]}>{highScore}</Text>
-        <Text style={[styles.myBest, { color: isDark ? '#8DE5DF' : theme.colors.primary + 'aa' }]}>KİŞİSEL REKOR</Text>
+        <Text style={[styles.myScore, { color: isDark ? '#FFFFFF' : theme.colors.primary, ...SCORE_SHADOW }]}>{highScore}</Text>
+        <Text style={[styles.myBest, { color: isDark ? '#FFFFFF' : theme.colors.primary + 'aa' }]}>KİŞİSEL REKOR</Text>
       </View>
 
       {/* divider */}
@@ -859,12 +859,12 @@ function LeaderboardList({ leaderboard, lbLoading, highScore, playerName, theme 
           {leaderboard.map((entry, i) => {
             const medal     = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : null;
             const rankColor = i === 0
-              ? theme.colors.primary
+              ? (isDark ? '#FFFFFF' : theme.colors.primary)
               : i === 1
-              ? (isDark ? '#5EDBD3' : 'rgba(0,137,123,0.70)')
+              ? (isDark ? '#E0F7F5' : 'rgba(0,137,123,0.70)')
               : i === 2
-              ? (isDark ? '#8DE5DF' : 'rgba(0,137,123,0.50)')
-              : theme.colors.textSecondary;
+              ? (isDark ? '#C5F0EC' : 'rgba(0,137,123,0.50)')
+              : (isDark ? theme.colors.textPrimary : theme.colors.textSecondary);
             const isMe      = entry.name === playerName;
             const podiumBg  = i === 0
               ? (isDark ? 'rgba(14,205,185,0.20)' : 'rgba(0,137,123,0.08)')
@@ -895,7 +895,7 @@ function LeaderboardList({ leaderboard, lbLoading, highScore, playerName, theme 
                 <Text style={[
                   styles.lbScore,
                   {
-                    color: i < 3 ? rankColor : theme.colors.primary,
+                    color: i < 3 ? rankColor : (isDark ? '#FFFFFF' : theme.colors.primary),
                     fontSize: i < 3 ? 18 : 15,
                     ...(i < 3 ? SCORE_SHADOW : {}),
                   },
