@@ -101,6 +101,7 @@ export function StoreReviewPrompt({
       >
         {/* Content */}
         <View style={styles.content}>
+          <Text style={styles.stars}>★★★★★</Text>
           <Text
             style={[styles.title, { color: theme.colors.textPrimary }]}
             numberOfLines={2}
@@ -164,6 +165,11 @@ const styles = StyleSheet.create({
   },
   content: {
     gap: 4,
+  },
+  stars: {
+    fontSize: 22,
+    color: '#FFD700',
+    letterSpacing: 3,
   },
   title: {
     fontSize: 14,
