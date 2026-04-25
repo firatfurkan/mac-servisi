@@ -24,6 +24,7 @@ import BannerAd from '../src/components/ads/BannerAd';
 import { LoadingProvider } from '../src/context/LoadingContext';
 import { useAppTheme } from '../src/hooks/useAppTheme';
 import { useNotifiedMatchTracker } from '../src/hooks/useNotifiedMatchTracker';
+import { useRedCardMonitor } from '../src/hooks/useRedCardMonitor';
 import '../src/i18n/config';
 import { initSounds } from '../src/services/soundManager';
 import { syncPushSubscriptions } from '../src/services/pushService';
@@ -82,6 +83,7 @@ export default function RootLayout() {
   });
 
   useNotifiedMatchTracker();
+  useRedCardMonitor();
 
   useEffect(() => {
     let sub: any = null;

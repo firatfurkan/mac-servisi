@@ -67,12 +67,17 @@ export default function MatchDetailScreen() {
     setEndMinute(maxMinute);
   }, [maxMinute]);
 
-  // Lineup ve stats verisini sayfa açılır açılmaz fetch et (tab geçişinde bekleme olmasın)
-  const { data: lineup, isLoading: lineupLoading } = useLineup(id ?? "", !!id);
+  // Tab-gated API calls to reduce initial load
+  const { data: lineup, isLoading: lineupLoading } = useLineup(
+    id ?? "",
+    !!id && (activeTab === "summary" || activeTab === "lineup"),
+  );
+  // H2H: needed for both h2h tab AND knockout paired match search
+  const enableH2H = !!match && (activeTab === "h2h" || (isKnockoutRound(match?.league.round) && !isSingleLegKnockout(match?.league.round)));
   const { data: h2hMatches = [], isLoading: h2hLoading } = useH2H(
     match?.homeTeam.id ?? "",
     match?.awayTeam.id ?? "",
-    activeTab === "h2h" && !!match,
+    enableH2H,
   );
   const { data: lastHomeMatches = [], isLoading: lastHomeLoading } =
     useTeamLastHomeMatches(
@@ -96,7 +101,10 @@ export default function MatchDetailScreen() {
     id ?? "",
     !!id && activeTab === "summary",
   );
-  const { data: playerMatchStats = [] } = usePlayerMatchStats(id ?? "", !!id);
+  const { data: playerMatchStats = [] } = usePlayerMatchStats(
+    id ?? "",
+    !!id && (activeTab === "summary" || activeTab === "statistics" || activeTab === "lineup"),
+  );
 
   // Knockout maçlarda eşleşen diğer ayak maçını bul (1st/2nd leg)
   const isKnockout = isKnockoutRound(match?.league.round);
@@ -120,7 +128,7 @@ export default function MatchDetailScreen() {
     needsPairedMatch,
   );
 
-  // 2) Fallback: H2H'den ara (round fixtures'da bulunamazsa, farklı round adı olabilir)
+  // Paired fixture found check
   const roundPairedFound = React.useMemo(() => {
     if (!match || pairedRoundFixtures.length === 0) return false;
     const teamIds = new Set([match.homeTeam.id, match.awayTeam.id]);
@@ -129,11 +137,8 @@ export default function MatchDetailScreen() {
     );
   }, [match, pairedRoundFixtures]);
 
-  const { data: h2hForPaired = [] } = useH2H(
-    match?.homeTeam.id ?? "",
-    match?.awayTeam.id ?? "",
-    needsPairedMatch && !roundPairedFound && !!match,
-  );
+  // Reuse h2hMatches for paired match search (consolidate API calls)
+  const h2hForPaired = h2hMatches;
 
   // Eşleşen maçı bul: önce round fixtures, sonra h2h fallback
   const pairedMatch = React.useMemo(() => {

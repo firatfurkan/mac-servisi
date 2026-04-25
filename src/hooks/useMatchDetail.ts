@@ -52,7 +52,7 @@ export function useMatchDetail(matchId: string) {
       if (data.status === 'half_time') return 15_000;
       return data.status === 'live' ? 30_000 : false;
     },
-    staleTime: 0,
+    staleTime: 30_000, // 30s — data fresh during normal gameplay, refetch on interval
     gcTime: 5 * 60_000, // 5dk cache'de tut — geri dönünce anında göster
   });
 }
