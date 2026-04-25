@@ -30,6 +30,7 @@ import { syncPushSubscriptions } from '../src/services/pushService';
 import { useFavoritesStore } from '../src/stores/favoritesStore';
 import { useNotificationStore } from '../src/stores/notificationStore';
 import { useSettingsStore } from '../src/stores/settingsStore';
+import { useStoreReviewStore } from '../src/stores/storeReviewStore';
 import { useThemeStore } from '../src/stores/themeStore';
 
 SplashScreen.preventAutoHideAsync();
@@ -110,11 +111,13 @@ export default function RootLayout() {
 
       try {
         // Paralel çalıştır — sıralı await yerine hepsi aynı anda başlar
+        const { loadReviewState } = useStoreReviewStore.getState();
         await Promise.all([
           initializeTheme(),
           initializeLanguage(),
           loadFavorites(),
           loadNotifications(),
+          loadReviewState(),
         ]);
         // Sync all stored notification subscriptions to Firestore
         const { notifiedMatches } = useNotificationStore.getState();

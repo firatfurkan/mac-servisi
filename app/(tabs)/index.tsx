@@ -18,9 +18,11 @@ import SearchBar from "../../src/components/home/SearchBar";
 import { AppFooter } from "../../src/components/AppFooter";
 import { useAppTheme } from "../../src/hooks/useAppTheme";
 import { useMatches } from "../../src/hooks/useMatches";
+import { useStoreReviewPrompt } from "../../src/hooks/useStoreReviewPrompt";
 import { useFavoritesStore } from "../../src/stores/favoritesStore";
 import { useMatchStore } from "../../src/stores/matchStore";
 import { groupMatchesByLeague, PRIORITY_LEAGUES } from "../../src/utils/matchUtils";
+import { StoreReviewPrompt } from "../../src/components/common/StoreReviewPrompt";
 
 export default function HomeScreen() {
   const { t, i18n } = useTranslation();
@@ -30,6 +32,9 @@ export default function HomeScreen() {
   const { favoriteTeamIds } = useFavoritesStore();
   const [liveOnly, setLiveOnly] = useState(false);
   const [manualRefreshing, setManualRefreshing] = useState(false);
+
+  // Store Review prompt (non-intrusive)
+  const { showPrompt, handleRate, handleLater } = useStoreReviewPrompt();
 
   const {
     data: matches = [],
@@ -255,6 +260,11 @@ export default function HomeScreen() {
           ListFooterComponent={<AppFooter />}
         />
       )}
+      <StoreReviewPrompt
+        visible={showPrompt}
+        onRate={handleRate}
+        onLater={handleLater}
+      />
     </View>
   );
 }

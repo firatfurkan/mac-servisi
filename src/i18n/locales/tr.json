@@ -198,6 +198,12 @@
     "goals": "Gol",
     "assists": "Asist"
   },
+  "storeReview": {
+    "title": "Bu uygulamayı beğeniyor musunuz?",
+    "subtitle": "Görüşünüz bizim için çok değerli.",
+    "rateButton": "Yorum Yap ⭐",
+    "laterButton": "Belki Sonra"
+  },
   "notifications": {
     "matchStarted": "Maç Başladı!",
     "matchFinished": "Maç Bitti!",

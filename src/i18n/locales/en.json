@@ -198,6 +198,12 @@
     "goals": "Goals",
     "assists": "Assists"
   },
+  "storeReview": {
+    "title": "Enjoying the app?",
+    "subtitle": "Your feedback means a lot to us.",
+    "rateButton": "Rate Us ⭐",
+    "laterButton": "Maybe Later"
+  },
   "notifications": {
     "matchStarted": "Match Started!",
     "matchFinished": "Match Finished!",
