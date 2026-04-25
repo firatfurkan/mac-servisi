@@ -791,11 +791,12 @@ function PlayerCard({ player, theme, onPress, disabled, valueStyle, flashStyle, 
         </Text>
         <View style={styles.valueArea}>
           {revealed ? (
-            <Animated.Text style={[
-              styles.valueText,
-              { color: primary, textShadowColor: primary, textShadowOffset: { width: 0, height: 0 } },
-              valueStyle,
-            ]}>
+            <Animated.Text
+              style={[styles.valueText, { color: theme.colors.primary }, valueStyle]}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.65}
+            >
               {fmt(player.marketValue)}
             </Animated.Text>
           ) : (
