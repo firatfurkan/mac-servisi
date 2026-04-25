@@ -92,9 +92,6 @@ const FADE_IN_MS     = 340;
 const TIMER_SECS     = 7;
 const LB_COLLECTION  = 'leaderboard';
 
-// Premium gold palette — replaces garish #FFBB33 warning
-const GOLD        = '#D4AF37';
-const GOLD_LIGHT  = '#F0CB35';
 const SCORE_SHADOW = {
   textShadowColor:  'rgba(0,0,0,0.60)',
   textShadowOffset: { width: 0, height: 1 } as const,
@@ -646,7 +643,7 @@ export default function ValueQuizGame({ theme }: Props) {
             </View>
           )}
         </View>
-        <ScoreBox label="REKOR" value={highScore} color={GOLD} theme={theme} />
+        <ScoreBox label="REKOR" value={highScore} color={theme.dark ? 'rgba(14,205,185,0.65)' : 'rgba(0,137,123,0.80)'} theme={theme} />
       </View>
 
       {/* cards */}
@@ -678,10 +675,10 @@ export default function ValueQuizGame({ theme }: Props) {
         <TouchableOpacity
           onPress={openLbModal}
           activeOpacity={0.78}
-          style={[styles.lbOpenBtn, { borderColor: GOLD + '70' }]}
+          style={[styles.lbOpenBtn, { borderColor: theme.colors.primary + '70' }]}
         >
-          <Ionicons name="trophy" size={13} color={GOLD} />
-          <Text style={[styles.lbOpenText, { color: GOLD }]}>EN İYİLER</Text>
+          <Ionicons name="trophy" size={13} color={theme.colors.primary} />
+          <Text style={[styles.lbOpenText, { color: theme.colors.primary }]}>EN İYİLER</Text>
         </TouchableOpacity>
       </View>
 
@@ -838,13 +835,13 @@ function LeaderboardList({ leaderboard, lbLoading, highScore, playerName, theme 
     <>
       {/* user's own record */}
       <View style={[styles.myRow, {
-        backgroundColor: isDark ? 'rgba(212,175,55,0.12)' : 'rgba(212,175,55,0.10)',
-        borderColor: GOLD + '70',
+        backgroundColor: isDark ? 'rgba(14,205,185,0.12)' : 'rgba(0,137,123,0.07)',
+        borderColor: theme.colors.primary + '70',
       }]}>
-        <Ionicons name="person-circle-outline" size={16} color={GOLD} />
+        <Ionicons name="person-circle-outline" size={16} color={theme.colors.primary} />
         <Text style={[styles.myLabel, { color: theme.colors.textPrimary, fontFamily: 'Rajdhani_600SemiBold' }]}>{playerName}</Text>
-        <Text style={[styles.myScore, { color: GOLD, ...SCORE_SHADOW }]}>{highScore}</Text>
-        <Text style={[styles.myBest, { color: GOLD + 'cc' }]}>KİŞİSEL REKOR</Text>
+        <Text style={[styles.myScore, { color: theme.colors.primary, ...SCORE_SHADOW }]}>{highScore}</Text>
+        <Text style={[styles.myBest, { color: theme.colors.primary + 'aa' }]}>KİŞİSEL REKOR</Text>
       </View>
 
       {/* divider */}
@@ -861,14 +858,20 @@ function LeaderboardList({ leaderboard, lbLoading, highScore, playerName, theme 
         <ScrollView style={styles.lbScroll} showsVerticalScrollIndicator={false} horizontal={false} scrollEventThrottle={16}>
           {leaderboard.map((entry, i) => {
             const medal     = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : null;
-            const rankColor = i === 0 ? GOLD_LIGHT : i === 1 ? '#D8D8D8' : i === 2 ? '#E8A870' : theme.colors.textSecondary;
+            const rankColor = i === 0
+              ? theme.colors.primary
+              : i === 1
+              ? (isDark ? 'rgba(14,205,185,0.65)' : 'rgba(0,137,123,0.70)')
+              : i === 2
+              ? (isDark ? 'rgba(14,205,185,0.45)' : 'rgba(0,137,123,0.50)')
+              : theme.colors.textSecondary;
             const isMe      = entry.name === playerName;
             const podiumBg  = i === 0
-              ? (isDark ? 'rgba(212,175,55,0.14)' : 'rgba(212,175,55,0.11)')
+              ? (isDark ? 'rgba(14,205,185,0.14)' : 'rgba(0,137,123,0.08)')
               : i === 1
-              ? (isDark ? 'rgba(200,200,200,0.09)' : 'rgba(180,180,180,0.08)')
+              ? (isDark ? 'rgba(14,205,185,0.08)' : 'rgba(0,137,123,0.05)')
               : i === 2
-              ? (isDark ? 'rgba(205,127,50,0.09)' : 'rgba(180,110,50,0.07)')
+              ? (isDark ? 'rgba(14,205,185,0.05)' : 'rgba(0,137,123,0.03)')
               : i % 2 === 0 ? zebraOdd : zebraEven;
             return (
               <View key={i} style={[
@@ -933,7 +936,7 @@ function LeaderboardModal({ theme, leaderboard, lbLoading, highScore, playerName
       ]}>
         {/* header row */}
         <View style={styles.lbModalHeader}>
-          <Ionicons name="trophy" size={18} color={GOLD} />
+          <Ionicons name="trophy" size={18} color={theme.colors.primary} />
           <Text style={[styles.lbModalTitle, { color: theme.colors.textPrimary }]}>GLOBAL TOP 10</Text>
           <TouchableOpacity onPress={onClose} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
             <Ionicons name="close-circle" size={22} color={theme.colors.textSecondary} />
@@ -1021,7 +1024,7 @@ function NameEntryModal({ theme, onConfirm }: { theme: AppTheme; onConfirm: (nam
         </View>
 
         {!canStart && trimmed.length > 0 && (
-          <Text style={[styles.nmHint, { color: GOLD }]}>En az 2 karakter giriniz</Text>
+          <Text style={[styles.nmHint, { color: theme.colors.primary }]}>En az 2 karakter giriniz</Text>
         )}
 
         {/* Başla butonu */}
@@ -1072,8 +1075,8 @@ function GameOver({ theme, score, highScore, isNewHS, leaderboard, lbLoading, pl
         <Text style={[styles.goTitle, { color: theme.colors.accent }]}>OYUN BİTTİ</Text>
 
         {isNewHS && (
-          <View style={[styles.recordBadge, { backgroundColor: GOLD, shadowColor: GOLD, shadowOpacity: 0.55, shadowRadius: 10, elevation: 6 }]}>
-            <Ionicons name="trophy" size={13} color="#1a1200" />
+          <View style={[styles.recordBadge, { backgroundColor: theme.colors.primary, shadowColor: theme.colors.primary, shadowOpacity: 0.55, shadowRadius: 10, elevation: 6 }]}>
+            <Ionicons name="trophy" size={13} color="#FFFFFF" />
             <Text style={styles.recordText}>YENİ REKOR!</Text>
           </View>
         )}
@@ -1086,14 +1089,14 @@ function GameOver({ theme, score, highScore, isNewHS, leaderboard, lbLoading, pl
           <View style={[styles.goSep, { backgroundColor: theme.colors.divider }]} />
           <View style={styles.goBlock}>
             <Text style={[styles.goLabel, { color: theme.colors.textSecondary }]}>REKOR</Text>
-            <Text style={[styles.goBig, { color: GOLD, ...SCORE_SHADOW }]}>{highScore}</Text>
+            <Text style={[styles.goBig, { color: theme.dark ? 'rgba(14,205,185,0.70)' : 'rgba(0,137,123,0.80)', ...SCORE_SHADOW }]}>{highScore}</Text>
           </View>
         </View>
 
         {/* leaderboard panel */}
         <View style={[styles.lbContainer, { borderColor: theme.colors.primary + '35' }]}>
           <View style={styles.lbInnerHeader}>
-            <Ionicons name="trophy" size={13} color={GOLD} />
+            <Ionicons name="trophy" size={13} color={theme.colors.primary} />
             <Text style={[styles.lbTitle, { color: theme.colors.textPrimary }]}>GLOBAL TOP 10</Text>
           </View>
           <LeaderboardList
@@ -1221,7 +1224,7 @@ const styles = StyleSheet.create({
   },
   goTitle:     { fontSize: 32, fontFamily: 'Rajdhani_700Bold', letterSpacing: 3 },
   recordBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 6, borderRadius: 20, marginTop: 10, shadowOffset: { width: 0, height: 3 } },
-  recordText:  { color: '#1a1200', fontSize: 12, fontFamily: 'Rajdhani_700Bold', letterSpacing: 1.5 },
+  recordText:  { color: '#FFFFFF', fontSize: 12, fontFamily: 'Rajdhani_700Bold', letterSpacing: 1.5 },
   goRow:       { flexDirection: 'row', alignItems: 'center', marginVertical: 14 },
   goBlock:     { alignItems: 'center', paddingHorizontal: 22 },
   goLabel:     { fontSize: 11, fontFamily: 'Rajdhani_700Bold', letterSpacing: 2.5 },
