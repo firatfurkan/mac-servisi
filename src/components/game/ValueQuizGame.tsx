@@ -784,7 +784,7 @@ function PlayerCard({ player, theme, onPress, disabled, valueStyle, flashStyle, 
             {player.team}
           </Text>
         </View>
-        <Text style={[styles.ageMevki, { color: labelColor, fontWeight: 'bold' }]}>
+        <Text numberOfLines={1} style={[styles.ageMevki, { color: labelColor, fontWeight: 'bold' }]}>
           {player.age} Yaş | {positionTR(player.position)}
         </Text>
         <Text numberOfLines={1} style={[styles.league, { color: labelColor, fontWeight: 'bold' }]}>
