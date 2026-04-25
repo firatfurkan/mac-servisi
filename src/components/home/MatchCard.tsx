@@ -19,6 +19,7 @@ import {
 import { registerMatchPush, unregisterMatchPush } from "../../services/pushService";
 import { useFavoritesStore } from "../../stores/favoritesStore";
 import { useNotificationStore } from "../../stores/notificationStore";
+import { useRedCardStore } from "../../stores/redCardStore";
 import { Match, MatchEvent } from "../../types";
 import { formatMatchTime, getAggregateAdvancer, isKnockoutRound, isLive, isSingleLegKnockout } from "../../utils/matchUtils";
 
@@ -108,6 +109,13 @@ function MatchCard({ match, events, pairedMatch }: Props) {
   const notStarted = match.status === "not_started";
   const unfinished =
     match.status === "postponed" || match.status === "cancelled";
+
+  // Get red cards from background queue (no API call)
+  const redCardEvents = useRedCardStore((s) =>
+    s.events.filter((e) => e.matchId === match.id),
+  );
+  const homeRedCards = redCardEvents.filter((e) => e.playerTeam === match.homeTeam.name).length;
+  const awayRedCards = redCardEvents.filter((e) => e.playerTeam === match.awayTeam.name).length;
 
   // Aggregate hesaplama: paired maç varsa ve bu maç 2. ayaksa
   const isSecondLeg = !!pairedMatch &&
@@ -316,9 +324,17 @@ function MatchCard({ match, events, pairedMatch }: Props) {
           >
             {match.homeTeam.name}
           </Text>
-          {advancer === "home" && (
-            <Ionicons name="checkmark-circle" size={13} color="#4CAF50" style={styles.advancerIcon} />
-          )}
+          <View style={styles.badgesRow}>
+            {homeRedCards > 0 && (
+              <View style={[styles.redCardBadge, { backgroundColor: "#FF4444" }]}>
+                <Text style={styles.badgeText}>🔴</Text>
+                <Text style={[styles.badgeCount, { color: "#FFF" }]}>{homeRedCards}</Text>
+              </View>
+            )}
+            {advancer === "home" && (
+              <Ionicons name="checkmark-circle" size={13} color="#4CAF50" style={styles.advancerIcon} />
+            )}
+          </View>
         </View>
       </TouchableOpacity>
 
@@ -412,9 +428,17 @@ function MatchCard({ match, events, pairedMatch }: Props) {
           >
             {match.awayTeam.name}
           </Text>
-          {advancer === "away" && (
-            <Ionicons name="checkmark-circle" size={13} color="#4CAF50" style={styles.advancerIcon} />
-          )}
+          <View style={[styles.badgesRow, { flexDirection: "row-reverse" }]}>
+            {awayRedCards > 0 && (
+              <View style={[styles.redCardBadge, { backgroundColor: "#FF4444" }]}>
+                <Text style={styles.badgeText}>🔴</Text>
+                <Text style={[styles.badgeCount, { color: "#FFF" }]}>{awayRedCards}</Text>
+              </View>
+            )}
+            {advancer === "away" && (
+              <Ionicons name="checkmark-circle" size={13} color="#4CAF50" style={styles.advancerIcon} />
+            )}
+          </View>
         </View>
         <Image
           source={{ uri: match.awayTeam.logoUrl }}
@@ -526,5 +550,28 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     justifyContent: "center",
     alignItems: "center",
+  },
+  badgesRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    flexShrink: 0,
+  },
+  redCardBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 2,
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+    borderRadius: 4,
+    justifyContent: "center",
+  },
+  badgeText: {
+    fontSize: 10,
+    fontWeight: "600",
+  },
+  badgeCount: {
+    fontSize: 9,
+    fontWeight: "700",
   },
 });
