@@ -746,8 +746,9 @@ function PlayerCard({ player, theme, onPress, disabled, valueStyle, flashStyle, 
   const [photoError, setPhotoError] = useState(false);
   const [primary, secondary] = player.colors;
   useEffect(() => { setPhotoError(false); }, [player.id]);
-  const showPhoto = player.photoId > 0 && !photoError;
-  const cardBg    = theme.dark ? '#0d1c1a' : '#ffffff';
+  const showPhoto  = player.photoId > 0 && !photoError;
+  const cardBg     = theme.dark ? '#0d1c1a' : '#ffffff';
+  const labelColor = theme.dark ? '#FFFFFF' : theme.colors.textPrimary;
 
   return (
     <TouchableOpacity activeOpacity={0.87} onPress={onPress} disabled={disabled}
@@ -774,25 +775,25 @@ function PlayerCard({ player, theme, onPress, disabled, valueStyle, flashStyle, 
 
       <View style={styles.info}>
         <Text numberOfLines={2} ellipsizeMode="tail" adjustsFontSizeToFit minimumFontScale={0.78}
-          style={[styles.name, { color: theme.colors.textPrimary }]}>
+          style={[styles.name, { color: labelColor, fontWeight: 'bold' }]}>
           {player.name}
         </Text>
         <View style={styles.teamRow}>
           <View style={[styles.teamDot, { backgroundColor: secondary || primary }]} />
-          <Text numberOfLines={1} style={[styles.teamName, { color: theme.colors.textPrimary }]}>
+          <Text numberOfLines={1} style={[styles.teamName, { color: labelColor, fontWeight: 'bold' }]}>
             {player.team}
           </Text>
         </View>
-        <Text style={[styles.ageMevki, { color: primary }]}>
+        <Text style={[styles.ageMevki, { color: labelColor, fontWeight: 'bold' }]}>
           {player.age} Yaş | {positionTR(player.position)}
         </Text>
-        <Text numberOfLines={1} style={[styles.league, { color: theme.colors.textPrimary }]}>
+        <Text numberOfLines={1} style={[styles.league, { color: labelColor, fontWeight: 'bold' }]}>
           {player.league}
         </Text>
         <View style={styles.valueArea}>
           {revealed ? (
             <Animated.Text
-              style={[styles.valueText, { color: theme.colors.primary }, valueStyle]}
+              style={[styles.valueText, { color: theme.dark ? '#FFFFFF' : theme.colors.primary, fontWeight: 'bold' }, valueStyle]}
               numberOfLines={1}
               adjustsFontSizeToFit
               minimumFontScale={0.65}
