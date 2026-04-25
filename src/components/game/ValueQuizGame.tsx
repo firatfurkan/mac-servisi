@@ -643,7 +643,7 @@ export default function ValueQuizGame({ theme }: Props) {
             </View>
           )}
         </View>
-        <ScoreBox label="REKOR" value={highScore} color={theme.dark ? 'rgba(14,205,185,0.65)' : 'rgba(0,137,123,0.80)'} theme={theme} />
+        <ScoreBox label="REKOR" value={highScore} color={theme.dark ? theme.colors.primary : 'rgba(0,137,123,0.80)'} theme={theme} />
       </View>
 
       {/* cards */}
@@ -835,13 +835,13 @@ function LeaderboardList({ leaderboard, lbLoading, highScore, playerName, theme 
     <>
       {/* user's own record */}
       <View style={[styles.myRow, {
-        backgroundColor: isDark ? 'rgba(14,205,185,0.12)' : 'rgba(0,137,123,0.07)',
+        backgroundColor: isDark ? 'rgba(14,205,185,0.22)' : 'rgba(0,137,123,0.07)',
         borderColor: theme.colors.primary + '70',
       }]}>
         <Ionicons name="person-circle-outline" size={16} color={theme.colors.primary} />
         <Text style={[styles.myLabel, { color: theme.colors.textPrimary, fontFamily: 'Rajdhani_600SemiBold' }]}>{playerName}</Text>
         <Text style={[styles.myScore, { color: theme.colors.primary, ...SCORE_SHADOW }]}>{highScore}</Text>
-        <Text style={[styles.myBest, { color: theme.colors.primary + 'aa' }]}>KİŞİSEL REKOR</Text>
+        <Text style={[styles.myBest, { color: isDark ? '#8DE5DF' : theme.colors.primary + 'aa' }]}>KİŞİSEL REKOR</Text>
       </View>
 
       {/* divider */}
@@ -861,17 +861,17 @@ function LeaderboardList({ leaderboard, lbLoading, highScore, playerName, theme 
             const rankColor = i === 0
               ? theme.colors.primary
               : i === 1
-              ? (isDark ? 'rgba(14,205,185,0.65)' : 'rgba(0,137,123,0.70)')
+              ? (isDark ? '#5EDBD3' : 'rgba(0,137,123,0.70)')
               : i === 2
-              ? (isDark ? 'rgba(14,205,185,0.45)' : 'rgba(0,137,123,0.50)')
+              ? (isDark ? '#8DE5DF' : 'rgba(0,137,123,0.50)')
               : theme.colors.textSecondary;
             const isMe      = entry.name === playerName;
             const podiumBg  = i === 0
-              ? (isDark ? 'rgba(14,205,185,0.14)' : 'rgba(0,137,123,0.08)')
+              ? (isDark ? 'rgba(14,205,185,0.20)' : 'rgba(0,137,123,0.08)')
               : i === 1
-              ? (isDark ? 'rgba(14,205,185,0.08)' : 'rgba(0,137,123,0.05)')
+              ? (isDark ? 'rgba(14,205,185,0.12)' : 'rgba(0,137,123,0.05)')
               : i === 2
-              ? (isDark ? 'rgba(14,205,185,0.05)' : 'rgba(0,137,123,0.03)')
+              ? (isDark ? 'rgba(14,205,185,0.08)' : 'rgba(0,137,123,0.03)')
               : i % 2 === 0 ? zebraOdd : zebraEven;
             return (
               <View key={i} style={[
@@ -1089,7 +1089,7 @@ function GameOver({ theme, score, highScore, isNewHS, leaderboard, lbLoading, pl
           <View style={[styles.goSep, { backgroundColor: theme.colors.divider }]} />
           <View style={styles.goBlock}>
             <Text style={[styles.goLabel, { color: theme.colors.textSecondary }]}>REKOR</Text>
-            <Text style={[styles.goBig, { color: theme.dark ? 'rgba(14,205,185,0.70)' : 'rgba(0,137,123,0.80)', ...SCORE_SHADOW }]}>{highScore}</Text>
+            <Text style={[styles.goBig, { color: theme.dark ? theme.colors.primary : 'rgba(0,137,123,0.80)', ...SCORE_SHADOW }]}>{highScore}</Text>
           </View>
         </View>
 
