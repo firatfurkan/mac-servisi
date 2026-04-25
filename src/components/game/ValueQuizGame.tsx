@@ -801,9 +801,9 @@ function PlayerCard({ player, theme, onPress, disabled, valueStyle, flashStyle, 
               {fmt(player.marketValue)}
             </Animated.Text>
           ) : (
-            <View style={[styles.hiddenBox, { borderColor: primary + '50' }]}>
-              <Ionicons name="help-circle" size={20} color={primary} />
-              <Text style={[styles.hiddenText, { color: primary }]}>DOKUN</Text>
+            <View style={[styles.hiddenBox, { borderColor: labelColor + '60' }]}>
+              <Ionicons name="help-circle" size={20} color={labelColor} />
+              <Text style={[styles.hiddenText, { color: labelColor, fontWeight: 'bold' }]}>DOKUN</Text>
             </View>
           )}
         </View>
