@@ -18,12 +18,16 @@ import { useAppTheme } from '../../hooks/useAppTheme';
 import { apiService } from '../../services/api';
 import { Match, Team } from '../../types';
 
-// ─── Türkçe normalize ─────────────────────────────────────────
-function normalizeTR(s: string) {
+// ─── Türkçe normalize (zırhlı versiyon) ───────────────────────
+// Step 1: Turkish-specific transformations (before toLowerCase)
+// Step 2: Convert to lowercase
+// Step 3: Replace special chars with ASCII equivalents
+function normalizeTR(s: string): string {
   return s
+    .replace(/İ/g, 'i').replace(/I/g, 'ı')
     .toLowerCase()
-    .replace(/[ğ]/g, 'g').replace(/[ü]/g, 'u').replace(/[ş]/g, 's')
-    .replace(/[ı]/g, 'i').replace(/[ö]/g, 'o').replace(/[ç]/g, 'c');
+    .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's')
+    .replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c');
 }
 
 // ─── Takım Arama Overlay ──────────────────────────────────────

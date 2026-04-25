@@ -1191,24 +1191,22 @@ export const apiService = {
 
    async searchTeams(query: string): Promise<Team[]> {
     if (USE_MOCK) return mockApiService.searchTeams(query);
-    
-    // 1. Orijinal Türkçeyi İngilizce karakterlere çevir (geniş arama için)
-    const normalizedQuery = query
-      .replace(/ı/g, 'i').replace(/İ/g, 'I')
-      .replace(/ğ/g, 'g').replace(/Ğ/g, 'G')
-      .replace(/ü/g, 'u').replace(/Ü/g, 'U')
-      .replace(/ş/g, 's').replace(/Ş/g, 'S')
-      .replace(/ö/g, 'o').replace(/Ö/g, 'O')
-      .replace(/ç/g, 'c').replace(/Ç/g, 'C');
 
-    // 2. Hem İngilizce karakterli halini (geniş arama) 
-    // hem de kullanıcının yazdığı orijinal halini (tam ad araması) paralel isteyelim.
+    // Normalize using same algorithm as SearchBar.tsx (SearchBar normalizeTR)
+    // Step 1: Turkish-specific (before toLowerCase), Step 2: toLowerCase, Step 3: ASCII
+    const normalizedQuery = query
+      .replace(/İ/g, 'i').replace(/I/g, 'ı')
+      .toLowerCase()
+      .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's')
+      .replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c');
+
+    // Dual approach: normalized (broad search) + original (exact match fallback)
     const fetchSearch = safeFetch(`${BASE_URL}/teams?search=${encodeURIComponent(normalizedQuery)}`, { headers }).catch(() => ({ response: [] }));
     const fetchName = safeFetch(`${BASE_URL}/teams?name=${encodeURIComponent(query)}`, { headers }).catch(() => ({ response: [] }));
 
     const [searchData, nameData] = await Promise.all([fetchSearch, fetchName]);
 
-    // 3. İki ihtimalden gelen sonuçları birleştirip tekrar edenleri ayıkla
+    // Combine results from both endpoints and deduplicate by team ID
     const records = [...(searchData.response || []), ...(nameData.response || [])];
     const uniqueTeams = new Map<string, any>();
     records.forEach((t: any) => {
