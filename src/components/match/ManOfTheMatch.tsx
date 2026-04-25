@@ -70,31 +70,38 @@ export default function ManOfTheMatch({ matchId, lineup, events = [] }: Props) {
   ];
 
   useEffect(() => {
-    let unsubscribe: (() => void) | undefined;
+    if (!matchId) return;
 
-    const init = async () => {
-      // 1. Cihazda daha önce oy verilmiş mi? (hızlı UI kilidi)
-      try {
-        const stored = await AsyncStorage.getItem(LOCAL_VOTE_KEY(matchId));
+    let unsubscribe: (() => void) | null = null;
+
+    // 1. Cihazda daha önce oy verilmiş mi? (hızlı UI kilidi)
+    AsyncStorage.getItem(LOCAL_VOTE_KEY(matchId))
+      .then(stored => {
         if (stored) setMyVote(stored);
-      } catch {}
+      })
+      .catch(() => {});
 
-      // 2. Firestore'dan gerçek zamanlı oy sayılarını dinle
-      const ref = doc(db, "motmVotes", matchId);
-      unsubscribe = onSnapshot(ref, (snap) => {
+    // 2. Firestore'dan gerçek zamanlı oy sayılarını dinle
+    // onSnapshot'ı doğrudan çağır (async wrapper yok = cleanup zamanında listener kesin açılmış olur)
+    const ref = doc(db, "motmVotes", matchId);
+    unsubscribe = onSnapshot(
+      ref,
+      (snap) => {
         if (snap.exists()) {
           const data = snap.data();
           setVotes((data.votes as VoteMap) ?? {});
         }
         setLoading(false);
-      }, () => {
+      },
+      () => {
         // Firestore erişim hatası → loading'i kaldır
         setLoading(false);
-      });
-    };
+      }
+    );
 
-    init();
-    return () => unsubscribe?.();
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
   }, [matchId]);
 
   const handleVote = useCallback(async (player: Player) => {

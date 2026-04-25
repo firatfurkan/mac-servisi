@@ -59,20 +59,28 @@ export function useChat(matchId: string) {
       limit(100)
     );
 
-    const unsub = onSnapshot(
-      q,
-      (snapshot) => {
-        const msgs: ChatMessage[] = [];
-        snapshot.forEach((doc) => {
-          msgs.push({ id: doc.id, ...doc.data() } as ChatMessage);
-        });
-        setMessages(msgs);
-        setLoading(false);
-      },
-      () => setLoading(false)
-    );
+    let unsubscribe: (() => void) | null = null;
+    try {
+      unsubscribe = onSnapshot(
+        q,
+        (snapshot) => {
+          const msgs: ChatMessage[] = [];
+          snapshot.forEach((doc) => {
+            msgs.push({ id: doc.id, ...doc.data() } as ChatMessage);
+          });
+          setMessages(msgs);
+          setLoading(false);
+        },
+        () => setLoading(false)
+      );
+    } catch (error) {
+      console.error('[Chat] onSnapshot error:', error);
+      setLoading(false);
+    }
 
-    return () => unsub();
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
   }, [matchId, authReady]);
 
   const sendMessage = async (text: string, userName: string) => {
