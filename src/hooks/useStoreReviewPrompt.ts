@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react';
-import * as StoreReview from 'expo-store-review';
+import { Linking, Platform } from 'react-native';
 import { useStoreReviewStore } from '../stores/storeReviewStore';
+
+const STORE_URLS = {
+  ios: 'https://apps.apple.com/app/id6761078600',
+  android: 'https://play.google.com/store/apps/details?id=com.furkanf.asist',
+};
 
 interface UseStoreReviewPromptReturn {
   showPrompt: boolean;
@@ -42,10 +47,8 @@ export function useStoreReviewPrompt(): UseStoreReviewPromptReturn {
   const handleRate = async () => {
     setShowPrompt(false);
     await store.markReviewed();
-    // Request review (native dialog on iOS, Play Store on Android)
-    if (StoreReview.isAvailable()) {
-      await StoreReview.requestReview();
-    }
+    const url = Platform.OS === 'ios' ? STORE_URLS.ios : STORE_URLS.android;
+    await Linking.openURL(url).catch(() => {});
   };
 
   const handleLater = async () => {
