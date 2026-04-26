@@ -329,13 +329,7 @@ function MatchCard({ match, events, pairedMatch }: Props) {
             {match.homeTeam.name}
           </Text>
           <View style={styles.badgesRow}>
-            {homeRedCards > 0 && (
-              <View style={styles.redCardRect}>
-                {homeRedCards > 1 && (
-                  <Text style={styles.redCardCount}>{homeRedCards}</Text>
-                )}
-              </View>
-            )}
+            {homeRedCards > 0 && <View style={styles.redCardRect} />}
             {advancer === "home" && (
               <Ionicons name="checkmark-circle" size={13} color="#4CAF50" style={styles.advancerIcon} />
             )}
@@ -434,13 +428,7 @@ function MatchCard({ match, events, pairedMatch }: Props) {
             {match.awayTeam.name}
           </Text>
           <View style={[styles.badgesRow, { flexDirection: "row-reverse" }]}>
-            {awayRedCards > 0 && (
-              <View style={styles.redCardRect}>
-                {awayRedCards > 1 && (
-                  <Text style={styles.redCardCount}>{awayRedCards}</Text>
-                )}
-              </View>
-            )}
+            {awayRedCards > 0 && <View style={styles.redCardRect} />}
             {advancer === "away" && (
               <Ionicons name="checkmark-circle" size={13} color="#4CAF50" style={styles.advancerIcon} />
             )}
@@ -570,12 +558,5 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     alignItems: "center",
     justifyContent: "center",
-  },
-  redCardCount: {
-    color: "#fff",
-    fontSize: 8,
-    fontWeight: "700",
-    lineHeight: 9,
-    includeFontPadding: false,
   },
 });
