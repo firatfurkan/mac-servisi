@@ -569,10 +569,8 @@ const styles = StyleSheet.create({
   redCardRect: {
     width: 8,
     height: 12,
-    backgroundColor: "#E53935",
-    borderRadius: 1,
-    borderWidth: 0.5,
-    borderColor: "#C62828",
+    backgroundColor: "#EF5350",
+    borderRadius: 2,
   },
   redCardRectBack: {
     marginRight: -4,
