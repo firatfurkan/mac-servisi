@@ -567,13 +567,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   redCardRect: {
-    width: 7,
-    height: 10,
-    backgroundColor: "#FF1744",
-    borderRadius: 1.5,
+    width: 8,
+    height: 12,
+    backgroundColor: "#E53935",
+    borderRadius: 1,
+    borderWidth: 0.5,
+    borderColor: "#C62828",
   },
   redCardRectBack: {
-    marginRight: -3,
-    opacity: 0.45,
+    marginRight: -4,
+    opacity: 0.5,
   },
 });
