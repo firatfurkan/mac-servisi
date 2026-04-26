@@ -99,15 +99,18 @@ export const useStoreReviewStore = create<StoreReviewStore>((set, get) => ({
     // 2. Max 3 prompts → stop after 3rd dismiss
     if (state.promptCount >= 3) return false;
 
-    // 3. Minimum 3 app opens required
+    // 3. First launch: show immediately (before any other rules)
+    if (state.appOpenCount === 1 && state.promptCount === 0) return true;
+
+    // 4. Minimum 3 app opens required (subsequent prompts)
     if ((state.appOpenCount || 0) < 3) return false;
 
-    // 4. First 24 hours → no prompt (warmup period)
+    // 5. First 24 hours → no prompt (warmup period)
     const appAge = Date.now() - state.firstOpenTimestamp;
     const ONE_DAY_MS = 24 * 60 * 60 * 1000;
     if (appAge < ONE_DAY_MS) return false;
 
-    // 5. Last prompt check — 3 days gap
+    // 6. Last prompt check — 3 days gap
     if (state.lastPromptTimestamp > 0) {
       const timeSinceLastPrompt = Date.now() - state.lastPromptTimestamp;
       const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
