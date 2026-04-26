@@ -311,7 +311,7 @@ function MatchCard({ match, events, pairedMatch }: Props) {
           style={styles.logo}
           resizeMode="contain"
         />
-        <View style={styles.teamNameRow}>
+        <View style={styles.teamInfoContainer}>
           <Text
             style={[
               styles.teamName,
@@ -414,7 +414,7 @@ function MatchCard({ match, events, pairedMatch }: Props) {
         activeOpacity={0.6}
         hitSlop={{ top: 8, bottom: 8, left: 0, right: 4 }}
       >
-        <View style={[styles.teamNameRow, { flexDirection: "row-reverse" }]}>
+        <View style={[styles.teamInfoContainer, { flexDirection: "row-reverse" }]}>
           <Text
             style={[
               styles.teamName,
@@ -500,11 +500,11 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     flexShrink: 0,
   },
-  teamNameRow: {
+  teamInfoContainer: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    gap: 3,
+    gap: 5,
   },
   teamName: {
     flex: 1,
