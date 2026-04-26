@@ -330,9 +330,10 @@ function MatchCard({ match, events, pairedMatch }: Props) {
           </Text>
           <View style={styles.badgesRow}>
             {homeRedCards > 0 && (
-              <View style={styles.redCardBadge}>
-                {homeRedCards > 1 && <View style={[styles.redCardRect, styles.redCardRectBack]} />}
-                <View style={styles.redCardRect} />
+              <View style={styles.redCardRect}>
+                {homeRedCards > 1 && (
+                  <Text style={styles.redCardCount}>{homeRedCards}</Text>
+                )}
               </View>
             )}
             {advancer === "home" && (
@@ -434,9 +435,10 @@ function MatchCard({ match, events, pairedMatch }: Props) {
           </Text>
           <View style={[styles.badgesRow, { flexDirection: "row-reverse" }]}>
             {awayRedCards > 0 && (
-              <View style={styles.redCardBadge}>
-                {awayRedCards > 1 && <View style={[styles.redCardRect, styles.redCardRectBack]} />}
-                <View style={styles.redCardRect} />
+              <View style={styles.redCardRect}>
+                {awayRedCards > 1 && (
+                  <Text style={styles.redCardCount}>{awayRedCards}</Text>
+                )}
               </View>
             )}
             {advancer === "away" && (
@@ -561,19 +563,19 @@ const styles = StyleSheet.create({
     gap: 4,
     flexShrink: 0,
   },
-  // Kırmızı kart ikonu: fiziksel kart dikdörtgeni, 2+ kartta üst üste kayık
-  redCardBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
   redCardRect: {
     width: 8,
     height: 12,
-    backgroundColor: "#EF5350",
+    backgroundColor: "#E53935",
     borderRadius: 2,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  redCardRectBack: {
-    marginRight: -4,
-    opacity: 0.5,
+  redCardCount: {
+    color: "#fff",
+    fontSize: 8,
+    fontWeight: "700",
+    lineHeight: 9,
+    includeFontPadding: false,
   },
 });
