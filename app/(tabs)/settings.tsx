@@ -360,7 +360,7 @@ export default function SettingsScreen() {
         <InfoRow
           icon="information-circle-outline"
           label={t('settings.version')}
-          value="1.1.2"
+          value="1.1.4"
           theme={theme}
         />
         <View style={[styles.divider, { backgroundColor: theme.colors.divider }]} />
@@ -397,7 +397,7 @@ export default function SettingsScreen() {
         </TouchableOpacity>
 
         <View style={styles.footerTextContainer}>
-          <Text style={[styles.footerText, { color: theme.colors.textSecondary }]}>v.1.1.2</Text>
+          <Text style={[styles.footerText, { color: theme.colors.textSecondary }]}>v.1.1.4</Text>
           <Text style={[styles.footerText, { color: theme.colors.textSecondary }]}>2026 MaçServisi</Text>
           <TouchableOpacity onPress={handleStudioTap} activeOpacity={1} hitSlop={{ top: 12, bottom: 12, left: 20, right: 20 }}>
             <Text style={[styles.footerStudio, { color: theme.colors.primary }]}>Lionx Studio</Text>

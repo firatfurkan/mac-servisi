@@ -113,13 +113,13 @@ export default function RootLayout() {
 
       try {
         // Paralel çalıştır — sıralı await yerine hepsi aynı anda başlar
-        const { loadReviewState } = useStoreReviewStore.getState();
+        const { loadReviewState, incrementOpenCount } = useStoreReviewStore.getState();
         await Promise.all([
           initializeTheme(),
           initializeLanguage(),
           loadFavorites(),
           loadNotifications(),
-          loadReviewState(),
+          loadReviewState().then(() => incrementOpenCount()),
         ]);
         // Sync all stored notification subscriptions to Firestore
         const { notifiedMatches } = useNotificationStore.getState();

@@ -18,7 +18,7 @@ type Tab = 'privacy' | 'terms';
 /* ─────────────────────────── Turkish Content ─────────────────────────── */
 
 const PRIVACY_TR = `
-SON GÜNCELLEME: 27 Mart 2026
+SON GÜNCELLEME: 26 Nisan 2026
 
 Maç Servisi uygulamasını ("Uygulama") kullanmadan önce lütfen bu Gizlilik Politikası'nı dikkatlice okuyun. Uygulamayı kullanarak aşağıdaki koşulları kabul etmiş sayılırsınız.
 
@@ -93,7 +93,7 @@ E-posta: macservisi@yahoo.com
 `;
 
 const TERMS_TR = `
-SON GÜNCELLEME: 27 Mart 2026
+SON GÜNCELLEME: 26 Nisan 2026
 
 Bu Kullanım Koşulları ("Koşullar"), Maç Servisi uygulamasını kullanan tüm bireyler için geçerlidir. Uygulamayı indirerek veya kullanarak bu koşulları kabul etmiş sayılırsınız.
 
@@ -170,7 +170,7 @@ E-posta: macservisi@yahoo.com
 /* ─────────────────────────── English Content ─────────────────────────── */
 
 const PRIVACY_EN = `
-LAST UPDATED: March 27, 2026
+LAST UPDATED: April 26, 2026
 
 Please read this Privacy Policy carefully before using the Maç Servisi ("Match Service") application. By using the app, you agree to the terms below.
 
@@ -244,7 +244,7 @@ Privacy inquiries: macservisi@yahoo.com
 `;
 
 const TERMS_EN = `
-LAST UPDATED: March 27, 2026
+LAST UPDATED: April 26, 2026
 
 These Terms of Use ("Terms") apply to all individuals using the Maç Servisi application. By downloading or using the app, you agree to these Terms.
 

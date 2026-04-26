@@ -11,6 +11,26 @@ export interface RedCardEvent {
   timestamp: number;
 }
 
+/** Normalize team name for comparison: lowercase, strip Turkish/Latin diacritics, collapse spaces. */
+export function normalizeTeamName(name: string): string {
+  const CHAR_MAP: Record<string, string> = {
+    // Turkish
+    'ğ':'g','ş':'s','ı':'i','ö':'o','ü':'u','ç':'c',
+    // Latin accented (common in team names)
+    'à':'a','á':'a','â':'a','ä':'a','ã':'a','å':'a',
+    'è':'e','é':'e','ê':'e','ë':'e',
+    'ì':'i','í':'i','î':'i','ï':'i',
+    'ò':'o','ó':'o','ô':'o','õ':'o',
+    'ù':'u','ú':'u','û':'u',
+    'ý':'y','ÿ':'y','ñ':'n','ß':'ss',
+  };
+  return name
+    .toLowerCase()
+    .replace(/[ğşıöüçàáâäãåèéêëìíîïòóôõùúûýÿñß]/g, (c) => CHAR_MAP[c] ?? c)
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 interface RedCardState {
   events: RedCardEvent[];
   setRedCardEvent: (event: RedCardEvent) => void;
@@ -25,20 +45,19 @@ export const useRedCardStore = create<RedCardState>()(
 
       setRedCardEvent: (event: RedCardEvent) =>
         set((state) => {
-          // Avoid duplicates: check if this card already exists
+          // Deduplicate by matchId + playerName + minute (same card, any session)
           const exists = state.events.some(
             (e) =>
               e.matchId === event.matchId &&
               e.playerName === event.playerName &&
-              e.minute === event.minute &&
-              Math.abs(e.timestamp - event.timestamp) < 5000, // Within 5 seconds
+              e.minute === event.minute,
           );
 
           if (exists) return state;
 
-          // Add new event, keep last 100
+          // Add new event, keep last 200
           return {
-            events: [event, ...state.events].slice(0, 100),
+            events: [event, ...state.events].slice(0, 200),
           };
         }),
 

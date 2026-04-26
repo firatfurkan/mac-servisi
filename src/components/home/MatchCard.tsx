@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { memo, useCallback, useEffect, useRef } from "react";
+import React, { memo, useCallback, useEffect, useRef, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Animated,
@@ -19,7 +19,7 @@ import {
 import { registerMatchPush, unregisterMatchPush } from "../../services/pushService";
 import { useFavoritesStore } from "../../stores/favoritesStore";
 import { useNotificationStore } from "../../stores/notificationStore";
-import { useRedCardStore } from "../../stores/redCardStore";
+import { normalizeTeamName, useRedCardStore } from "../../stores/redCardStore";
 import { Match, MatchEvent } from "../../types";
 import { formatMatchTime, getAggregateAdvancer, isKnockoutRound, isLive, isSingleLegKnockout } from "../../utils/matchUtils";
 
@@ -111,11 +111,15 @@ function MatchCard({ match, events, pairedMatch }: Props) {
     match.status === "postponed" || match.status === "cancelled";
 
   // Get red cards from background queue (no API call)
-  const redCardEvents = useRedCardStore((s) =>
-    s.events.filter((e) => e.matchId === match.id),
+  const allRedCardEvents = useRedCardStore((s) => s.events);
+  const redCardEvents = useMemo(
+    () => allRedCardEvents.filter((e) => e.matchId === match.id),
+    [allRedCardEvents, match.id]
   );
-  const homeRedCards = redCardEvents.filter((e) => e.playerTeam === match.homeTeam.name).length;
-  const awayRedCards = redCardEvents.filter((e) => e.playerTeam === match.awayTeam.name).length;
+  const normHome = normalizeTeamName(match.homeTeam.name);
+  const normAway = normalizeTeamName(match.awayTeam.name);
+  const homeRedCards = redCardEvents.filter((e) => normalizeTeamName(e.playerTeam) === normHome).length;
+  const awayRedCards = redCardEvents.filter((e) => normalizeTeamName(e.playerTeam) === normAway).length;
 
   // Aggregate hesaplama: paired maç varsa ve bu maç 2. ayaksa
   const isSecondLeg = !!pairedMatch &&
@@ -326,9 +330,9 @@ function MatchCard({ match, events, pairedMatch }: Props) {
           </Text>
           <View style={styles.badgesRow}>
             {homeRedCards > 0 && (
-              <View style={[styles.redCardBadge, { backgroundColor: "#FF4444" }]}>
-                <Text style={styles.badgeText}>🔴</Text>
-                <Text style={[styles.badgeCount, { color: "#FFF" }]}>{homeRedCards}</Text>
+              <View style={styles.redCardBadge}>
+                {homeRedCards > 1 && <View style={[styles.redCardRect, styles.redCardRectBack]} />}
+                <View style={styles.redCardRect} />
               </View>
             )}
             {advancer === "home" && (
@@ -430,9 +434,9 @@ function MatchCard({ match, events, pairedMatch }: Props) {
           </Text>
           <View style={[styles.badgesRow, { flexDirection: "row-reverse" }]}>
             {awayRedCards > 0 && (
-              <View style={[styles.redCardBadge, { backgroundColor: "#FF4444" }]}>
-                <Text style={styles.badgeText}>🔴</Text>
-                <Text style={[styles.badgeCount, { color: "#FFF" }]}>{awayRedCards}</Text>
+              <View style={styles.redCardBadge}>
+                {awayRedCards > 1 && <View style={[styles.redCardRect, styles.redCardRectBack]} />}
+                <View style={styles.redCardRect} />
               </View>
             )}
             {advancer === "away" && (
@@ -557,21 +561,19 @@ const styles = StyleSheet.create({
     gap: 4,
     flexShrink: 0,
   },
+  // Kırmızı kart ikonu: fiziksel kart dikdörtgeni, 2+ kartta üst üste kayık
   redCardBadge: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 2,
-    paddingHorizontal: 5,
-    paddingVertical: 2,
-    borderRadius: 4,
-    justifyContent: "center",
   },
-  badgeText: {
-    fontSize: 10,
-    fontWeight: "600",
+  redCardRect: {
+    width: 7,
+    height: 10,
+    backgroundColor: "#FF1744",
+    borderRadius: 1.5,
   },
-  badgeCount: {
-    fontSize: 9,
-    fontWeight: "700",
+  redCardRectBack: {
+    marginRight: -3,
+    opacity: 0.45,
   },
 });

@@ -22,6 +22,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Share,
   StyleSheet,
   Text,
   TextInput,
@@ -48,6 +49,12 @@ const IS_EXPO_GO = Constants.appOwnership === 'expo';
 const AD_EVERY_N_GAMES = 5;
 const BONUS_LIVES = 3;
 
+// ── Share links ──────────────────────────────────────────────
+const SHARE_LINKS = {
+  ios: 'https://apps.apple.com/tr/app/macservisi-canl%C4%B1-skor/id6761078600?l=tr',
+  android: 'https://play.google.com/store/apps/details?id=com.furkanf.asist',
+};
+
 // Interstitial
 const PROD_INTERSTITIAL_IOS     = 'ca-app-pub-3272601063768123/4155815150';
 const PROD_INTERSTITIAL_ANDROID = 'ca-app-pub-3272601063768123/6034826857';
@@ -67,7 +74,7 @@ async function ensureAuth(): Promise<string | null> {
     const cred = await signInAnonymously(auth);
     return cred.user.uid;
   } catch (err) {
-    console.error('[LB] auth error:', err);
+    if (__DEV__) console.error('[LB] auth error:', err);
     return null;
   }
 }
@@ -123,7 +130,9 @@ function marginFor(score: number): number {
   if (score < 5)  return 0.35;
   if (score < 10) return 0.25;
   if (score < 20) return 0.18;
-  return 0.12;
+  if (score < 50) return 0.12;
+  if (score < 80) return 0.08;
+  return 0.05;
 }
 
 function balancedNext(anchor: Player, excludeIds: Set<number>, score: number): Player {
@@ -202,6 +211,14 @@ export default function ValueQuizGame({ theme }: Props) {
   const scoreRef     = useRef(score);
   const highScoreRef = useRef(highScore);
   const phaseRef     = useRef(phase);
+
+  // cheat protection
+  const lastPickTimeRef  = useRef<number>(0);
+  const rapidStreakRef   = useRef<number>(0);
+  const suspiciousRef    = useRef<boolean>(false);
+
+  // 100-point milestone celebration
+  const [milestoneScore, setMilestoneScore] = useState<number | null>(null);
 
   // ── Interstitial ad ──────────────────────────────────────────
   const gamesPlayedRef   = useRef(0);
@@ -293,7 +310,7 @@ export default function ValueQuizGame({ theme }: Props) {
         .slice(0, 10);
       setLeaderboard(rows);
     } catch (err) {
-      console.error('[LB] fetch error:', err);
+      if (__DEV__) console.error('[LB] fetch error:', err);
     } finally {
       setLbLoading(false);
     }
@@ -310,17 +327,17 @@ export default function ValueQuizGame({ theme }: Props) {
       const existing = await getDoc(ref);
       const newScore = Math.round(finalScore);
 
+      const payload: Record<string, unknown> = {
+        uid, name: playerName, score: newScore, weekId, ts: serverTimestamp(),
+        ...(suspiciousRef.current ? { suspicious: true } : {}),
+      };
       if (!existing.exists()) {
-        await setDoc(ref, { uid, name: playerName, score: newScore, weekId, ts: serverTimestamp() });
-        console.log('[LB] created entry, week:', weekId, 'score:', newScore);
+        await setDoc(ref, payload);
       } else if ((existing.data().score as number) < newScore) {
-        await setDoc(ref, { uid, name: playerName, score: newScore, weekId, ts: serverTimestamp() });
-        console.log('[LB] updated record:', existing.data().score, '→', newScore);
-      } else {
-        console.log('[LB] no update — existing score', existing.data().score, '≥', newScore);
+        await setDoc(ref, payload);
       }
     } catch (err) {
-      console.error('[LB] save error:', err);
+      if (__DEV__) console.error('[LB] save error:', err);
     }
     await fetchLeaderboard();
   }, [playerName, fetchLeaderboard]);
@@ -438,6 +455,18 @@ export default function ValueQuizGame({ theme }: Props) {
   const onPick = useCallback(
     (side: 'left' | 'right') => {
       if (phase !== 'guessing') return;
+
+      // cheat protection — track pick timing
+      const pickNow = Date.now();
+      const pickGap = lastPickTimeRef.current > 0 ? pickNow - lastPickTimeRef.current : Infinity;
+      lastPickTimeRef.current = pickNow;
+      if (pickGap < 1000) {
+        rapidStreakRef.current += 1;
+        if (rapidStreakRef.current >= 50) suspiciousRef.current = true;
+      } else {
+        rapidStreakRef.current = 0;
+      }
+
       stopTimer();
       const chosen  = side === 'left' ? pair.left : pair.right;
       const other   = side === 'left' ? pair.right : pair.left;
@@ -470,7 +499,9 @@ export default function ValueQuizGame({ theme }: Props) {
             withSpring(1, { damping: 7, stiffness: 220 }),
           );
           setPhase('correct');
-          setScore(prev => prev + 1);
+          const newScore = scoreRef.current + 1;
+          setScore(newScore);
+          if (newScore > 0 && newScore % 100 === 0) setMilestoneScore(newScore);
 
           // Both cards fade out — no card survives, every round is fresh
           opacityL.value = withTiming(0,   { duration: FADE_OUT_MS });
@@ -511,6 +542,10 @@ export default function ValueQuizGame({ theme }: Props) {
     bonusLivesRef.current = 0;
     setBonusLives(0);
     hasContinuedRef.current = false;
+    lastPickTimeRef.current = 0;
+    rapidStreakRef.current   = 0;
+    suspiciousRef.current    = false;
+    setMilestoneScore(null);
     const next = balancedPair(0);
     seenRef.current = new Set([next.left.id, next.right.id]);
     setPair(next);
@@ -685,6 +720,14 @@ export default function ValueQuizGame({ theme }: Props) {
       {/* overlays */}
       <Animated.View pointerEvents="none" style={[styles.redOverlay, redStyle]} />
 
+      {milestoneScore !== null && (
+        <MilestoneBurst
+          milestoneScore={milestoneScore}
+          onDone={() => setMilestoneScore(null)}
+          theme={theme}
+        />
+      )}
+
       {phase === 'gameover' && (
         <GameOver
           theme={theme}
@@ -715,6 +758,88 @@ export default function ValueQuizGame({ theme }: Props) {
         <NameEntryModal theme={theme} onConfirm={handleNameConfirm} />
       )}
     </View>
+  );
+}
+
+// ── Milestone celebration ─────────────────────────────────────
+const MILESTONE_COLORS = ['#0ECDB9', '#FFD700', '#FF6B9D', '#7C3AED', '#00E5FF', '#FF8C00', '#A8FF3E', '#FF4444'];
+const MILESTONE_ANGLES = [0, 45, 90, 135, 180, 225, 270, 315].map(d => d * Math.PI / 180);
+const MILESTONE_TEXTS  = ['MUHTEŞEM!', 'EFSANEVİ!'];
+
+function Particle({ angle, color }: { angle: number; color: string }) {
+  const tx = useSharedValue(0);
+  const ty = useSharedValue(0);
+  const op = useSharedValue(0);
+  const sc = useSharedValue(0.2);
+
+  useEffect(() => {
+    const dist = 90 + Math.random() * 70;
+    op.value = withSequence(
+      withTiming(1,   { duration: 100 }),
+      withTiming(0,   { duration: 1100, easing: Easing.out(Easing.quad) }),
+    );
+    sc.value = withSequence(
+      withSpring(1.2, { damping: 7, stiffness: 300 }),
+      withTiming(0.2, { duration: 1000 }),
+    );
+    tx.value = withTiming(Math.cos(angle) * dist, { duration: 1200, easing: Easing.out(Easing.quad) });
+    ty.value = withTiming(Math.sin(angle) * dist, { duration: 1200, easing: Easing.out(Easing.quad) });
+  }, []); // eslint-disable-line
+
+  const pStyle = useAnimatedStyle(() => ({
+    opacity: op.value,
+    transform: [{ translateX: tx.value }, { translateY: ty.value }, { scale: sc.value }],
+  }));
+
+  return <Animated.View style={[styles.particle, { backgroundColor: color }, pStyle]} />;
+}
+
+function MilestoneBurst({ milestoneScore, onDone, theme }: {
+  milestoneScore: number; onDone: () => void; theme: AppTheme;
+}) {
+  const text = MILESTONE_TEXTS[((milestoneScore / 100) - 1) % MILESTONE_TEXTS.length];
+  const bgOp = useSharedValue(0);
+  const txSc = useSharedValue(0.4);
+  const txOp = useSharedValue(0);
+
+  useEffect(() => {
+    bgOp.value = withSequence(
+      withTiming(1, { duration: 180 }),
+      withTiming(1, { duration: 1700 }),
+      withTiming(0, { duration: 400 }),
+    );
+    txOp.value = withSequence(
+      withTiming(1, { duration: 220 }),
+      withTiming(1, { duration: 1700 }),
+      withTiming(0, { duration: 360 }),
+    );
+    txSc.value = withSequence(
+      withSpring(1.18, { damping: 7, stiffness: 190 }),
+      withSpring(1.0,  { damping: 14, stiffness: 110 }),
+    );
+    const t = setTimeout(onDone, 2500);
+    return () => clearTimeout(t);
+  }, []); // eslint-disable-line
+
+  const bgStyle = useAnimatedStyle(() => ({ opacity: bgOp.value }));
+  const txStyle = useAnimatedStyle(() => ({
+    opacity: txOp.value,
+    transform: [{ scale: txSc.value }],
+  }));
+
+  return (
+    <Animated.View style={[styles.msBg, bgStyle]} pointerEvents="none">
+      <View style={styles.msCenter} pointerEvents="none">
+        {MILESTONE_ANGLES.map((angle, i) => (
+          <Particle key={i} angle={angle} color={MILESTONE_COLORS[i % MILESTONE_COLORS.length]} />
+        ))}
+      </View>
+      <Animated.View style={[styles.msTextWrap, txStyle]}>
+        <Text style={styles.msEmoji}>✨</Text>
+        <Text style={[styles.msBigText, { color: theme.colors.primary }]}>{text}</Text>
+        <Text style={[styles.msSubText, { color: '#FFFFFF' }]}>{milestoneScore} PUANA ULAŞTIN!</Text>
+      </Animated.View>
+    </Animated.View>
   );
 }
 
@@ -847,7 +972,7 @@ function LeaderboardList({ leaderboard, lbLoading, highScore, playerName, theme 
       {/* divider */}
       <View style={[styles.lbDivider, { backgroundColor: theme.colors.primary + '30' }]} />
 
-      {/* top 10 */}
+      {/* top 5 */}
       {lbLoading ? (
         <ActivityIndicator size="small" color={theme.colors.primary} style={{ marginVertical: 14 }} />
       ) : leaderboard.length === 0 ? (
@@ -856,7 +981,7 @@ function LeaderboardList({ leaderboard, lbLoading, highScore, playerName, theme 
         </Text>
       ) : (
         <ScrollView style={styles.lbScroll} showsVerticalScrollIndicator={false} horizontal={false} scrollEventThrottle={16}>
-          {leaderboard.map((entry, i) => {
+          {leaderboard.slice(0, 5).map((entry, i) => {
             const medal     = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : null;
             const rankColor = i === 0
               ? (isDark ? '#FFFFFF' : theme.colors.primary)
@@ -937,7 +1062,7 @@ function LeaderboardModal({ theme, leaderboard, lbLoading, highScore, playerName
         {/* header row */}
         <View style={styles.lbModalHeader}>
           <Ionicons name="trophy" size={18} color={theme.colors.primary} />
-          <Text style={[styles.lbModalTitle, { color: theme.colors.textPrimary }]}>GLOBAL TOP 10</Text>
+         <Text style={[styles.lbModalTitle, { color: theme.colors.textPrimary }]}>MAÇSERVİSİ TOP 5</Text>
           <TouchableOpacity onPress={onClose} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
             <Ionicons name="close-circle" size={22} color={theme.colors.textSecondary} />
           </TouchableOpacity>
@@ -1054,6 +1179,29 @@ function GameOver({ theme, score, highScore, isNewHS, leaderboard, lbLoading, pl
   leaderboard: LeaderEntry[]; lbLoading: boolean; playerName: string;
   onRestart: () => void; onContinue: () => void; continueAvailable: boolean;
 }) {
+  const [sharingInProgress, setSharingInProgress] = useState(false);
+
+  const onShare = useCallback(async () => {
+    setSharingInProgress(true);
+    try {
+      const message = `🎯 Maç Servisi Arena'da tam ${score} puan yaptım! 🔥
+
+Futbol bilgin o kadar iyiyse gel beni geç! 🚀
+
+📱 Uygulamayı İndir:
+🍎 iOS: ${SHARE_LINKS.ios}
+🤖 Android: ${SHARE_LINKS.android}`;
+      await Share.share({
+        message,
+        title: 'Maç Servisi Arena Meydan Oku',
+      });
+    } catch (err) {
+      if (__DEV__) console.log('[Challenge] share error:', err);
+    } finally {
+      setSharingInProgress(false);
+    }
+  }, [score]);
+
   const scale   = useSharedValue(0.78);
   const opacity = useSharedValue(0);
   useEffect(() => {
@@ -1097,7 +1245,7 @@ function GameOver({ theme, score, highScore, isNewHS, leaderboard, lbLoading, pl
         <View style={[styles.lbContainer, { borderColor: theme.colors.primary + '35' }]}>
           <View style={styles.lbInnerHeader}>
             <Ionicons name="trophy" size={13} color={theme.colors.primary} />
-            <Text style={[styles.lbTitle, { color: theme.colors.textPrimary }]}>GLOBAL TOP 10</Text>
+            <Text style={[styles.lbTitle, { color: theme.colors.textPrimary }]}>MAÇSERVİSİ TOP 5</Text>
           </View>
           <LeaderboardList
             leaderboard={leaderboard}
@@ -1119,6 +1267,16 @@ function GameOver({ theme, score, highScore, isNewHS, leaderboard, lbLoading, pl
             <Ionicons name="play-circle" size={17} color="rgba(255,255,255,0.7)" />
           </TouchableOpacity>
         )}
+
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={onShare}
+          disabled={sharingInProgress}
+          style={[styles.challengeBtn, { backgroundColor: '#FF8C00' }]}>
+          <Ionicons name="share-social" size={16} color="#fff" />
+          <Text style={styles.challengeBtnText}>MEYDAN OKU</Text>
+          {sharingInProgress && <ActivityIndicator size="small" color="#fff" style={{ marginLeft: 8 }} />}
+        </TouchableOpacity>
 
         <TouchableOpacity activeOpacity={0.85} onPress={onRestart}
           style={[styles.retryBtn, { backgroundColor: theme.colors.primary }]}>
@@ -1201,6 +1359,15 @@ const styles = StyleSheet.create({
   greenFlash: { ...StyleSheet.absoluteFillObject, backgroundColor: '#16C784', borderRadius: 20 },
   redOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: '#FF3B5C' },
 
+  // milestone burst
+  particle:   { width: 12, height: 12, borderRadius: 6, position: 'absolute' },
+  msBg:       { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.78)', alignItems: 'center', justifyContent: 'center' },
+  msCenter:   { position: 'absolute', width: 0, height: 0, alignItems: 'center', justifyContent: 'center' },
+  msTextWrap: { alignItems: 'center', gap: 8 },
+  msEmoji:    { fontSize: 54, lineHeight: 64 },
+  msBigText:  { fontSize: 52, fontFamily: 'Rajdhani_700Bold', letterSpacing: 4, textShadowColor: 'rgba(0,0,0,0.55)', textShadowOffset: { width: 0, height: 2 } as const, textShadowRadius: 10 },
+  msSubText:  { fontSize: 15, fontFamily: 'Rajdhani_700Bold', letterSpacing: 3, opacity: 0.9 },
+
   // VS badge
   vsBadge:  { position: 'absolute', left: 0, right: 0, alignItems: 'center' },
   vsCircle: {
@@ -1234,6 +1401,8 @@ const styles = StyleSheet.create({
   retryText:    { color: '#fff', fontSize: 14, fontFamily: 'Rajdhani_700Bold', letterSpacing: 2 },
   continueBtn:  { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 15, paddingHorizontal: 28, borderRadius: 14, marginTop: 16, backgroundColor: '#7C3AED', borderWidth: 1.5, borderColor: '#A855F7', shadowColor: '#7C3AED', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.45, shadowRadius: 10, elevation: 6 },
   continueBtnText: { color: '#fff', fontSize: 13, fontFamily: 'Rajdhani_700Bold', letterSpacing: 1.5 },
+  challengeBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 12, paddingHorizontal: 24, borderRadius: 14, marginTop: 12, shadowColor: '#FF8C00', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.35, shadowRadius: 8, elevation: 5 },
+  challengeBtnText: { color: '#fff', fontSize: 13, fontFamily: 'Rajdhani_700Bold', letterSpacing: 1.5 },
   livesRow:     { flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 4, justifyContent: 'center' },
 
   // leaderboard modal header

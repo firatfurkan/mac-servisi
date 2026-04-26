@@ -30,7 +30,7 @@ export default function HardUpdateModal({ visible, message }: HardUpdateModalPro
       const urlToOpen = storeUrl || getDefaultStoreUrl();
       await Linking.openURL(urlToOpen);
     } catch (error) {
-      console.log('Failed to open store:', error);
+      if (__DEV__) console.log('Failed to open store:', error);
     }
   };
 

@@ -14,6 +14,7 @@
  */
 
 const { onSchedule } = require('firebase-functions/v2/scheduler');
+const { onDocumentCreated } = require('firebase-functions/v2/firestore');
 const { initializeApp } = require('firebase-admin/app');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 const { Expo } = require('expo-server-sdk');
@@ -313,3 +314,42 @@ function mapStatus(short) {
   if (['PST', 'CANC', 'ABD', 'AWD', 'WO'].includes(short)) return 'cancelled';
   return 'not_started';
 }
+
+/**
+ * Her editor'ün maksimum 10 analizi olmasını sağla.
+ * Yeni analiz eklenince çalışır; 10'dan fazlaysa en eski siler.
+ */
+exports.cleanupOldAnalyses = onDocumentCreated(
+  {
+    document: 'pendingAnalyses/{docId}',
+    region: 'europe-west1',
+  },
+  async (event) => {
+    const newAnalysis = event.data.data();
+    const editorUid = newAnalysis.editorUid;
+
+    if (!editorUid) {
+      console.log('[Cleanup] No editorUid found, skipping cleanup');
+      return;
+    }
+
+    try {
+      // Kullanıcının tüm analizlerini getir (en eski ilk)
+      const userAnalyses = await db
+        .collection('pendingAnalyses')
+        .where('editorUid', '==', editorUid)
+        .orderBy('timestamp', 'asc')
+        .get();
+
+      const LIMIT = 10;
+      if (userAnalyses.docs.length > LIMIT) {
+        // En eski sil
+        const oldestDoc = userAnalyses.docs[0];
+        await db.collection('pendingAnalyses').doc(oldestDoc.id).delete();
+        console.log(`[Cleanup] Deleted oldest analysis for editor ${editorUid}. Total before: ${userAnalyses.docs.length}`);
+      }
+    } catch (err) {
+      console.error(`[Cleanup] Error cleaning up analyses for ${editorUid}:`, err.message);
+    }
+  }
+);

@@ -82,12 +82,18 @@ function LeagueSection({
   }, [matches, roundFixtures, isTwoLeggedKnockout]);
 
    const goToStandings = () => {
-    // Statik hesaplama yerine o an ekranda olan maçın gerçek sezon bilgisini alıyoruz
     const matchSeason = matches[0]?.league?.season;
     const currentSeason = matchSeason || String(new Date().getFullYear() - 1);
-    
+
+    // TFF 2. Lig: Beyaz/Kırmızı grup bilgisini URL'e ekle
+    let groupParam = "";
+    if (leagueId === "205") {
+      if (leagueName.includes("Beyaz")) groupParam = "&group=beyaz";
+      else if (leagueName.includes("rmizi")) groupParam = "&group=kirmizi"; // Kırmızı veya Kirmizi
+    }
+
     router.push(
-      `/standings/${leagueId}?name=${encodeURIComponent(leagueName)}&logo=${encodeURIComponent(leagueLogo)}&season=${currentSeason}`,
+      `/standings/${leagueId}?name=${encodeURIComponent(leagueName)}&logo=${encodeURIComponent(leagueLogo)}&season=${currentSeason}${groupParam}`,
     );
   };
 

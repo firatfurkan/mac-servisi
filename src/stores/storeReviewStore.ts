@@ -8,6 +8,7 @@ export interface ReviewState {
   promptCount: number;
   lastPromptTimestamp: number;
   firstOpenTimestamp: number;
+  appOpenCount: number;
 }
 
 const defaultReviewState: ReviewState = {
@@ -15,10 +16,12 @@ const defaultReviewState: ReviewState = {
   promptCount: 0,
   lastPromptTimestamp: 0,
   firstOpenTimestamp: 0,
+  appOpenCount: 0,
 };
 
 interface StoreReviewStore extends ReviewState {
   loadReviewState: () => Promise<void>;
+  incrementOpenCount: () => Promise<void>;
   markReviewed: () => Promise<void>;
   dismissPrompt: () => Promise<void>;
   shouldShowPrompt: () => boolean;
@@ -51,6 +54,15 @@ export const useStoreReviewStore = create<StoreReviewStore>((set, get) => ({
         () => {}
       );
     }
+  },
+
+  incrementOpenCount: async () => {
+    const newState: ReviewState = {
+      ...get(),
+      appOpenCount: (get().appOpenCount || 0) + 1,
+    };
+    set(newState);
+    await AsyncStorage.setItem(REVIEW_STATE_KEY, JSON.stringify(newState)).catch(() => {});
   },
 
   markReviewed: async () => {
@@ -87,12 +99,15 @@ export const useStoreReviewStore = create<StoreReviewStore>((set, get) => ({
     // 2. Max 3 prompts → stop after 3rd dismiss
     if (state.promptCount >= 3) return false;
 
-    // 3. First 24 hours → no prompt (warmup period)
+    // 3. Minimum 3 app opens required
+    if ((state.appOpenCount || 0) < 3) return false;
+
+    // 4. First 24 hours → no prompt (warmup period)
     const appAge = Date.now() - state.firstOpenTimestamp;
     const ONE_DAY_MS = 24 * 60 * 60 * 1000;
     if (appAge < ONE_DAY_MS) return false;
 
-    // 4. Last prompt check — 3 days gap
+    // 5. Last prompt check — 3 days gap
     if (state.lastPromptTimestamp > 0) {
       const timeSinceLastPrompt = Date.now() - state.lastPromptTimestamp;
       const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;

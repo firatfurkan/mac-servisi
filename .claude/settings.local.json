@@ -79,7 +79,8 @@
       "Bash(npx expo-doctor:*)",
       "WebFetch(domain:firatfurkan.github.io)",
       "Bash(eas secret:list)",
-      "Read(//c/tmp/**)"
+      "Read(//c/tmp/**)",
+      "Bash(eas build *)"
     ]
   }
 }

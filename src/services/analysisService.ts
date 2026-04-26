@@ -6,6 +6,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  limit,
   onSnapshot,
   orderBy,
   query,
@@ -53,7 +54,7 @@ export interface LiveAnalysis {
 export function subscribePublicAnalyses(
   cb: (analyses: LiveAnalysis[]) => void,
 ): Unsubscribe {
-  const q = query(collection(db, 'liveAnalyses'), orderBy('approvedAt', 'desc'));
+  const q = query(collection(db, 'liveAnalyses'), orderBy('approvedAt', 'desc'), limit(50));
   return onSnapshot(q, (snap) => {
     cb(snap.docs.map((d) => ({ id: d.id, ...d.data() } as LiveAnalysis)));
   });
@@ -106,7 +107,7 @@ export function subscribeEditorAnalyses(
 export function subscribeAllPending(
   cb: (analyses: PendingAnalysis[]) => void,
 ): Unsubscribe {
-  const q = query(collection(db, 'pendingAnalyses'), orderBy('timestamp', 'desc'));
+  const q = query(collection(db, 'pendingAnalyses'), orderBy('timestamp', 'desc'), limit(100));
   return onSnapshot(q, (snap) => {
     cb(snap.docs.map((d) => ({ id: d.id, ...d.data() } as PendingAnalysis)));
   });
@@ -197,7 +198,7 @@ export async function updateEditorStats(editorUid: string, correct: boolean): Pr
       lastPredictionUpdate: Timestamp.now(),
     });
   } catch (err) {
-    console.error('[Editor Stats] update error:', err);
+    if (__DEV__) console.error('[Editor Stats] update error:', err);
   }
 }
 

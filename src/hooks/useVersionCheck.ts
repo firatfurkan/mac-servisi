@@ -79,7 +79,7 @@ export function useVersionCheck() {
         setChecked(true);
       } catch (error) {
         // Firestore error → soft update'e izin ver
-        console.log('Version check error:', error);
+        if (__DEV__) console.log('Version check error:', error);
         setChecked(true);
       }
     };

@@ -198,7 +198,7 @@ export default function NavigationMenu({ children }: NavigationMenuProps) {
             {/* Info Footer */}
             <View style={styles.footer}>
               <Text style={[styles.footerText, { color: theme.colors.textSecondary }]}>
-                v1.1.2
+                v1.1.4
               </Text>
               <Text style={[styles.footerText, { color: theme.colors.textSecondary }]}>
                 © 2026 MaçServisi

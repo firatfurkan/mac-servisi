@@ -493,8 +493,8 @@ export function getRoundBase(round: string): string {
 export function isSingleLegKnockout(round?: string): boolean {
   if (!round) return false;
   const r = round.toLowerCase();
-  // "Final" ve "3rd Place Final" tek maçtır
-  return r === "final" || r.includes("3rd place");
+  // "Final", "Finals" (yükselme play-off) ve "3rd Place Final" tek maçtır
+  return r === "final" || r === "finals" || r.includes("3rd place");
 }
 
 /**
@@ -630,6 +630,16 @@ function statusOrder(status: Match["status"]): number {
  */
 export function groupKey(match: Match): string {
   const round = match.league.round ?? "";
+
+  // TFF 2. Lig (205): Beyaz/Kırmızı grup ayrımı — round "Beyaz - N" / "Kirmizi - N" şeklinde gelir
+  if (match.league.id === "205") {
+    const r = round.toLowerCase();
+    if (r.startsWith("beyaz"))   return "205__beyaz";
+    if (r.startsWith("kirmizi") || r.startsWith("kırmızı")) return "205__kirmizi";
+    if (isKnockoutRound(round))  return `205__${round}`;
+    return "205";
+  }
+
   if (isKnockoutRound(round)) return `${match.league.id}__${round}`;
   // "Regular Season - Group A" / "Group 1" gibi grup ayrımlarını key'e ekle
   const groupPart = round.match(/[Gg]roup[\s\-_]*(\S+)/)?.[1];
@@ -638,16 +648,21 @@ export function groupKey(match: Match): string {
   return `${match.league.id}__${match.league.name}`;
 }
 
+/** TFF 2. Lig Beyaz/Kırmızı groupKey → görünen bölüm başlığı */
+export function getSectionLabel(key: string, firstMatch: Match): string {
+  if (key === "205__beyaz")   return "TFF 2. Lig — Beyaz Grup";
+  if (key === "205__kirmizi") return "TFF 2. Lig — Kırmızı Grup";
+  return firstMatch.league.name;
+}
+
 // ─── Lig Öncelik Sıralaması ───────────────────────────────────────────────────
 // Maçlar ekranı ve Analiz Merkezi'nde liglerin gösterim sırası.
 // Listede olmayan ligler en sona, aralarında başlangıç saatine göre sıralanır.
 export const PRIORITY_LEAGUES = [
   // ─── Türkiye Zirvesi ───
   "203", // Süper Lig
-  "552", // Türkiye Kupası (grup aşaması)
-  "206", // Türkiye Kupası (eleme turları)
-  "204", // Türkiye 1. Lig
-  "205", // Türkiye 2. Lig
+  "204", // TFF 1. Lig
+  "206", // Türkiye Kupası
   // ─── Avrupa Dev Kupaları ───
   "2",   // Şampiyonlar Ligi
   "3",   // Avrupa Ligi
@@ -668,6 +683,13 @@ export const PRIORITY_LEAGUES = [
   "78",  // Bundesliga
   "61",  // Ligue 1
   "94",  // Portekiz Primeira Liga
+  // ─── Türkiye Alt Ligler ───
+  "205",  // TFF 2. Lig
+  "552",  // TFF 3. Lig - Grup 1
+  "553",  // TFF 3. Lig - Grup 2
+  "554",  // TFF 3. Lig - Grup 3
+  "1027", // TFF 3. Lig - Grup 4
+  "1007", // TFF 3. Lig - Play-offs
   // ─── Majör Kupalar (ayrı blok) ───
   "45",  // FA Cup
   "143", // Copa del Rey
@@ -683,7 +705,6 @@ export const PRIORITY_LEAGUES = [
   "62",  // Ligue 2
   "88",  // Hollanda Eredivisie
   "144", // Belçika Pro League
-  "205", // Türkiye 2. Lig
   "531", // UEFA Süper Kupası
   "551", // Türkiye Süper Kupa
 ];

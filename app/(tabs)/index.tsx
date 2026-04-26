@@ -21,14 +21,14 @@ import { useMatches } from "../../src/hooks/useMatches";
 import { useStoreReviewPrompt } from "../../src/hooks/useStoreReviewPrompt";
 import { useFavoritesStore } from "../../src/stores/favoritesStore";
 import { useMatchStore } from "../../src/stores/matchStore";
-import { groupMatchesByLeague, PRIORITY_LEAGUES } from "../../src/utils/matchUtils";
+import { groupMatchesByLeague, getSectionLabel, PRIORITY_LEAGUES } from "../../src/utils/matchUtils";
 import { StoreReviewPrompt } from "../../src/components/common/StoreReviewPrompt";
 
 export default function HomeScreen() {
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const theme = useAppTheme();
-  const { selectedDate } = useMatchStore();
+  const { selectedDate, setSelectedDate } = useMatchStore();
   const { favoriteTeamIds } = useFavoritesStore();
   const [liveOnly, setLiveOnly] = useState(false);
   const [manualRefreshing, setManualRefreshing] = useState(false);
@@ -42,6 +42,7 @@ export default function HomeScreen() {
     isError,
     refetch,
   } = useMatches(selectedDate);
+
 
   const handleManualRefresh = async () => {
     setManualRefreshing(true);
@@ -79,7 +80,14 @@ export default function HomeScreen() {
     const aIsPriority = aPriority !== -1;
     const bIsPriority = bPriority !== -1;
 
-    if (aIsPriority && bIsPriority) return aPriority - bPriority;
+    if (aIsPriority && bIsPriority) {
+      if (aPriority === bPriority) {
+        // TFF 2. Lig: Beyaz Grup her zaman Kırmızı Grup'tan önce
+        if (a.endsWith("__beyaz") && b.endsWith("__kirmizi")) return -1;
+        if (a.endsWith("__kirmizi") && b.endsWith("__beyaz")) return 1;
+      }
+      return aPriority - bPriority;
+    }
     if (aIsPriority) return -1;
     if (bIsPriority) return 1;
     const aFirst = grouped[a][0]?.startTime || "";
@@ -110,7 +118,15 @@ export default function HomeScreen() {
         ]}
       >
         <TouchableOpacity
-          onPress={() => setLiveOnly(!liveOnly)}
+          onPress={() => {
+            const turningOn = !liveOnly;
+            setLiveOnly(turningOn);
+            if (turningOn) {
+              // Bugüne git — canlı maçlar her zaman bugündedir
+              const today = new Date().toISOString().split("T")[0];
+              setSelectedDate(today);
+            }
+          }}
           style={[
             styles.liveBtn,
             {
@@ -180,7 +196,7 @@ export default function HomeScreen() {
               <React.Fragment key={key}>
                 <LeagueSection
                   leagueId={realLeagueId}
-                  leagueName={leagueMatches[0].league.name}
+                  leagueName={getSectionLabel(key, leagueMatches[0])}
                   leagueLogo={leagueMatches[0].league.logoUrl}
                   leagueCountry={leagueMatches[0].league.country}
                   matches={leagueMatches}

@@ -34,7 +34,7 @@ export const checkVersion = async (): Promise<{ isOld: boolean; updateUrl: strin
 
     return { isOld, updateUrl };
   } catch (error) {
-    console.error('Version check failed:', error);
+    if (__DEV__) console.error('Version check failed:', error);
     return { isOld: false, updateUrl: '' };
   }
 };

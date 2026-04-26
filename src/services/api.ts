@@ -1575,6 +1575,15 @@ export const apiService = {
       });
     }
 
+    // Yükselme play-off ligleri (1007, 204, 205):
+    // isKnockoutRound "promotion" stringini dışlar, bu yüzden override gerekli.
+    // 1007 = TFF 3. Lig Play-offs (tüm turlar yükselme play-off)
+    // 204 = TFF 1. Lig / 205 = TFF 2. Lig (regular season + play-off turları karışık)
+    const PROMOTION_PLAYOFF_LEAGUES = new Set(['1007', '204', '205']);
+    if (PROMOTION_PLAYOFF_LEAGUES.has(leagueId)) {
+      knockoutRounds = allRounds.filter((r) => r.toLowerCase().includes('promotion'));
+    }
+
     if (!knockoutRounds.length) return [];
 
     // Step 2: Fetch fixtures for every knockout round in parallel
@@ -1603,6 +1612,15 @@ export const apiService = {
 
       // Second safety net: reject "Play-off Round" even after getRoundBase strips the leg suffix
       if (lower.startsWith('play-off round') || lower.startsWith('playoff round')) return null;
+
+      // Promotion Play-offs (1007 / 204 / 205):
+      // Strip "Promotion Play-offs - " prefix so each stage gets a distinct key.
+      // "Promotion Play-offs - 1st Round" → "1st Round"
+      // "Promotion Play-offs - Finals"    → "Finals"
+      if (lower.startsWith('promotion play-offs') || lower.startsWith('promotion playoffs')) {
+        const stage = raw.replace(/^Promotion Play-offs?\s*[-–—]\s*/i, '').trim();
+        return stage || raw;
+      }
 
       // UCL / EL / ECL (new UEFA format) — only a play-off round that ALSO
       // says "knockout" is the main-tournament round.
@@ -1651,11 +1669,14 @@ export const apiService = {
 
     // Round progression order (earliest → latest)
     const ROUND_ORDER = [
+      // Promotion play-off numbered rounds (1007 / 204 / 205)
+      '1st Round', '2nd Round', '3rd Round', '4th Round',
+      // Standard cup bracket rounds
       'Round of 128', 'Round of 64', 'Round of 32',
       'Round of 16',
       'Quarter-finals', 'Quarter-Finals',
       'Semi-finals', 'Semi-Finals',
-      '3rd Place Final', 'Final',
+      '3rd Place Final', 'Finals', 'Final',
     ];
     const getOrder = (key: string) => {
       const idx = ROUND_ORDER.findIndex((r) => r.toLowerCase() === key.toLowerCase());
@@ -1839,24 +1860,105 @@ export const apiService = {
 
       const qfTeamIds = collectTeamIds(qf);
 
-      // Drop SF if every SF matchup has at least one team from QF squad
-      // (otherwise SF contains old mismatched data).
+      // Drop SF if every SF matchup has BOTH teams from the QF squad.
+      // Using OR (either team) is not strict enough — an early-round team that
+      // coincidentally also appears in QF would slip through.
       const sfValid = !!sf && sf.matchups.every((m) =>
-        qfTeamIds.has(String(m.team1?.id ?? '___')) ||
+        qfTeamIds.has(String(m.team1?.id ?? '___')) &&
         qfTeamIds.has(String(m.team2?.id ?? '___')),
       );
       if (sf && !sfValid) {
         bracketRounds.splice(bracketRounds.indexOf(sf), 1);
       }
 
-      // For Final: its teams must come from SF teams (which are QF teams).
-      // If SF was dropped or Final teams aren't in QF squad → drop Final.
+      // Final: both finalists must be from the QF squad (SF winners come from QF).
+      // AND-check prevents a team that played in both an early mislabeled "Final"
+      // AND the real QF from making the bogus Final survive the guard.
       const fnValid = !!fn && sfValid && fn.matchups.every((m) =>
-        qfTeamIds.has(String(m.team1?.id ?? '___')) ||
+        qfTeamIds.has(String(m.team1?.id ?? '___')) &&
         qfTeamIds.has(String(m.team2?.id ?? '___')),
       );
       if (fn && !fnValid) {
         bracketRounds.splice(bracketRounds.indexOf(fn), 1);
+      }
+
+      // Date-based chronological guard (second independent check):
+      // A round whose ALL matches predate the earliest QF match cannot be a
+      // legitimate later round — drop it regardless of team ID outcome.
+      const getMatchDates = (r?: BracketRound): number[] =>
+        (r?.matchups ?? []).flatMap((m) =>
+          [m.leg1?.date, m.leg2?.date]
+            .filter(Boolean)
+            .map((d) => new Date(d!).getTime())
+            .filter((t) => !isNaN(t)),
+        );
+
+      const qfDates = getMatchDates(qf);
+      const qfEarliestMs = qfDates.length ? Math.min(...qfDates) : Infinity;
+
+      // Re-fetch references after possible earlier splices
+      const sfNow = bracketRounds.find((r) => r.key.toLowerCase().includes('semi'));
+      const fnNow = bracketRounds.find((r) => r.key.toLowerCase() === 'final');
+
+      if (sfNow) {
+        const sfDates = getMatchDates(sfNow);
+        if (sfDates.length > 0 && Math.max(...sfDates) < qfEarliestMs) {
+          bracketRounds.splice(bracketRounds.indexOf(sfNow), 1);
+        }
+      }
+      if (fnNow) {
+        const fnDates = getMatchDates(fnNow);
+        if (fnDates.length > 0 && Math.max(...fnDates) < qfEarliestMs) {
+          bracketRounds.splice(bracketRounds.indexOf(fnNow), 1);
+        }
+      }
+    }
+
+    // Yükselme play-off ligleri (1007 / 204 / 205): aynı sanity guard.
+    // "1st Round" anchor — Finals/later rounds must chronologically follow it.
+    if (PROMOTION_PLAYOFF_LEAGUES.has(leagueId)) {
+      const findPromoRound = (key: string) =>
+        bracketRounds.find((r) => r.key.toLowerCase() === key);
+
+      const r1 = findPromoRound('1st round');
+
+      const collectTeamIds = (r?: BracketRound): Set<string> => {
+        const ids = new Set<string>();
+        if (!r) return ids;
+        for (const m of r.matchups) {
+          if (m.team1?.id) ids.add(String(m.team1.id));
+          if (m.team2?.id) ids.add(String(m.team2.id));
+        }
+        return ids;
+      };
+
+      const getMatchDatesPromo = (r?: BracketRound): number[] =>
+        (r?.matchups ?? []).flatMap((m) =>
+          [m.leg1?.date, m.leg2?.date]
+            .filter(Boolean)
+            .map((d) => new Date(d!).getTime())
+            .filter((t) => !isNaN(t)),
+        );
+
+      const r1TeamIds = collectTeamIds(r1);
+      const r1Dates = getMatchDatesPromo(r1);
+      const r1EarliestMs = r1Dates.length ? Math.min(...r1Dates) : Infinity;
+
+      // Drop any later round whose latest match date predates the 1st Round,
+      // or whose teams are entirely disjoint from the 1st Round squad.
+      const laterRounds = bracketRounds.filter((r) => r.key.toLowerCase() !== '1st round');
+      for (const round of laterRounds) {
+        const dates = getMatchDatesPromo(round);
+        const datesBogus = dates.length > 0 && Math.max(...dates) < r1EarliestMs;
+        // Team-ID check: every matchup must have at least one team from r1
+        const teamsBogus = r1TeamIds.size > 0 && round.matchups.every((m) =>
+          !r1TeamIds.has(String(m.team1?.id ?? '___')) &&
+          !r1TeamIds.has(String(m.team2?.id ?? '___')),
+        );
+        if (datesBogus || teamsBogus) {
+          const idx = bracketRounds.indexOf(round);
+          if (idx !== -1) bracketRounds.splice(idx, 1);
+        }
       }
     }
 

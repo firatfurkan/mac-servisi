@@ -74,7 +74,7 @@ export function useChat(matchId: string) {
         () => setLoading(false)
       );
     } catch (error) {
-      console.error('[Chat] onSnapshot error:', error);
+      if (__DEV__) console.error('[Chat] onSnapshot error:', error);
       setLoading(false);
     }
 

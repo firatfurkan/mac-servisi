@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
@@ -46,6 +46,8 @@ const CUP_LEAGUE_IDS = new Set([
   '1',   '4',   '5',   '6',   '9',   '33',  // FIFA WC / EURO / NL / Copa Am / AFCON
   '32',  '34',  // WC Qualifiers (Play-offs phase)
   '206', '551',             // Türkiye Kupası / Süper Kupa
+  '1007',                   // TFF 3. Lig Play-offs
+  '204', '205',             // TFF 1. Lig / 2. Lig (yükselme play-off bracket)
   '45',  '48',              // FA Cup / Carabao Cup
   '66',  '81',  '89',       // Coupe de France / DFB-Pokal / KNVB
   '143', '137',             // Copa del Rey / Coppa Italia
@@ -60,6 +62,7 @@ const CUP_LEAGUE_IDS = new Set([
  */
 const HIDE_STANDINGS_LEAGUE_IDS = new Set([
   '206',  // Türkiye Kupası — group stage data is messy, show only bracket
+  '1007', // TFF 3. Lig Play-offs — no group standings, only bracket
 ]);
 
 export default function StandingsScreen() {
@@ -69,12 +72,14 @@ export default function StandingsScreen() {
     logo,
     season: seasonParam,
     teamId,
+    group: groupParam,
   } = useLocalSearchParams<{
     leagueId: string;
     name: string;
     logo: string;
     season: string;
     teamId?: string;
+    group?: string;
   }>();
   const theme = useAppTheme();
   const router = useRouter();
@@ -96,7 +101,7 @@ export default function StandingsScreen() {
     isError,
     isRefetching,
     refetch,
-  } = useStandings(leagueId!, season, undefined, undefined, teamId);
+  } = useStandings(leagueId!, season, !hideStandings, undefined, teamId);
 
   const primaryEmpty = !isLoading && (standingsData?.rows ?? []).length === 0;
 
@@ -111,6 +116,15 @@ export default function StandingsScreen() {
   const allGroups = activeStandingsData?.groups ?? [];
   const hasGroups = allGroups.length > 1;
   const [selectedGroupIdx, setSelectedGroupIdx] = useState(0);
+
+  // URL'den gelen grup parametresine göre oto-seçim (örn. TFF 2. Lig Beyaz/Kırmızı)
+  useEffect(() => {
+    if (!groupParam || !hasGroups) return;
+    const idx = allGroups.findIndex((g) =>
+      g.name?.toLowerCase().includes(groupParam.toLowerCase()),
+    );
+    if (idx !== -1) setSelectedGroupIdx(idx);
+  }, [groupParam, hasGroups, allGroups.length]);
 
   const activeGroupRows = hasGroups
     ? (allGroups[selectedGroupIdx]?.rows ?? [])
@@ -411,7 +425,7 @@ export default function StandingsScreen() {
                         fontWeight: '700',
                         color: idx === selectedGroupIdx ? '#fff' : theme.colors.textSecondary,
                       }}>
-                        {g.name}
+                        {g.name?.replace("Kirmizi", "Kırmızı")}
                       </Text>
                     </TouchableOpacity>
                   ))}

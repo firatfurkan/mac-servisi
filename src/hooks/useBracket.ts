@@ -5,10 +5,11 @@ export function useBracket(leagueId: string, season: string) {
   return useQuery({
     queryKey: ['bracket', leagueId, season],
     queryFn: () => apiService.getBracket(leagueId, season),
-    // Türkiye Kupası (206): keep staleTime short so mis-labeled rounds get
-    // corrected quickly as the tournament progresses. Other cups: 1 hour.
-    staleTime: leagueId === '206' ? 60_000 : 60 * 60 * 1000,
-    refetchOnMount: true,
+    // Play-off ligleri (206, 1007, 204, 205): short stale + gc times so
+    // mis-labeled rounds get corrected quickly on refetch.
+    staleTime: ['206', '1007', '204', '205'].includes(leagueId) ? 60_000 : 60 * 60 * 1000,
+    gcTime:    ['206', '1007', '204', '205'].includes(leagueId) ? 90_000 : 60 * 60 * 1000,
+    refetchOnMount: 'always' as const,
     enabled: !!leagueId && !!season,
   });
 }

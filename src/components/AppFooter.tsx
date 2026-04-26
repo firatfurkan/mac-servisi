@@ -7,7 +7,7 @@ export const AppFooter = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.text, { color: theme.colors.textSecondary }]}>v.1.1.2</Text>
+      <Text style={[styles.text, { color: theme.colors.textSecondary }]}>v.1.1.4</Text>
       <Text style={[styles.text, { color: theme.colors.textSecondary }]}>2026 MaçServisi</Text>
       <Text style={[styles.studio, { color: theme.colors.primary }]}>Lionx Studio</Text>
     </View>
