@@ -16,6 +16,8 @@ import {
 } from 'firebase/firestore';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  AppState,
+  AppStateStatus,
   ActivityIndicator,
   Dimensions,
   Image,
@@ -211,6 +213,8 @@ export default function ValueQuizGame({ theme }: Props) {
   const scoreRef     = useRef(score);
   const highScoreRef = useRef(highScore);
   const phaseRef     = useRef(phase);
+  const timeLeftRef  = useRef(TIMER_SECS);
+  const appStateRef  = useRef<AppStateStatus>(AppState.currentState);
 
   // cheat protection
   const lastPickTimeRef  = useRef<number>(0);
@@ -383,15 +387,31 @@ export default function ValueQuizGame({ theme }: Props) {
     cancelAnimation(timerProgress);
   }, []);
 
+  const resumeTimer = useCallback(() => {
+    const remaining = timeLeftRef.current;
+    if (remaining <= 0) return;
+    timerProgress.value = remaining / TIMER_SECS;
+    timerProgress.value = withTiming(0, { duration: remaining * 1000, easing: Easing.linear });
+    countdownRef.current = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) { clearInterval(countdownRef.current!); return 0; }
+        return prev - 1;
+      });
+    }, 1000);
+  }, []); // eslint-disable-line
+
   useEffect(() => {
     if (phase !== 'guessing') { stopTimer(); return; }
+    timeLeftRef.current = TIMER_SECS;
     setTimeLeft(TIMER_SECS);
     timerProgress.value = 1;
     timerProgress.value = withTiming(0, { duration: TIMER_SECS * 1000, easing: Easing.linear });
     countdownRef.current = setInterval(() => {
       setTimeLeft(prev => {
-        if (prev <= 1) { clearInterval(countdownRef.current!); return 0; }
-        return prev - 1;
+        const next = prev <= 1 ? 0 : prev - 1;
+        timeLeftRef.current = next;
+        if (prev <= 1) clearInterval(countdownRef.current!);
+        return next;
       });
     }, 1000);
     return stopTimer;
@@ -400,6 +420,21 @@ export default function ValueQuizGame({ theme }: Props) {
   useEffect(() => {
     if (timeLeft === 0 && phaseRef.current === 'guessing') handleTimeout();
   }, [timeLeft]); // eslint-disable-line
+
+  // ── AppState pause/resume ─────────────────────────────────
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (nextState: AppStateStatus) => {
+      const prev = appStateRef.current;
+      appStateRef.current = nextState;
+      if (phaseRef.current !== 'guessing') return;
+      if (prev === 'active' && nextState.match(/inactive|background/)) {
+        stopTimer();
+      } else if (prev.match(/inactive|background/) && nextState === 'active') {
+        resumeTimer();
+      }
+    });
+    return () => sub.remove();
+  }, [stopTimer, resumeTimer]);
 
   // ── wrong-answer core ────────────────────────────────────
   const triggerWrong = useCallback((shakeSide?: 'left' | 'right') => {
